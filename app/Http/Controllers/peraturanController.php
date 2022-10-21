@@ -1,0 +1,253 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use PDF;
+use Illuminate\Support\Facades\Gate;
+use Carbon\Carbon;
+use App\peraturan;
+use DataTables;
+
+class peraturanController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function __construct(){
+        $this->middleware(function($request, $next){
+        if(gate::allows('PATUH')) return $next($request);
+        abort(403,'Anda tidak memiliki hak akses');
+        });
+    }
+    public function index(Request $request)
+   {
+         if($request->ajax())
+        {
+            $data = peraturan::latest()->get();
+            
+
+
+
+
+            return DataTables::of($data)
+            ->addColumn('action', function ($data) {
+                        
+                      $button = '<a href="peraturan/'.$data->id.'/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>' ;
+                      $button .= '<a href="peraturan/'.$data->id.'"> <button class="btn btn-success btn-sm">Detail</button></a>' ; 
+                      $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
+                      return $button;
+                     
+
+            })
+            ->editColumn('id', 'ID: {{$id}}')
+            ->make(true);
+            //return datatables()->of($data)->toJson();
+        }
+        return view ('peraturan.index');
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return view('peraturan.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        
+        $description=$request->get('description');
+        $dom = new \DomDocument();
+        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);    
+        $images = $dom->getElementsByTagName('img');
+
+        foreach($images as $k => $img){
+            $data = $img->getAttribute('src');
+
+            list($type, $data) = explode(';', $data);
+            list(, $data)      = explode(',', $data);
+            $data = base64_decode($data);
+
+            $image_name= "/storage/peraturan/" . time().$k.'.png';
+            $path = public_path() . $image_name;
+
+            file_put_contents($path, $data);
+            
+            $img->removeAttribute('src');
+            $img->setAttribute('src', $image_name);
+        }
+
+        $description = $dom->saveHTML();
+
+
+
+        $new_peraturan = new \App\peraturan;
+
+        $new_peraturan->name = $request->get('name');
+        $new_peraturan->nosk = $request->get('nosk');
+        $new_peraturan->tglsk= $request->get('tglsk');
+        $new_peraturan->tgllaku=$request->get('tgllaku');
+        $new_peraturan->uraian = $request->get('uraian');
+        $new_peraturan->pdf = $description;
+        $new_peraturan->created_by = \Auth::user()->id;
+        $new_peraturan->save();
+        return redirect()->route('peraturan.index')->with('status','Peraturan Berhasil Ditambahkan');
+
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $peraturan = \App\peraturan::findorFail($id);
+        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
+
+        //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
+        //return $pdf->stream();
+        //exit(0);
+
+        return view('peraturan.show',['peraturan'=>$peraturan,'time'=>$time]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $edit_peraturan = \App\peraturan::findorFail($id);
+        return view('peraturan.edit',['peraturan'=>$edit_peraturan]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function simpanedit(Request $request, $id)
+    {
+        
+
+        $edit_peraturan = \App\peraturan::findorFail($id);
+        $description=$request->get('description');
+        $dom = new \DomDocument('1.0','UTF-8');
+        libxml_use_internal_errors(true);
+        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);    
+        $images = $dom->getElementsByTagName('img');
+        $bs64='base64';
+
+        foreach($images as $k => $img){
+            $data = $img->getAttribute('src');
+            if (strpos($data, $bs64) == true)
+            {
+            $data = base64_decode(preg_replace('#^data:image/\w+;base64.#i','',$data));
+            //list($type, $data) = explode(';', $data);
+            //list(, $data)      = explode(',', $data);
+            
+
+            $image_name= "/storage/peraturan/" . 'post_' . time().$k.'.png';
+            $path = public_path() . $image_name;
+
+            file_put_contents($path, $data);
+            
+            $img->removeAttribute('src');
+            $img->setAttribute('src', $image_name);
+        }else{
+            $image_name="/".$data;
+            $img->setAttribute('src',$image_name);    
+        }
+        };
+
+        $description_save = $dom->saveHTML();
+
+        $edit_peraturan->name = $request->get('name');
+        $edit_peraturan->nosk = $request->get('nosk');
+        $edit_peraturan->tglsk = $request->get('tglsk');
+        $edit_peraturan->tgllaku = $request->get('tgllaku');
+        $edit_peraturan->uraian = $request->get('uraian');
+        
+        //$edit_peraturan->pdf = $description_save;
+        
+        $edit_peraturan->updated_by = \Auth::user()->id;
+        $edit_peraturan->save();
+        return redirect()->route('peraturan.index')->with('status','Peraturan Berhasil Diperbaharui');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $peraturan = \App\peraturan::findOrFail($id);
+        $peraturan->delete();
+
+        return redirect()->route('peraturan.index')
+        ->with('status','Peraturan Successfully moved to trash');
+    }
+
+    public function trash(){
+        $deletedperaturan = \App\peraturan::onlyTrashed()->paginate(10);
+        return view('peraturan.trash', ['peraturan'=>$deletedperaturan]);
+
+    }
+    public function restore($id){
+        $peraturan = \App\peraturan::withTrashed()->findOrFail($id);
+
+        if($peraturan->trashed()){
+            $peraturan->restore();
+        } else {
+            return redirect()->route('peraturan.index')
+            ->with('status','peraturan is not in trash');
+        }
+
+        return redirect()->route('peraturan.index')
+        ->with('status','peraturan Successfully Restored');
+    }
+
+    public function deletePermanent($id){
+        $peraturan = \App\peraturan::withTrashed()->findOrFail($id);
+
+       // if($peraturan->trashed()){
+         //   return redirect()->route('peraturan.index')
+           // ->with('status'.'Cannot Delete Permanent Active peraturan');
+        //} else {
+            $peraturan->forceDelete();
+
+            return redirect()->route('peraturan.trash')
+            ->with('status','peraturan Permanently Deleted');
+        //}
+    }
+    public function show_pdf($id)
+    {
+        $peraturan = \App\peraturan::findorFail($id);
+        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
+
+        //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
+        //return $pdf->stream();
+        //exit(0);
+
+        return view('peraturan.show_pdf',['peraturan'=>$peraturan,'time'=>$time]);
+    }
+}
