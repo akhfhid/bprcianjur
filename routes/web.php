@@ -14,39 +14,42 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-
-Route::get('/', function () {return view('auth.login');});
-route::get('/reset',function(){return view('auth.passwords.reset');})->name("reset");
-Auth::routes();
-route::match(["GET", "POST"], "/register", function(){
-	return redirect("/login");
-})->name("register");
-
-
-
-route::middleware(['auth'])->group(function() {
-Route::prefix('set-user')->middleware('auth')->group(function () {
-    Route::get('/', 'SetUserController@index')->name('setuser.index');
-    Route::get('/edit/{id}', 'SetUserController@edit')->name('setuser.edit');
-    Route::post('/update/{id}', 'SetUserController@update')->name('setuser.update');
+Route::get('/', function () {
+    return view('auth.login');
 });
+route::get('/reset', function () {
+    return view('auth.passwords.reset');
+})->name('reset');
+Auth::routes();
+route::match(['GET', 'POST'], '/register', function () {
+    return redirect('/login');
+})->name('register');
 
+route::middleware(['auth'])->group(function () {
+    Route::prefix('set-user')
+        ->middleware('auth')
+        ->group(function () {
+            Route::get('/', 'SetUserController@index')->name('setuser.index');
+            Route::get('/edit/{id}', 'SetUserController@edit')->name('setuser.edit');
+            Route::post('/update/{id}', 'SetUserController@update')->name('setuser.update');
+        });
+Route::post('/pegawai/toggle-active/{id}', 'PegawaiController@toggleActive')
+    ->name('pegawai.toggle-active');
 
     route::get('users/{id}/active', 'UserController@active')->name('users.active');
-    route::post('users/{id}/update',"UserController@updateuser")->name('users.updateuser');
-    route::get('users/{id}/edit'."UserController@edit")->name('users.edit');
-    Route::resource("users", "UserController");
+    route::post('users/{id}/update', 'UserController@updateuser')->name('users.updateuser');
+    route::get('users/{id}/edit' . 'UserController@edit')->name('users.edit');
+    Route::resource('users', 'UserController');
     Route::get('/home', 'HomeController@index');
     Route::get('/categories/trash', 'CategoriesController@trash')->name('categories.trash');
     Route::get('/categories/{id}/restore', 'CategoriesController@restore')->name('categories.restore');
     Route::delete('/categories/{category}/delete-permanent', 'CategoriesController@deletePermanent')->name('categories.delete-permanent');
-    Route::resource("categories", "CategoriesController");
+    Route::resource('categories', 'CategoriesController');
 
     Route::get('/cabang/trash', 'KantorController@trash')->name('cabang.trash');
     Route::Get('/cabang/{id}/restore', 'KantorController@restore')->name('cabang.restore');
     Route::delete('/cabang/{cabang}/delete-permanent', 'KantorController@deletePermanent')->name('cabang.delete-permanent');
     Route::resource('cabang', 'KantorController');
-
 
     Route::get('/jabatan/trash', 'JabatanController@trash')->name('jabatan.trash');
     Route::get('/jabatan/{id}/restore', 'JabatanController@restore')->name('jabatan.restore');
@@ -58,8 +61,8 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     Route::delete('/pangkat/{pangkat}/delete-permanent', 'PangkatController@deletePermanent')->name('pangkat.delete-permanent');
     route::resource('pangkat', 'PangkatController');
 
-//Route::get('/ajax/pangkat/search','PangkatController@ajaxsearch');
-//Route::get('pegawai','PegawaiController@create')->name('pegawai.create');
+    //Route::get('/ajax/pangkat/search','PangkatController@ajaxsearch');
+    //Route::get('pegawai','PegawaiController@create')->name('pegawai.create');
     Route::get('/pegawai/data', 'PegawaiController@data')->name('pegawai.data');
     Route::get('/pegawai/trash', 'PegawaiController@trash')->name('pegawai.trash');
     Route::delete('/pegawai/{pegawai}/delete-permanent', 'PegawaiController@deletePermanent')->name('pegawai.delete-permanent');
@@ -67,15 +70,14 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('pegawai/{id}/cetak', 'PegawaiController@cetakpdf')->name('pegawai.cetak');
     route::post('Pegawai/Simpan', 'PegawaiController@simpan')->name('pegawai.simpan');
     route::get('Pegawai/Input', 'PegawaiController@input')->name('pegawai.input');
-    route::get('/Pegawai/Jadwal','PegawaiController@listberkala')->name('pegawai.listberkala');
-    route::get('/Pegawai/{pegawai}/Berkala/','PegawaiController@EditBerkala')->name('pegawai.editberkala');
-    route::post('/Pegawai/Updateberkala/{pegawai}','PegawaiController@UpdateBerkala')->name('pegawai.updateberkala');
-    route::get('/Pegawai/JadwalBerkala','PegawaiController@jadwalberkala')->name('pegawai.jadwalberkala');
-    route::get('/Pegawai/BerkalaPangkat','PegawaiController@berkalapangkat')->name('pegawai.berkalapangkat');
-    route::get('/Pegawai/ListPangkat','PegawaiController@datapangkat')->name('pegawai.datapangkat');
-    route::get('/Pegawai/JadwalPangkat','PegawaiController@listpangkat')->name('pegawai.listpangkat');
+    route::get('/Pegawai/Jadwal', 'PegawaiController@listberkala')->name('pegawai.listberkala');
+    route::get('/Pegawai/{pegawai}/Berkala/', 'PegawaiController@EditBerkala')->name('pegawai.editberkala');
+    route::post('/Pegawai/Updateberkala/{pegawai}', 'PegawaiController@UpdateBerkala')->name('pegawai.updateberkala');
+    route::get('/Pegawai/JadwalBerkala', 'PegawaiController@jadwalberkala')->name('pegawai.jadwalberkala');
+    route::get('/Pegawai/BerkalaPangkat', 'PegawaiController@berkalapangkat')->name('pegawai.berkalapangkat');
+    route::get('/Pegawai/ListPangkat', 'PegawaiController@datapangkat')->name('pegawai.datapangkat');
+    route::get('/Pegawai/JadwalPangkat', 'PegawaiController@listpangkat')->name('pegawai.listpangkat');
     Route::resource('pegawai', 'PegawaiController');
-
 
     route::get('keluarga/{id}', 'KeluargaController@tambah')->name('keluarga.tambah');
     route::post('keluarga/{id}', 'KeluargaController@update')->name('keluarga.update');
@@ -91,7 +93,6 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::delete('/riwayatpendi/{riwayatpendi}/delete-permanent', 'riwayatpendiController@deletePermanent')->name('riwayatpendi.delete-permanent');
     route::resource('riwayatpendi', 'riwayatpendiController');
 
-
     route::get('riwayatkerja/{id}', 'riwayatkerjaController@tambah')->name('riwayatkerja.tambah');
     route::get('riwayatkerja/{id}/list', 'riwayatkerjaController@list')->name('riwayatkerja.list');
     route::post('riwayatkerja/{id}', 'riwayatkerjaController@update')->name('riwayatkerja.update');
@@ -104,17 +105,16 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::delete('pelatihan/{pelatihan}/delete-permanent', 'pelatihanController@deletePermanent')->name('pelatihan.delete-permanent');
     route::resource('pelatihan', 'pelatihanController');
 
-
     route::POST('ordercuti/{id}/setuju', 'ordercutiController@setuju')->name('ordercuti.setuju');
     route::post('ordercuti/{id}/tolak', 'ordercutiController@tolak')->name('ordercuti.tolak');
     route::get('ordercuti/dataapprove', 'ordercutiController@disetujui')->name('ordercuti.datasetuju');
     route::get('ordercuti/datatolak', 'ordercutiController@ditolak')->name('ordercuti.datatolak');
-    route::get('ordercuti/cutiwajib','ordercutiController@cutiwajib')->name('ordercuti.cutiwajib');
-    route::get('ordercuti/cutilainnya','ordercutiController@cutilainnya')->name('ordercuti.cutilainnya');
-    route::get('ordercuti/indexcutiwajib','ordercutiController@indexcutiwajib')->name('ordercuti.indexcutiwajib');
-    route::get('ordercuti/indexcuti','ordercutiController@indexcuti')->name('ordercuti.indexcuti');
-    route::get('ordercuti/indexcutilainnya','ordercutiController@indexcutilainnya')->name('ordercuti.indexcutilainnya');
-    route::get('ordercuti/indexcutitahunan','ordercutiController@indexcutitahunan')->name('ordercuti.indexcutitahunan');
+    route::get('ordercuti/cutiwajib', 'ordercutiController@cutiwajib')->name('ordercuti.cutiwajib');
+    route::get('ordercuti/cutilainnya', 'ordercutiController@cutilainnya')->name('ordercuti.cutilainnya');
+    route::get('ordercuti/indexcutiwajib', 'ordercutiController@indexcutiwajib')->name('ordercuti.indexcutiwajib');
+    route::get('ordercuti/indexcuti', 'ordercutiController@indexcuti')->name('ordercuti.indexcuti');
+    route::get('ordercuti/indexcutilainnya', 'ordercutiController@indexcutilainnya')->name('ordercuti.indexcutilainnya');
+    route::get('ordercuti/indexcutitahunan', 'ordercutiController@indexcutitahunan')->name('ordercuti.indexcutitahunan');
     //route::post('ordercuti/update','ordercutiController@update')->name('ordercuti.update');
     route::resource('ordercuti', 'ordercutiController');
 
@@ -128,7 +128,6 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('peraturan/{id}/edit', 'peraturanController@edit')->name('peraturan.edit');
     route::resource('peraturan', 'peraturanController');
 
-
     route::POST('mutasi/{id}/setuju', 'mutasiController@setuju')->name('mutasi.setuju');
     route::post('mutasi/{id}/tolak', 'mutasiController@tolak')->name('mutasi.tolak');
     route::get('mutasi/dataapprove', 'mutasiController@disetujui')->name('mutasi.disetujui');
@@ -141,7 +140,7 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('mutasipangkat/tolak', 'mutasipangkatController@ditolak')->name('mutasipangkat.tolak');
     route::resource('mutasipangkat', 'mutasipangkatController');
 
-//route user staff
+    //route user staff
     route::get('staff/daftarcuti', 'StaffController@cuti')->name('staff.cuti');
     route::get('staff/cuti', 'StaffController@permohonancuti')->name('staff.permohonancuti');
     route::post('staff/mintacuti', 'StaffController@mintacuti')->name('staff.mintacuti');
@@ -154,10 +153,9 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('staff/status', 'StaffController@statusatur')->name('staff.status');
     route::get('Staff/Peraturan/Show/{id}', 'StaffController@showatur')->name('staff.showatur');
     route::get('Staff/Peraturan/Print/{id}', 'StaffController@show_pdf')->name('staff.show_pdf');
-    route::get('staff/Cuti/CutiWajib','StaffController@cutiwajib')->name('staff.cutiwajib');
-    route::get('staff/Cuti/CutiLainnya','StaffController@cutilainnya')->name('staff.cutilainnya');
+    route::get('staff/Cuti/CutiWajib', 'StaffController@cutiwajib')->name('staff.cutiwajib');
+    route::get('staff/Cuti/CutiLainnya', 'StaffController@cutilainnya')->name('staff.cutilainnya');
     route::resource('staff', 'StaffController');
-
 
     route::get('Supervisor/IndexPegawai', 'SupervisorController@indexpegawai')->name('supervisor.indexpegawai');
     route::Get('Supervisor/ProfilePegawai/{id}', 'SupervisorController@detailpegawai')->name('supervisor.detailpegawai');
@@ -186,8 +184,8 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('supervisor/status', 'SupervisorController@statusatur')->name('supervisor.status');
     route::get('Supervisor/Peraturan/Show/{id}', 'SupervisorController@showatur')->name('supervisor.showatur');
     route::get('Supervisor/Peraturan/Print/{id}', 'SupervisorController@show_pdf')->name('supervisor.show_pdf');
-    route::get('Supervisor/Cuti/CutiWajib','SupervisorController@cutiwajib')->name('supervisor.cutiwajib');
-    route::get('Supervisor/Cuti/CutiLainnya','SupervisorController@cutilainnya')->name('supervisor.cutilainnya');
+    route::get('Supervisor/Cuti/CutiWajib', 'SupervisorController@cutiwajib')->name('supervisor.cutiwajib');
+    route::get('Supervisor/Cuti/CutiLainnya', 'SupervisorController@cutilainnya')->name('supervisor.cutilainnya');
     route::resource('supervisor', 'SupervisorController');
 
     route::get('Pincab/IndexPegawai', 'PincabController@indexpegawai')->name('pincab.indexpegawai');
@@ -214,8 +212,8 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('pincab/status', 'PincabController@statusatur')->name('pincab.status');
     route::get('Pincab/Peraturan/Show/{id}', 'PincabController@showatur')->name('pincab.showatur');
     route::get('Pincab/Peraturan/print/{id}', 'PincabController@print_pdf')->name('pincab.show_pdf');
-    route::get('Pincab/Cuti/CutiWajib','PincabController@cutiwajib')->name('pincab.cutiwajib');
-    route::get('Pincab/Cuti/CutiLainnya','PincabController@cutilainnya')->name('pincab.cutilainnya');
+    route::get('Pincab/Cuti/CutiWajib', 'PincabController@cutiwajib')->name('pincab.cutiwajib');
+    route::get('Pincab/Cuti/CutiLainnya', 'PincabController@cutilainnya')->name('pincab.cutilainnya');
     route::resource('pincab', 'PincabController');
 
     route::get('Kadiv/Profile', 'KadivController@profile')->name('kadiv.profile');
@@ -243,10 +241,10 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('Kadiv/status', 'KadivController@statusatur')->name('kadiv.status');
     route::get('Kadiv/Peraturan/Show/{id}', 'KadivController@showatur')->name('kadiv.showatur');
     route::get('Kadiv/Peraturan/Print/{id}', 'KadivController@show_pdf')->name('kadiv.show_pdf');
-//route::get('Kadiv/Peraturan/Atur','KadivController@index')->name('kadiv.index');
+    //route::get('Kadiv/Peraturan/Atur','KadivController@index')->name('kadiv.index');
     route::get('Kadiv/Peraturan/ShowTrash/{id}', 'KadivController@showtrash')->name('kadiv.showtrash');
-    route::get('Kadiv/Cuti/CutiWajib','KadivController@cutiwajib')->name('kadiv.cutiwajib');
-    route::get('Kadiv/Cuti/CutiLainnya','KadivController@cutilainnya')->name('kadiv.cutilainnya');
+    route::get('Kadiv/Cuti/CutiWajib', 'KadivController@cutiwajib')->name('kadiv.cutiwajib');
+    route::get('Kadiv/Cuti/CutiLainnya', 'KadivController@cutilainnya')->name('kadiv.cutilainnya');
     route::resource('Kadiv', 'KadivController');
 
     route::get('Kepatuhan/IndexPegawai', 'KepatuhanController@indexpegawai')->name('kepatuhan.indexpegawai');
@@ -276,8 +274,8 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('Kepatuhan/Peraturan/Approved', 'KepatuhanController@setujudata')->name('kepatuhan.setujudata');
     route::get('Kepatuhan/Peraturan/Ignored', 'KepatuhanController@tolakdata')->name('kepatuhan.tolakdata');
     route::get('Kepatuhan/Peraturan/Log', 'KepatuhanController@loguser')->name('kepatuhan.loguser');
-    route::get('Kepatuhan/Cuti/CutiWajib','KepatuhanController@cutiwajib')->name('kepatuhan.cutiwajib');
-    route::get('Kepatuhan/Cuti/CutiLainnya','KepatuhanController@cutilainnya')->name('kepatuhan.cutilainnya');
+    route::get('Kepatuhan/Cuti/CutiWajib', 'KepatuhanController@cutiwajib')->name('kepatuhan.cutiwajib');
+    route::get('Kepatuhan/Cuti/CutiLainnya', 'KepatuhanController@cutilainnya')->name('kepatuhan.cutilainnya');
     route::resource('Kepatuhan', 'KepatuhanController');
 
     route::get('Direksi/Profile', 'DireksiController@profile')->name('direksi.profile');
@@ -353,7 +351,7 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::get('/datalog', 'LogController@datalog')->name('Loguser.datalog');
     route::resource('Loguser', 'LogController');
 
-//Route::group(['middleware' => ['cors']], function (){
+    //Route::group(['middleware' => ['cors']], function (){
     Route::get('/ajax/pangkat/search', 'PangkatController@ajaxsearch')->name('pangkat.ajaxsearch');
     Route::get('/ajax/pegawai/search', 'PegawaiController@ajaxsearch')->name('pegawai.ajaxsearch');
     Route::get('/ajax/jabatan/search', 'JabatanController@ajaxsearch')->name('jabatan.ajaxsearch');
@@ -377,17 +375,14 @@ Route::prefix('set-user')->middleware('auth')->group(function () {
     route::delete('/riwayatsanksi/{riwayatsanksi}/delete-permanent', 'riwayatsanksiController@deletePermanent')->name('riwayatsanksi.delete-permanent');
     route::resource('riwayatsanksi', 'riwayatsanksiController');
 
-
-
-    route::get('gaji/{id}','gajiController@tambah')->name('gaji.tambah');
-    route::get('gaji/{id}/list','gajiController@list')->name('gaji.list');
-    route::delete('gaji/{gaji}/delete-permanent','gajiController@deletePermanent')->name('gaji.delete-permanent');
-    route::resource('gaji','gajiController');
+    route::get('gaji/{id}', 'gajiController@tambah')->name('gaji.tambah');
+    route::get('gaji/{id}/list', 'gajiController@list')->name('gaji.list');
+    route::delete('gaji/{gaji}/delete-permanent', 'gajiController@deletePermanent')->name('gaji.delete-permanent');
+    route::resource('gaji', 'gajiController');
 
     route::get('pangkat/{id}/list', 'BerkalaController@list')->name('berkala.list');
-    route::get('berkala/{id}/tambah','BerkalaController@tambah')->name('berkala.tambah');
-    route::resource('berkala','BerkalaController');
+    route::get('berkala/{id}/tambah', 'BerkalaController@tambah')->name('berkala.tambah');
+    route::resource('berkala', 'BerkalaController');
 
-    route::resource('penghasilan','PenghasilanController');
-
+    route::resource('penghasilan', 'PenghasilanController');
 });

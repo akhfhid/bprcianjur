@@ -48,11 +48,10 @@
 		type="radio"
 		class="form-control"
 		name="status"
-		id="active"
+		id="inactive"
 		{{$user->status == "INACTIVE" ? "checked" : ""}}>
 		<label for="inactive">Inactive</label>
 		<br><br>
-
 	<label for="">Roles</label>
 	<br>
     <SELECT name="roles" class="form-control">
