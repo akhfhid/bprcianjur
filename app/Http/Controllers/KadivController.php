@@ -584,12 +584,10 @@ class KadivController extends Controller
 
     }
      public function cutikadiv(){
-        $id_user = \Auth::user()->pegawai_id;
+        $user = \Auth::user()->pegawai_id;
         $role = \Auth::user()->roles;
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($id_user){
-                            $query->where('id',$id_user);})
-                        ->where("status","like","SUBMIT")->get();
+        $ordercuti = \App\ordercuti::where('pegawai_id',$user)
+                        ->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -631,9 +629,9 @@ class KadivController extends Controller
         $peg = \App\Pegawai::where('id',$user_id)->first();
         $jabpeg = $peg->jabatan;
         $jabatan = \App\Jabatan::where('id',$jabpeg)->first();
-        //$jabatasan = $jabatan->atasan;
-        //$jabket = \App\jabatan::where('id',$jabtatasan)->first();
-        //$jabketat = $jabatan->atasan;
+        $jabatasan = $jabatan->atasan;
+        $jabket = \App\jabatan::where('id',$jabatasan)->first();
+        $jabketat = $jabket->atasan;
 
 
         if($jeniscuti == "Cuti Wajib"){
@@ -641,15 +639,21 @@ class KadivController extends Controller
         $new_cuti->user_id = \Auth::user()->id;
         $new_cuti->cabang = \Auth::user()->cabang;
         $new_cuti->pegawai_id = $request->get('idpeg');
-        $new_cuti->jmlcuti = $jmlcuti;
+        $new_cuti->jmlcuti = 3;
         $new_cuti->tglawal = $awal;
         $new_cuti->tglakhir = $akhir;
         $new_cuti->jeniscuti = $jeniscuti;
         $new_cuti->alasan = $request->get('alasan');
         $new_cuti->status = "SUBMIT";
-        $new_cuti->otoatasan = "ADMIN";
+        $new_cuti->otoatasan = $jabatasan;
         $new_cuti->statasan = "SUBMIT";
-        $new_cuti->diketatasan = "ADMIN";
+        
+        if($jabatasan = '1'){
+        $new_cuti->diketatasan = $jabatasan;
+        }else{
+        $new_cuti->diketatasan = $jabketat;
+        }
+        
         $new_cuti->statdiket = "SUBMIT";
         $new_cuti->otosdm = "ADMIN";
         $new_cuti->statsdm = "SUBMIT";
@@ -658,30 +662,38 @@ class KadivController extends Controller
         $new_cuti->user_id = \Auth::user()->id;
         $new_cuti->cabang = \Auth::user()->cabang;
         $new_cuti->pegawai_id = $request->get('idpeg');
-        $new_cuti->jmlcuti = $jmlcuti;
+        $new_cuti->jmlcuti = $jmlcuti+1;
         $new_cuti->tglawal = $awal;
         $new_cuti->tglakhir = $akhir;
         $new_cuti->jeniscuti = $jeniscuti;
         $new_cuti->alasan = $request->get('alasan');
         $new_cuti->status = 'SUBMIT';
-        $new_cuti->otoatasan = "ADMIN";
+        $new_cuti->otoatasan = $jabatasan;
         $new_cuti->statasan = 'SUBMIT';
-        $new_cuti->diketatasan = "ADMIN";
+        if($jabatasan = '1'){
+        $new_cuti->diketatasan = $jabatasan;
+        }else{
+        $new_cuti->diketatasan = $jabketat;
+        }
         $new_cuti->statdiket = 'SUBMIT';
         }else{
         $new_cuti  = new \App\ordercuti;
         $new_cuti->user_id = \Auth::user()->id;
         $new_cuti->cabang = \Auth::user()->cabang;
         $new_cuti->pegawai_id = $request->get('idpeg');
-        $new_cuti->jmlcuti = $jmlcuti;
+        $new_cuti->jmlcuti = $jmlcuti+1;
         $new_cuti->tglawal = $awal;
         $new_cuti->tglakhir = $akhir;
         $new_cuti->jeniscuti = $jeniscuti;
         $new_cuti->alasan = $request->get('alasan');
         $new_cuti->status = 'SUBMIT';
-        $new_cuti->otoatasan = "ADMIN";
+        $new_cuti->otoatasan = $jabatasan;
         $new_cuti->statasan = 'SUBMIT';
-        $new_cuti->diketatasan = "ADMIN";
+        if($jabatasan = '1'){
+        $new_cuti->diketatasan = $jabatasan;
+        }else{
+        $new_cuti->diketatasan = $jabketat;
+        }
         $new_cuti->statdiket = 'SUBMIT';
         }
         $new_cuti->save();
@@ -690,9 +702,7 @@ class KadivController extends Controller
     }
     public function tolakcuti(){
         $user = \Auth::user()->pegawai_id;
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($user){
-                            $query->where('id','$user');})
+        $ordercuti = \App\ordercuti::where('pegawai_id',$user)
                         ->where("status","like","DITOLAK")->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
@@ -726,9 +736,7 @@ class KadivController extends Controller
     }
      public function setujucuti(){
         $user = \Auth::user()->pegawai_id;
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($user){
-                            $query->where('id','$user');})
+        $ordercuti = \App\ordercuti::where('pegawai_id',$user)
                         ->where("status","like","DISETUJUI")->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
@@ -807,7 +815,8 @@ class KadivController extends Controller
                 "tglakhir" => $cuti['tglakhir'],
                 "alasan" => $cuti['alasan'],
                 "namacab"=>$namacab,
-                "status"=>$cuti['status']
+                "status"=>$cuti['status'],
+                "statasan"=>$cuti['statasan']
             ];
 
         }
@@ -818,31 +827,55 @@ class KadivController extends Controller
     public function setuju($id){
         $ordercuti = \App\ordercuti::findorFail($id);
         $pegawai = \App\Pegawai::where('id',$ordercuti['pegawai_id'])->first();
+        $statasan = $ordercuti->statasan;
+        $stadiket = $ordercuti->statdiket;
+        $ambilcuti = $ordercuti->jmlcuti;
         $jeniscuti = $ordercuti->jeniscuti;
+        $scuti = $pegawai->scuti;
+        $sisacuti = $scuti - $ambilcuti;
+        if($statasan == "SUBMIT"){
+            if ($jeniscuti == "Cuti Wajib") {
+                $ordercuti->statasan = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->save();
 
-        if ($jeniscuti == "Cuti Wajib") {
-            $ambilcuti = $ordercuti->jmlcuti;
-            $scuti = $pegawai->scuti;
-            $ordercuti->statdiket = 'DISETUJUI';
-            $ordercuti->save();
+            } elseif ($jeniscuti == "Cuti Tahunan") {
+                $ordercuti->status = 'DISETUJUI';
+                $ordercuti->statasan = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $pegawai->scuti = $sisacuti;
+                $ordercuti->save();
+                $pegawai->save();
+            } else {
 
-        } elseif ($jeniscuti == "Cuti Tahunan") {
-            $ambilcuti = $ordercuti->jmlcuti;
-            $scuti = $pegawai->scuti;
-            $sisacuti = $scuti-$ambilcuti;
-            $ordercuti->status = 'DISETUJUI';
-            $ordercuti->statdiket = 'DISETUJUI';
-            $pegawai->scuti = $sisacuti;
-            $ordercuti->save();
-            $pegawai->save();
-        } else {
+                $ordercuti->status = 'DISETUJUI';
+                $ordercuti->statasan = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->save();
+            }
+        }else{
+            if ($jeniscuti == "Cuti Wajib"){
+                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->save();
 
+            } elseif ($jeniscuti == "Cuti Tahunan") {
+                $ordercuti->status = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $pegawai->scuti = $sisacuti;
+                $ordercuti->save();
+                $pegawai->save();
+            } else {
             $ordercuti->status = 'DISETUJUI';
             $ordercuti->statdiket = 'DISETUJUI';
             $ordercuti->save();
         }
 
-        return redirect()->route('kadiv.cutiindex')->with('status','Data Cuti Successfully Updated');
+    }
+
+        $ordercuti->save();
+        $pegawai->save();
+
+    return redirect()->route('kadiv.cutiindex')->with('status','Data Cuti Successfully Updated');
 
     }
     public function tolak($id){
@@ -868,12 +901,23 @@ class KadivController extends Controller
         $jabpeg = $peg->jabatan;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($name){
-                        $query->where('name','LIKE',"%$name%");})
-                        ->where("status","like","DISETUJUI")
-                        ->where('diketatasan',$jabpeg)
-                        ->where('cabang',$idcabang)
-                        ->get();
+            ->wherehas('pegawai', function($query) use ($name){
+                $query->where('name','LIKE',"%$name%");})
+            ->where([
+                ['status',"LIKE","DISETUJUI"],
+                ['statasan',"like","DISETUJUI"],
+                ['otoatasan',$jabpeg],
+                ['cabang',$idcabang]
+            ])
+            ->orwhere([
+                ['status',"LIKE","DISETUJUI"],
+                ['statasan',"like","DISETUJUI"],
+                ['statdiket',"like","DISETUJUI"],
+                ['diketatasan',$jabpeg],
+                ['cabang',$idcabang]
+            ])
+
+            ->where('cabang',$idcabang)->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             $pegawai = \App\Pegawai::where('id',$cuti['pegawai_id'])->first();
@@ -904,11 +948,21 @@ class KadivController extends Controller
         $jabpeg = $peg->jabatan;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($name){
-                            $query->where('name','LIKE',"%$name%");})
-                        ->where("status","like","DITOLAK")
-                        ->where('diketatasan',$jabpeg)
-                        ->where('cabang',$idcabang)->get();
+            ->wherehas('pegawai', function($query) use ($name){
+                $query->where('name','LIKE',"%$name%");})
+            ->where([
+                ['status',"LIKE","DITOLAK"],
+                ['otoatasan',$jabpeg],
+                ['cabang',$idcabang]
+            ])
+            ->orwhere([
+                ['status',"LIKE","DITOLAK"],
+
+                ['diketatasan',$jabpeg],
+                ['cabang',$idcabang]
+            ])
+
+            ->where('cabang',$idcabang)->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
 

@@ -26,7 +26,7 @@ class JabatanController extends Controller
         $filterkeyword = $request->get('name');
 
         if($filterkeyword){
-            $jabatan = \App\Jabatan::where("name", "LIKE", "%$filterkeyword")->paginate(10);
+            $jabatan = \App\Jabatan::where("name", "LIKE", "%$filterkeyword%")->paginate(10);
         }
 
         return view('jabatan.index',['jabatan' => $jabatan]);
@@ -39,7 +39,9 @@ class JabatanController extends Controller
      */
     public function create()
     {
-        return view('jabatan.create');
+        $jenis = \App\Category::pluck("name","id");
+
+        return view('jabatan.create',["jenis"=>$jenis]);
     }
 
     /**
@@ -58,7 +60,8 @@ class JabatanController extends Controller
         $umak = $request->get('umak');
         $kantor = $request->get('kantor');
         $atasan = $request->get('atasan');
-        
+        //$jenis = $request->get('jenis');
+
 
         $new_jabatan = new \App\Jabatan;
         $new_jabatan->name = $name;
@@ -67,7 +70,7 @@ class JabatanController extends Controller
         $new_jabatan->tunak = $tunak;
         $new_jabatan->tunpang = $tunpang;
         $new_jabatan->umak = $umak;
-        
+        //$new_jabatan->jenis = $jenis;
         $new_jabatan->kantor = $kantor;
         $new_jabatan->atasan = $atasan;
         $new_jabatan->created_by = \Auth::user()->id;
@@ -95,8 +98,19 @@ class JabatanController extends Controller
      */
     public function edit($id)
     {
-        $jabatan_to_edit = \App\Jabatan::findOrFail($id);
-        return view ('jabatan.edit',['jabatan'=>$jabatan_to_edit]);
+        $jabatan = \App\Jabatan::findOrFail($id);
+        $atasan1 = $jabatan->atasan;
+        //$jenjab = $jabatan['jenis'];
+      // $jenis = \App\Category::pluck("name","id");
+       //$jenisjab = \App\Category::where('id',$jenjab)->first();
+       // $namejab = $jenisjab['name'];
+        $atasan = \App\Jabatan::pluck("name","id");
+        $jabatasan = \App\Jabatan::where('id',$atasan1)->first();
+            $jabname = $jabatasan['name'];
+       // 'jenis'=>$jenis,'namejab'=>$namejab,
+
+        return view ('jabatan.edit',['jabatan'=>$jabatan,'jabname'=>$jabname,
+                        'atasan'=>$atasan]);
     }
 
     /**
@@ -113,7 +127,7 @@ class JabatanController extends Controller
         $tunis = $request->get('tunis');
         $tunak = $request->get('tunak');
         $tunpang = $request->get('tunpang');
-      
+        $jenis = $request->get('jenis');
         $umak = $request->get('umak');
         $kantor = $request->get('kantor');
         $atasan = $request->get('atasan');
@@ -125,7 +139,7 @@ class JabatanController extends Controller
         $jabatan->tunis=$tunis;
         $jabatan->tunak=$tunak;
         $jabatan->tunpang=$tunpang;
-       
+        //$jabatan->jenis = $jenis;
         $jabatan->umak=$umak;
         $jabatan->kantor = $kantor;
         $jabatan->atasan = $atasan;

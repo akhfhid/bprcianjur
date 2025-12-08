@@ -46,7 +46,8 @@ Edit Data {{$peraturan->name}}
 	<textarea class="form-control" name="uraian" placeholder="Uraian Isi Peraturan" align="justify" value="{{$peraturan->uraian}}">{{$peraturan->uraian}}</textarea>
 	<br>
 	<label>Lampiran Peraturan</label>
-	<div class="summernote">
+	<label>Upload PDF</label> 
+	<input type="file" accept="application/pdf" name="pdf" id="pdf">
 	<textarea class="form-control" id="textarea" name="description"
 	style="width: 100%; height: 500px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;" height="500px"> {{$peraturan->pdf}}</textarea></div>
 	<br>

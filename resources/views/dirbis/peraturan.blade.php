@@ -14,7 +14,7 @@
 		</form>
 	</div>
 </div>
-<hr class="my-3">
+<hr class="my-3"> 
 
 <br>
 <div class="row">
@@ -31,7 +31,7 @@
 	<div class="row mb-3">
 	<div class="col-md-12 text-right">
 		<a href="{{route('dirbis.status')}}" class="btn btn-primary">Status Permintaan Data</a>
-		
+
 	</div>
 </div>
 		<table class="table table-bordered table-stripped">
@@ -54,8 +54,8 @@
 					<td>{{$atur->tgllaku}}</td>
 					<td>{{$atur->uraian}}</td>
 					<td>
-						<a href="{{route('dirbis.showatur',$atur['idatur'])}}" class="btn btn-primary">Detail</a>
-						<a href="{{route('dirbis.permohonandownload',$atur->id)}}" class="btn btn-primary btn-sm">Download</a>
+						<a href="{{route('dirbis.showatur',$atur['id'])}}" class="btn btn-primary">Detail</a>
+						
 					</td>
 				</tr>
 			</tbody>

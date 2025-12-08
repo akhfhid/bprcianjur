@@ -58,6 +58,7 @@ class UserController extends Controller
         $new_user->address = $request->get('address');
         $new_user->phone = $request->get('phone');
         $new_user->email=$request->get('email');
+        $new_user->loguser = $request->get('log');
         $new_user->password = \Hash::make($request->get('password'));
 
         if ($request->file('avatar')){
@@ -77,6 +78,7 @@ class UserController extends Controller
     public function show($id)
     {
         $user = \App\User::findOrFail($id);
+       // $pegawai = \App\Pegawai::where('name',$user['name'])->get();
         return view('users.show',['user'=>$user]);
     }
 
@@ -92,6 +94,7 @@ class UserController extends Controller
         $pegawai = \App\Pegawai::where('name',$user['name'])->first();
         $roles = \App\roles::pluck('name','ket');
         return view('users.edit',['user'=>$user, 'roles'=>$roles,'pegawai'=>$pegawai]);
+        //return view('users.edit',['user'=>$user, 'roles'=>$roles]);
     }
 
     /**
@@ -171,6 +174,7 @@ class UserController extends Controller
         $user->address = $request->get('address');
         $user->phone = $request->get('phone');
         $user->status = $request->get('status');
+        $user->loguser = $request->get('log');
         $user->pegawai_id = $request->get('pegawai_id');
 
 

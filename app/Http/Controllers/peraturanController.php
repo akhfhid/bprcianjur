@@ -67,42 +67,64 @@ class peraturanController extends Controller
     public function store(Request $request)
     {
         
-        $description=$request->get('description');
-        $dom = new \DomDocument();
-        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);    
-        $images = $dom->getElementsByTagName('img');
+        // $description=$request->get('description');
+        // $dom = new \DomDocument();
+        // $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);    
+        // $images = $dom->getElementsByTagName('img');
 
-        foreach($images as $k => $img){
-            $data = $img->getAttribute('src');
+        // foreach($images as $k => $img){
+        //     $data = $img->getAttribute('src');
 
-            list($type, $data) = explode(';', $data);
-            list(, $data)      = explode(',', $data);
-            $data = base64_decode($data);
+        //     list($type, $data) = explode(';', $data);
+        //     list(, $data)      = explode(',', $data);
+        //     $data = base64_decode($data);
 
-            $image_name= "/storage/peraturan/" . time().$k.'.png';
-            $path = public_path() . $image_name;
+        //     $image_name= "/storage/peraturan/" . time().$k.'.png';
+        //     $path = public_path() . $image_name;
 
-            file_put_contents($path, $data);
+        //     file_put_contents($path, $data);
             
-            $img->removeAttribute('src');
-            $img->setAttribute('src', $image_name);
-        }
+        //     $img->removeAttribute('src');
+        //     $img->setAttribute('src', $image_name);
+        // }
 
-        $description = $dom->saveHTML();
+        // $description = $dom->saveHTML();
 
+    // Validasi untuk memastikan file PDF diterima jika ada
+    // $request->validate([
+    //     'name' => 'required|string|max:255',
+    //     'nosk' => 'required|string|max:255',
+    //     'tglsk' => 'required|date',
+    //     'tgllaku' => 'required|date',
+    //     'uraian' => 'required|string',
+    //     'pdf' => 'nullable|file|mimes:pdf|max:10240', // Hanya menerima file PDF jika ada
+    // ]);
 
+    // Membuat instance baru untuk peraturan
+    $new_peraturan = new \App\peraturan;
 
-        $new_peraturan = new \App\peraturan;
+    // Mengisi data dari request
+    $new_peraturan->name = $request->get('name');
+    $new_peraturan->nosk = $request->get('nosk');
+    $new_peraturan->tglsk = $request->get('tglsk');
+    $new_peraturan->tgllaku = $request->get('tgllaku');
+    $new_peraturan->uraian = $request->get('uraian');
 
-        $new_peraturan->name = $request->get('name');
-        $new_peraturan->nosk = $request->get('nosk');
-        $new_peraturan->tglsk= $request->get('tglsk');
-        $new_peraturan->tgllaku=$request->get('tgllaku');
-        $new_peraturan->uraian = $request->get('uraian');
-        $new_peraturan->pdf = $description;
-        $new_peraturan->created_by = \Auth::user()->id;
-        $new_peraturan->save();
-        return redirect()->route('peraturan.index')->with('status','Peraturan Berhasil Ditambahkan');
+    // Menangani file PDF jika ada
+    if ($request->hasFile('pdf')) {
+        $file = $request->file('pdf');
+        $filename = time() . '.' . $file->getClientOriginalExtension(); // Menentukan nama file
+        $file->storeAs('pdfs', $filename, 'public'); // Menyimpan file ke folder pdfs dalam public storage
+        $new_peraturan->pdf = $filename; // Menyimpan nama file PDF ke kolom 'pdf'
+    }
+
+    // Menyimpan peraturan yang baru
+    $new_peraturan->created_by = \Auth::user()->id; // Menyimpan ID user yang membuat
+    $new_peraturan->save(); // Menyimpan ke database
+
+    // Mengarahkan kembali ke halaman index dengan pesan sukses
+    return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Ditambahkan');
+
 
     }
 
@@ -116,6 +138,13 @@ class peraturanController extends Controller
     {
         $peraturan = \App\peraturan::findorFail($id);
         $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
+        $new_loguser = new \App\loguser;
+        $user = \Auth::user()->pegawai_id;
+        $pegawai = \App\Pegawai::where('id',$user)->first();
+        $new_loguser->nampeg = $pegawai->name;
+        $new_loguser->keterangan = $peraturan->name;
+        //$new_loguser->waktu = $time;
+        $new_loguser->save();
 
         //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
         //return $pdf->stream();

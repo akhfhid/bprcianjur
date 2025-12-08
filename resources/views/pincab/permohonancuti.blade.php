@@ -31,6 +31,7 @@
 <label>Alasan Cuti</label>
 <textarea class="form-control" name="alasan"></textarea>
 <br>
+    <input type="hidden" class="form-control" name="jeniscuti" value="Cuti Tahunan">
 <input type="submit" class="btn btn-primary" value="Save">
 </form>
 

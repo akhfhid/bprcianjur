@@ -41,6 +41,7 @@
 		<table class="table table-bordered table-stripped">
 			<thead>
 				<tr>
+					<th><b>ID</b></th>
 					<th><b>Nama</b></th>
 					<th><b>NIK Pegawai</b></th>
 					<th><b>Status Pegawai</b></th>
@@ -54,6 +55,7 @@
 			<tbody>
 				@foreach($pegawai as $pegawais)
 				<tr>
+					<td>{{$pegawais['id']}}</td>
 					<td>{{$pegawais['name']}}</td>
 					<td>{{$pegawais['nikpegawai']}}</td>
 					<td>{{$pegawais['status']}}</td>

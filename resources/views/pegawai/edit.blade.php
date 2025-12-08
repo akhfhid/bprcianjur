@@ -71,7 +71,7 @@
 			<select class="form-control" name="spegawai">
 				<option value="{{$pegawai->spegawai}}">{{$spegawai}}</option>
 				<@foreach ($tetap as $speg =>$name)
-				<option class="{{$speg}}">{{$name}}</option>
+				<option class="form-control" value ="{{$speg}}">{{$name}}</option>
 					@endforeach
 			</select><br>
 
@@ -104,6 +104,7 @@
 			<label>Tunjangan Kinerja</label>
 			<select class="form-control" name="tuncab">
 			<option value="{{$pegawai->tuncab}}">{{$kant}}</option>
+				<option value=""></option>
 				@foreach($kantor as $cabang=>$name)
 				<option value="{{$cabang}}">{{$name}}</option>
 				@endforeach

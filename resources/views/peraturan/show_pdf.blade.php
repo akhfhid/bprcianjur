@@ -32,7 +32,10 @@
         <div>
             <div class="watermark">
                 {!! $peraturan->pdf !!}
+                   <embed src="{{public_path('storage/pdfs/' . $peraturan->pdf)}}" type="application/pdf"></embed>
+            <iframe src="{{asset('storage/pdfs/'. $peraturan->pdf)}}"></iframe>
             </div>
+
             </div>
         </div>
         <br>

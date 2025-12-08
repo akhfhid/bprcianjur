@@ -27,6 +27,7 @@
 	<div class="col-sm-12 mt-3">
 		{!! $peraturan->pdf !!}	
 	</div>
+	
 </div>
 	
 </div>

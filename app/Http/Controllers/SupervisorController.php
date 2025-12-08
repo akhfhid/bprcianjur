@@ -93,8 +93,8 @@ class SupervisorController extends Controller
         $datpeg = \Auth::user()->pegawai_id;
         $pegsup = \App\Pegawai::where('id',$datpeg)->first();
         $jabsup = $pegsup->jabatan;
-        $jab = \App\Jabatan::where('atasan',$jabsup)->first();
-        $jabpeg = $jab->id;
+        //$jab = \App\Jabatan::where('atasan',$jabsup)->first();
+        //$jabpeg = $jab->id;
         $filterkeyword = $request->get('keyword');
         if($filterkeyword){
             $datapegawai = \App\Pegawai::with('jabatan','cabang')->where("name","LIKE", "%$filterkeyword%")->where('cabang',$idcabang)->where('atasan1',$jabsup)->get();
@@ -138,13 +138,9 @@ class SupervisorController extends Controller
             "pangkat"=>$pangkat,
             "jabatan"=>$namajab,
             "cabang"=>$namacab,
-
-
         ];
 
       }
-      // return $data;
-
       return view ('supervisor.pegawai',['pegawai'=>$data]);
     }
 
@@ -434,7 +430,7 @@ class SupervisorController extends Controller
 
            $pegawai->updated_by = \Auth::user()->id;
            $pegawai->save();
-           $user->updated_by = \Auth::user()->id;
+           $iduser->updated_by = \Auth::user()->id;
            $iduser->save();
 
            return redirect()->route('supervisor.pegawai')->with('status','Data Pribadi Pegawai Berhasil Diupdate');
@@ -445,11 +441,12 @@ class SupervisorController extends Controller
         $idpeg = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id',$idpeg)->first();
         $jabpeg = $peg->jabatan;
+        $idcab = $peg->cabang;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
                         ->wherehas('pegawai', function($query) use ($name){
                             $query->where('name','LIKE',"%$name%");})
-                        ->where("statasan","like","SUBMIT")->where('otoatasan',$jabpeg)->where('cabang',$idcabang)->get();
+                        ->where("statasan","like","SUBMIT")->where('otoatasan',$jabpeg)->where('cabang',$idcab)->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -483,11 +480,14 @@ class SupervisorController extends Controller
 
     public function cutisetuju(Request $request){
         $idcabang = \Auth::user()->cabang;
+        $idpeg = \Auth::user()->pegawai_id;
+        $peg = \App\Pegawai::where('id',$idpeg)->first();
+        $jabpeg = $peg->jabatan;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($name){
-                            $query->where('name','LIKE',"%$name%");})
-                        ->where("status","like","DISETUJUI")->where('cabang',$idcabang)->get();
+            ->wherehas('pegawai', function($query) use ($name){
+                $query->where('name','LIKE',"%$name%");})
+            ->where("statasan","like","DISETUJUI")->where('otoatasan',$jabpeg)->where('cabang',$idcabang)->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -519,11 +519,14 @@ class SupervisorController extends Controller
     }
     public function cutitolak (Request $request){
         $idcabang = \Auth::user()->cabang;
+        $idpeg = \Auth::user()->pegawai_id;
+        $peg = \App\Pegawai::where('id',$idpeg)->first();
+        $jabpeg = $peg->jabatan;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($name){
-                            $query->where('name','LIKE',"%$name%");})
-                        ->where("status","like","DITOLAK")->where('cabang',$idcabang)->get();
+            ->wherehas('pegawai', function($query) use ($name){
+                $query->where('name','LIKE',"%$name%");})
+            ->where("statasan","like","DITOLAK")->where('otoatasan',$jabpeg)->where('cabang',$idcabang)->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -566,14 +569,15 @@ class SupervisorController extends Controller
         $jeniscuti = $request->get('jeniscuti');
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc= \Carbon\Carbon::parse($akhir);
-        $jmlcuti = $awlc->diffinDays($akhirc);
+        $jumlahcuti = $awlc->diffinDays($akhirc);
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id',$user_id)->first();
         $jabpeg = $peg->jabatan;
         $jabatan = \App\Jabatan::where('id',$jabpeg)->first();
         $jabatasan = $jabatan->atasan;
-        $jabket = \App\jabatan::where('id',$jabtatasan)->first();
+        $jabket = \App\jabatan::where('id',$jabatasan)->first();
         $jabketat = $jabatan->atasan;
+        $jmlcuti = $jumlahcuti+1;
         if ($jeniscuti == "Cuti Tahunan") {
             $new_cuti  = new \App\ordercuti;
             $new_cuti->user_id = \Auth::user()->id;
@@ -586,7 +590,7 @@ class SupervisorController extends Controller
             $new_cuti->alasan = $request->get('alasan');
             $new_cuti->status = 'SUBMIT';
             $new_cuti->otoatasan = $jabatasan;
-            $newcuti->statatasan = 'SUBMIT';
+            $new_cuti->statasan = 'SUBMIT';
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = 'SUBMIT';
         } elseif ($jeniscuti == "Cuti Lainnya") {
@@ -601,7 +605,7 @@ class SupervisorController extends Controller
             $new_cuti->alasan = $request->get('alasan');
             $new_cuti->status = 'SUBMIT';
             $new_cuti->otoatasan = $jabatasan;
-            $newcuti->statatasan = 'SUBMIT';
+            $new_cuti->statasan = 'SUBMIT';
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = 'SUBMIT';
         }else {
@@ -609,14 +613,14 @@ class SupervisorController extends Controller
             $new_cuti->user_id = \Auth::user()->id;
             $new_cuti->cabang = \Auth::user()->cabang;
             $new_cuti->pegawai_id = $request->get('idpeg');
-            $new_cuti->jmlcuti = $jmlcuti;
+            $new_cuti->jmlcuti = 3;
             $new_cuti->tglawal = $awal;
             $new_cuti->tglakhir = $akhir;
             $new_cuti->jeniscuti = $jeniscuti;
             $new_cuti->alasan = $request->get('alasan');
             $new_cuti->status = 'SUBMIT';
             $new_cuti->otoatasan = $jabatasan;
-            $newcuti->statatasan = 'SUBMIT';
+            $new_cuti->statasan = 'SUBMIT';
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = 'SUBMIT';
             $new_cuti->otosdm = "ADMIN";
@@ -626,14 +630,12 @@ class SupervisorController extends Controller
 
         $new_cuti->save();
 
-        return redirect()->route('supervisor.permohonancuti')->with('status','Permohonan Berhasil Diinput');
+        return redirect()->route('supervisor.cutisupervisor')->with('status','Permohonan Berhasil Diinput');
     }
+    //Data Cuti Supervisor
     public function cutisupervisor(){
         $id_user = \Auth::user()->pegawai_id;
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($id_user){
-                            $query->where('id',$id_user);})
-                        ->where("status","like","SUBMIT")->get();
+        $ordercuti = \App\ordercuti::where("pegawai_id",$id_user)->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -664,11 +666,9 @@ class SupervisorController extends Controller
 
     }
     public function tolakcuti(){
-        $user = \Auth::user()->pegawai_id;
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($user){
-                            $query->where('id','$user');})
-                        ->where("status","like","DITOLAK")->get();
+        $id_user = \Auth::user()->pegawai_id;
+        $ordercuti = \App\ordercuti::where([["pegawai_id",$id_user],
+                                        ["status","like","DITOLAK"]])->get();;
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -700,11 +700,9 @@ class SupervisorController extends Controller
 
     }
     public function setujucuti(){
-        $user = \Auth::user()->pegawai_id;
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($user){
-                            $query->where('id','$user');})
-                        ->where("status","like","DISETUJUI")->get();
+        $id_user = \Auth::user()->pegawai_id;
+        $ordercuti = \App\ordercuti::where([["pegawai_id",$id_user],
+                                    ["status","like","DISETUJUI"]])->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -735,6 +733,9 @@ class SupervisorController extends Controller
         return view('supervisor.setujucuti',['orderc'=>$data]);
 
     }
+    //---sampai sini
+
+    //Persetujuan Cuti
    public function setuju($id){
         $ordercuti = \App\ordercuti::findorFail($id);
         $pegawai = \App\Pegawai::where('id',$ordercuti['pegawai_id'])->first();

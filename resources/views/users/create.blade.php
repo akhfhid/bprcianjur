@@ -18,18 +18,18 @@
 		@csrf
 
 		<label for="name">Nama</label>
-		<input 
+		<input
 			Class="form-control"
-			placeholder="Full Name" 
-			type="text" 
+			placeholder="Full Name"
+			type="text"
 			name="name"
 			id="name"/>
 		<br>
 		<label for="name">Username</label>
-		<input 
+		<input
 			Class="form-control"
-			placeholder="Username" 
-			type="text" 
+			placeholder="Username"
+			type="text"
 			name="username"
 			id="username"/>
 		<br>
@@ -45,7 +45,7 @@
 		<br>
 		<label for="phone">Nomor Handphone</label>
 		<br>
-		<input 
+		<input
 			type="text"
 			name="phone"
 			class="form-control">
@@ -58,39 +58,45 @@
 		<br>
 		<label for="avatar">Avatar Image</label>
 		<br>
-		<input 
-			id="avatar" 
-			type="file" 
+		<input
+			id="avatar"
+			type="file"
 			name="avatar"
 			class="form-control">
 		<hr class="my-3">
 
 		<label for="email">Email</label>
-		<input 
-			class="form-control" 
-			type="text" 
+		<input
+			class="form-control"
+			type="text"
 			name="email"
 			placeholder="user@mail.com"
 			id="email"/>
 		<br>
 		<label for="password">Password</label>
-		<input 
-			class="form-control" 
-			placeholder="password" 
-			type="password" 
+		<input
+			class="form-control"
+			placeholder="password"
+			type="password"
 			name="password"
 			id="password"/>
 		<br>
 		<label for="password_confirmation">Konfirmasi Password</label>
-		<input 
-			class="form-control" 
-			placeholder="password confirmation" 
-			type="password" 
+		<input
+			class="form-control"
+			placeholder="password confirmation"
+			type="password"
 			name="password_confirmation"
 			id="password_confirmation"/>
 		<br>
-		<input 
-			class="btn btn-primary" 
+        <label>Akses Log User</label>
+        <select class="form-control" name="log">
+            <option value="TIDAK">Tidak</option>
+            <option value="YA">Ya</option>
+
+        </select>
+		<input
+			class="btn btn-primary"
 			type="submit"
 			value="Save">
 	</form>

@@ -66,8 +66,13 @@
 						@endif
 					</td>
 					<td>
-						
-						<form method="POST" class="d-inline" onsubmit="return confirm('Setujui Permohonan Cuti')" action="{{route('pincab.setuju',[$order['id']])}}">
+						@if($order['statasan']=="DISETUJUI")
+						<form method="POST" class="d-inline" onsubmit="return confirm('Proses Permohonan Cuti')" action="{{route('pincab.setuju',[$order['id']])}}">
+							@csrf
+							<input type="submit" value="Diketahui" class="btn btn-success btn-sm">
+						</form>
+						@elseif($order['statasan']=="SUBMIT")
+						<form method="POST" class="d-inline" onsubmit="return confirm('Proses Permohonan Cuti')" action="{{route('pincab.setuju',[$order['id']])}}">
 							@csrf
 							<input type="submit" value="Setuju" class="btn btn-success btn-sm">
 						</form>
@@ -75,7 +80,7 @@
 							@csrf
 							<input type="submit" value="Tolak" class="btn btn-danger btn-sm">
 						</form>
-
+						@endif
 						<br>
 						
 

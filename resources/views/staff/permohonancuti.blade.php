@@ -18,6 +18,7 @@
 <label>Nama Pegawai</label><br>
 <input type="text" value="{{$pega->name}}" name="name" class="form-control" disabled="disabled">
 <input type="hidden" value="{{$pega->id}}" name="idpeg" class="form-control">
+<input type="hidden" class="form-control" name="jeniscuti" value="Cuti Tahunan">
 <br>
 <label>Sisa Cuti Belum Diambil</label>
 <input type="text" value="{{$pega->scuti}}" name="name" class="form-control" disabled="disabled">
@@ -31,7 +32,6 @@
 <label>Alasan Cuti</label>
 <textarea class="form-control" name="alasan"></textarea>
 <br>
-<input type="hidden" class="form-control" name="jeniscuti" value="Cuti Tahunan">
 <input type="submit" class="btn btn-primary" value="Save">
 </form>
 

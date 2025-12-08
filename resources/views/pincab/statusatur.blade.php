@@ -54,6 +54,7 @@
 						
 						@if($atur['status']=="SETUJU" )
 							@if($atur['print']=="f")
+							<!-- <button onclick="window.print()" class="btn btn-primary">S PRINT </button> -->
 						<a href="{{route('pincab.show_pdf',$atur['idatur'])}}" class="btn btn-primary" target="_blank">Print</a>
 							@elseif($atur['print']=="t")
 							<a href="{{route('pincab.showatur',$atur['idatur'])}}" class="btn btn-primary">Detail</a>

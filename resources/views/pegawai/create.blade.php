@@ -132,7 +132,7 @@ processResults: function(data){ return {results: data.map(function(item){return 
 			<select class="form-control" name="spegawai">
 				<option value="#">Pilih Status Pegawai</option>
 				<@foreach ($statuspeg as $speg =>$name)
-				<option class="{{$speg}}">{{$name}}</option>
+				<option value="{{$speg}}">{{$name}}</option>
 					@endforeach
 			</select><br>
 			<label>Terhitung Mulai Tanggal</label>

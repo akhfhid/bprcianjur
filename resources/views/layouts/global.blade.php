@@ -14,10 +14,10 @@ header('Access-Control-Allow-Origin: localhost');
 	<title>SIKAP @yield("title")</title>
 	<link rel="stylesheet" href="{{asset('polished/polished.min.css')}}">
 	<link rel="stylesheet" href="{{asset('polished/iconic/css/open-iconic-bootstrap.min.css')}}">
-	<link rel="stylesheet" href="{{asset('summernote/summernote-bs4.css')}}">
-	<link rel="stylesheet" href="{{asset('summernote/summernote-bs4.js')}}">
+<!-- 	<link rel="stylesheet" href="{{asset('summernote/summernote-bs4.css')}}">
+	<link rel="stylesheet" href="{{asset('summernote/summernote-bs4.js')}}"> -->
 
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+	<!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css"> -->
 	<!--<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css"> -->
 	<!-- General CSS Files -->
  
@@ -108,6 +108,8 @@ header('Access-Control-Allow-Origin: localhost');
 <x-sidebar-kepatuhan></x-sidebar-kepatuhan>
 @elseif (auth()->user()->roles == 'DIRUT')
 <x-sidebar-direksi></x-sidebar-direksi>
+@elseif (auth()->user()->roles == 'DIRBIS')
+<x-sidebar-dirbis></x-sidebar-dirbis>
 
 @endif
 							<div class="d-block d-md-none">
@@ -129,13 +131,13 @@ header('Access-Control-Allow-Origin: localhost');
 					<div class="col-lg-10 col-md-9 p-4">
 						<div class="row">
 							<div class="col-md-12 pl-3 pt-2">
-								<div class="pl-3">
+								<div class="pl-3">	
 									<h3>@yield("pageTitle")</h3>
 									<br>
 								</div>
 							</div>
 						</div>
-
+						
 						@yield("content")
 
 					</div>

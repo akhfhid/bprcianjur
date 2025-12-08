@@ -2,7 +2,7 @@
 @section('title') List Pegawai @endsection
 
 @section('content')
-	
+
 <div class="row">
 	<div class="col-md-6">
 		<form action="{{route('direksi.indexpegawai')}}">
@@ -23,7 +23,7 @@
 {{session('status')}}
 </div>
 @endif
-	
+
 		<table class="table table-bordered table-stripped">
 			<thead>
 				<tr>
@@ -46,7 +46,7 @@
 					<td>{{$pegawais['jabatan']}}</td>
 					<td>{{$pegawais['cabang']}}</td>
 					<td>
-						<a href="{{route('direksi.detailpegawai',[$pegawais['id']])}}" class="btn btn-icon btn-warning" title="Detail Data Pegawai"><i class="far fa-user"></i></a>
+						<a href="{{route('dirbis.detailpegawai',[$pegawais['id']])}}" class="btn btn-icon btn-primary" title="Detail Data Pegawai">Detail<i class="far fa-user"></i></a>
 					</td>
 				</tr>
 				@endforeach
@@ -54,7 +54,7 @@
 			<tfoot>
 				<tr>
 				<td colspan="10">
-					
+
 				</td>
 				</tr>
 			</tfoot>

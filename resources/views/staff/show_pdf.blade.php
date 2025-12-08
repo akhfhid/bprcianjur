@@ -18,6 +18,7 @@
                     {{ $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y') }}</small>
                 </div>
                         {!! $peraturan->pdf !!}
+                        
             </div>
         </div>
         <br>

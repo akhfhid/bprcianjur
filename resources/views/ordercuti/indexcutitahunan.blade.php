@@ -79,7 +79,7 @@
 			<tfoot>
 				<tr>
 				<td colspan="10">
-
+					{{$ordercuti->appends(Request::all())->links()}}
 				</td>
 			</tr>
 			</tfoot>

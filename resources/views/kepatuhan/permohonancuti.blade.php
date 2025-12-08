@@ -12,7 +12,7 @@
 {{session('status')}}
 </div>
 @endif
-<form action="{{route('staff.mintacuti')}}" method="POST" enctype="multipart/form-data" class="shadow-sm p-3 bg-white">
+<form action="{{route('kepatuhan.mintacuti')}}" method="POST" enctype="multipart/form-data" class="shadow-sm p-3 bg-white">
 			@csrf
 
 <label>Nama Pegawai</label><br>
@@ -31,6 +31,7 @@
 <label>Alasan Cuti</label>
 <textarea class="form-control" name="alasan"></textarea>
 <br>
+<input type="hidden" class="form-control" name="jeniscuti" value="Cuti Tahunan">
 <input type="submit" class="btn btn-primary" value="Save">
 </form>
 

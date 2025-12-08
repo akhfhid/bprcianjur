@@ -24,7 +24,7 @@
 		<table class="table table-stripped table-bordered">
 			<thead>
 				<tr align="center">
-					
+
 					<th><b>Nama Pegawai</b></th>
 					<th><b>Kantor Cabang</b></th>
 					<th><b>Jumlah Cuti</b></th>
@@ -37,7 +37,7 @@
 			<tbody>
 				@foreach($orderc as $order)
 				<tr>
-					
+
 					<td>{{$order['namapeg']}}</td>
 					<td>{{$order['namacab']}}</td>
 					<td>{{$order['jmlcuti']}}</td>
@@ -67,7 +67,7 @@
 			</tr>
 			</tfoot>
 		</table>
-		
+
 	</div>
 </div>
 

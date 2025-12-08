@@ -76,7 +76,7 @@
 			<tfoot>
 				<tr>
 				<td colspan="10">
-
+					{{$deletedpegawai->appends(Request::all())->links()}}
 				</td>
 				</tr>
 			</tfoot>

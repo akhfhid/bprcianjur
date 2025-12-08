@@ -40,8 +40,12 @@
 	<label>Uraian</label>
 	<textarea class="form-control" name="uraian" placeholder="Uraian Isi Peraturan"></textarea>
 	<br>
+		<label>Upload PDF</label> 
+	<input type="file" accept="application/pdf" name="pdf" id="pdf">
+	<br>
 	<label>Lampiran Peraturan</label>
 	<div class="summernote">
+
 	<textarea class="form-control" id="textarea" name="description"
 	style="width: 100%; height: 500px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;" height="500px"></textarea></div>
 	<br>
@@ -50,4 +54,6 @@
 	</form>
 </div>
 @endsection
+
+
 

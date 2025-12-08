@@ -73,11 +73,9 @@
 						<span class="badge bg-dark text-light">{{$order['status']}}</span>
 						@endif
 					</td>
-					<td>
-
-						
-						@if($order['otosdm'] == "ADMIN")
-                        <form method="POST" class="d-inline" onsubmit="return confirm('Setujui Permohonan Cuti')" action="{{route('ordercuti.setuju',[$order['id']])}}">
+					<td>						
+						@if($order['statdiket']== "DISETUJUI" &&$order['status']== "SUBMIT" && $order['otosdm'] == "ADMIN")
+						<form method="POST" class="d-inline" onsubmit="return confirm('Setujui Permohonan Cuti')" action="{{route('ordercuti.setuju',[$order['id']])}}">
 							@csrf
 							<input type="submit" value="Setuju" class="btn btn-success btn-sm">
 						</form>
@@ -85,6 +83,7 @@
 							@csrf
 							<input type="submit" value="Tolak" class="btn btn-danger btn-sm">
 						</form>
+						
 						<a href="{{route('ordercuti.edit',[$order['id']])}}" class="btn btn-info btn-sm">Edit</a>
 						@endif
 						<br>

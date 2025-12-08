@@ -11,7 +11,7 @@
 
 <form enctype="multipart/form-data" class="bg-white shadow-sm p-3" action="{{route('users.updateuser',[$user->id])}}" method="POST">
 	@csrf
-	<input type="hidden" value="PUT" name="_method">
+
 	<input hidden
 		value="{{$user->name}}"
 		class="form-control"
@@ -30,8 +30,9 @@
 		name="username"
 		id="username"/>
 	<br>
-    <input value="{{$pegawai->id}}" class="form-control" type="text" id="pegawai" name="pegawai_id" hidden>
-	<label for="">Status</label>
+    <input value="{{$pegawai->id}}" class="form-control" type="text" id="pegawai" name="pegawai_id">
+
+    	<label for="">Status</label>
 	<br>
 	<input
 		value="ACTIVE"
@@ -104,7 +105,17 @@
 		name="email"
 		id="email">
 	<br>
-	<input
+    <label for="">Log Akses</label>
+    <br>
+    <select class="form-control" name="log">
+        <option value="{{$user->loguser}}">{{$user->loguser}}</option>
+        <option value="TIDAK">Tidak</option>
+        <option value="YA">Ya</option>
+
+    </select>
+    <br><br>
+
+    <input
 		class="btn btn-primary"
 		type="submit"
 		value="Save">

@@ -1,5 +1,5 @@
 @extends ('layouts.global')
-@section('title')Proile @endsection
+@section('title')Detail Data Pegawai @endsection
 
 @section('content')
 

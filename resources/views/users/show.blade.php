@@ -6,6 +6,7 @@
 <div class="col-md-8">
 	<div class="card">
 		<div class="card-body">
+			
 			<b>Nama :</b><br>
 			{{$user->name}}
 			<br><br>

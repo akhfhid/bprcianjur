@@ -1,50 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.global')
+@section('title')Detail Peraturan @endsection
+@section('content')
+<script type="text/javascript" src="{{ asset('canvas/pdf.min.js') }}"></script>
+<script type="text/javascript">
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "{{ asset('canvas/pdf.worker.min.js') }}";
+    document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<hr class="my-3">
+<div class="row mb-3">
+    <div class="col-md-12 text-right">
+        <a href="{{ route('pincab.peraturan') }}" class="btn btn-primary btn-sm">Back</a>
+    </div>
+</div>
 
-    
-    <title>Rules Pdf | {{ Auth::user()->name }}</title>
-</head>
-
-<body>
-    <style>
-        .watemark img{
-            width: 100%;
-        }
-        .watermark {
-            position: relative;
-        }
-        .watermark::after {
-            content: 'Printed By {{ Auth::user()->name }} - {{ Auth::user()->email }} -{{ $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y') }}';
-            position: absolute;
-            bottom: 0;
-            top: 0;
-            right: 0;
-            left: 0;
-            opacity:0,5;
-            font-size: 1,5em;
-        }
-    </style>
-    <div class="container">
-        <div>
-            <div class="watermark">
-                {!! $peraturan->pdf !!}
-            </div>
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col text-center">
+                    <small>{{ Auth::user()->name }} - {{ Auth::user()->email }}</small><br>
+                    {{ $time }}
+                </div>
+                <div class="col-auto">
+                    <button id="btnPrintCanvas" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-print"></i> Print PDF
+                    </button>
+                </div>
             </div>
         </div>
-        <br>
+
+        <div class="card-body">
+            <div id="pdf-container" style="width: 100%;"></div>
+        </div>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous">
-    </script>
-</body>
+<script>
+    const printedBy = "{{ Auth::user()->name }}";
+    const copyright = "© COPYRIGHT BPR CIANJUR JABAR";
+    const printDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-</html>
+    const container = document.getElementById('pdf-container');
+
+    const pdfData = `{!! $peraturan->pdf !!}`;
+    let imageList = [];
+    let isPdfFile = false;
+
+    if (pdfData.includes("<img")) {
+        const temp = document.createElement("div");
+        temp.innerHTML = pdfData;
+
+        const imgs = temp.querySelectorAll("img");
+        imgs.forEach(img => {
+            let src = img.getAttribute("src");
+            // if (!src.startsWith("http")) {
+            //     src = window.location.origin + src;
+            // }
+            imageList.push(src);
+        });
+    } else if (pdfData.toLowerCase().endsWith(".pdf")) {
+        isPdfFile = true;
+    }
+
+    if (isPdfFile) {
+        const url = `/storage/pdfs/${pdfData}`;
+        pdfjsLib.getDocument(url).promise.then(async (pdf) => {
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 1.5 });
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                container.appendChild(canvas);
+            }
+        });
+    } else if (imageList.length > 0) {
+        // Render HTML gambar ke canvas
+        imageList.forEach(src => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = src;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                container.appendChild(canvas);
+            };
+        });
+    } else {
+        container.innerHTML = `<p class="text-danger">File tidak dikenali atau tidak ditemukan.</p>`;
+    }
+
+    // --- PRINT BUTTON ---
+    document.getElementById('btnPrintCanvas').addEventListener('click', () => {
+        const canvases = container.querySelectorAll('canvas');
+        if (!canvases.length) {
+            alert("Tidak ada konten untuk dicetak.");
+            return;
+        }
+
+        const w = window.open('', '_blank');
+        w.document.open();
+        w.document.write(`
+            <html>
+            <head>
+                <title>Print Dokumen</title>
+                <style>
+                    @page { margin: 10mm; }
+                    canvas { page-break-after: always; max-width: 100%; }
+                    canvas:last-child { page-break-after: avoid; }
+                </style>
+            </head>
+            <body></body>
+            </html>
+        `);
+        w.document.close();
+
+        canvases.forEach(c => {
+            const clone = document.createElement('canvas');
+            clone.width = c.width;
+            clone.height = c.height;
+            const ctx = clone.getContext('2d');
+            ctx.drawImage(c, 0, 0);
+
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.textAlign = "center";
+            ctx.fillText(copyright, clone.width / 2, clone.height - 60);
+            ctx.fillText("Printed By: " + printedBy, clone.width / 2, clone.height - 40);
+            ctx.fillText("Print Date: " + printDate, clone.width / 2, clone.height - 20);
+
+            w.document.body.appendChild(clone);
+        });
+
+        setTimeout(() => {
+            w.print();
+            w.close();
+        }, 500);
+    });
+</script>
+
+
+@endsection

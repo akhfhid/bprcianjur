@@ -25,11 +25,18 @@ route::match(["GET", "POST"], "/register", function(){
 
 
 route::middleware(['auth'])->group(function() {
-    Route::get('/home', 'HomeController@index');
+Route::prefix('set-user')->middleware('auth')->group(function () {
+    Route::get('/', 'SetUserController@index')->name('setuser.index');
+    Route::get('/edit/{id}', 'SetUserController@edit')->name('setuser.edit');
+    Route::post('/update/{id}', 'SetUserController@update')->name('setuser.update');
+});
+
 
     route::get('users/{id}/active', 'UserController@active')->name('users.active');
+    route::post('users/{id}/update',"UserController@updateuser")->name('users.updateuser');
+    route::get('users/{id}/edit'."UserController@edit")->name('users.edit');
     Route::resource("users", "UserController");
-
+    Route::get('/home', 'HomeController@index');
     Route::get('/categories/trash', 'CategoriesController@trash')->name('categories.trash');
     Route::get('/categories/{id}/restore', 'CategoriesController@restore')->name('categories.restore');
     Route::delete('/categories/{category}/delete-permanent', 'CategoriesController@deletePermanent')->name('categories.delete-permanent');
@@ -53,7 +60,7 @@ route::middleware(['auth'])->group(function() {
 
 //Route::get('/ajax/pangkat/search','PangkatController@ajaxsearch');
 //Route::get('pegawai','PegawaiController@create')->name('pegawai.create');
-     Route::get('/pegawai/data', 'PegawaiController@data')->name('pegawai.data');
+    Route::get('/pegawai/data', 'PegawaiController@data')->name('pegawai.data');
     Route::get('/pegawai/trash', 'PegawaiController@trash')->name('pegawai.trash');
     Route::delete('/pegawai/{pegawai}/delete-permanent', 'PegawaiController@deletePermanent')->name('pegawai.delete-permanent');
     Route::post('/pegawai/{pegawai}/restore', 'PegawaiController@restore')->name('pegawai.restore');
@@ -206,7 +213,7 @@ route::middleware(['auth'])->group(function() {
     route::post('Pincab/Peraturan/Download', 'PincabController@mintadownload')->name('pincab.mintadownload');
     route::get('pincab/status', 'PincabController@statusatur')->name('pincab.status');
     route::get('Pincab/Peraturan/Show/{id}', 'PincabController@showatur')->name('pincab.showatur');
-    route::get('Pincab/Peraturan/Print/{id}', 'PincabController@show_pdf')->name('pincab.show_pdf');
+    route::get('Pincab/Peraturan/print/{id}', 'PincabController@print_pdf')->name('pincab.show_pdf');
     route::get('Pincab/Cuti/CutiWajib','PincabController@cutiwajib')->name('pincab.cutiwajib');
     route::get('Pincab/Cuti/CutiLainnya','PincabController@cutilainnya')->name('pincab.cutilainnya');
     route::resource('pincab', 'PincabController');
@@ -269,6 +276,8 @@ route::middleware(['auth'])->group(function() {
     route::get('Kepatuhan/Peraturan/Approved', 'KepatuhanController@setujudata')->name('kepatuhan.setujudata');
     route::get('Kepatuhan/Peraturan/Ignored', 'KepatuhanController@tolakdata')->name('kepatuhan.tolakdata');
     route::get('Kepatuhan/Peraturan/Log', 'KepatuhanController@loguser')->name('kepatuhan.loguser');
+    route::get('Kepatuhan/Cuti/CutiWajib','KepatuhanController@cutiwajib')->name('kepatuhan.cutiwajib');
+    route::get('Kepatuhan/Cuti/CutiLainnya','KepatuhanController@cutilainnya')->name('kepatuhan.cutilainnya');
     route::resource('Kepatuhan', 'KepatuhanController');
 
     route::get('Direksi/Profile', 'DireksiController@profile')->name('direksi.profile');
@@ -335,6 +344,7 @@ route::middleware(['auth'])->group(function() {
     route::get('Dirbis/Mutasi/Pangkat/Ignored', 'DirbisController@pangkattolak')->name('dirbis.pangkattolak');
     route::post('Dirbis/Mutasi/Pangkat/Setuju/{id}', 'DirbisController@setujupangkat')->name('dirbis.setujupangkat');
     route::post('Dirbis/Mutasi/Pangkat/Tolak/{id}', 'DirbisController@tolakpangkat')->name('dirbis.tolakpangkat');
+    route::get('Dirbis/Peraturan', 'DirbisController@peraturan')->name('dirbis.peraturan');
     route::get('Dirbis/Peraturan/Show/{id}', 'DirbisController@showatur')->name('dirbis.showatur');
     route::get('Dirbis/Peraturan/Print/{id}', 'DirbisController@show_pdf')->name('dirbis.show_pdf');
 

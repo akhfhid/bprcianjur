@@ -46,7 +46,7 @@
 					<td>{{$pegawais['jabatan']}}</td>
 					<td>{{$pegawais['cabang']}}</td>
 					<td>
-						<a href="{{route('kepatuhan.detailpegawai',[$pegawais['id']])}}" class="btn btn-icon btn-warning" title="Detail Data Pegawai"><i class="far fa-user"></i></a>
+						<a href="{{route('kepatuhan.detailpegawai',[$pegawais['id']])}}" class="btn btn-icon btn-primary" title="Detail Data Pegawai">Detail<i class="far fa-user"></i></a>
 					</td>
 				</tr>
 				@endforeach

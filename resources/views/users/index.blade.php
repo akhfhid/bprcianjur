@@ -50,19 +50,22 @@
 	<br>
 <table class="table table-bordered">
 	<thead>
-		<tr>
-
+		<tr style="text-align: center;">
+			<th><b>User ID</b></th>
 			<th><b>Username</b></th>
+			<th><b>Pegawai ID</b></th>
 			<th><b>Email</b></th>
 			<th><b>Avatar</b></th>
 			<th><b>Status</b></th>
 			<th><b>Action</b></th>
 		</tr>
 	</thead>
-	<tbody>
+	<tbody >
 		@foreach($users as $user)
-		<tr>
+		<tr style="text-align: center;">
+			<td>{{$user->id}}</td>
 			<td>{{$user->username}}</td>
+			<td>{{$user->pegawai_id}}</td>						
 			<td>{{$user->email}}</td>
 			<td>
 				@if($user->avatar)

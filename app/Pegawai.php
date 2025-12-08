@@ -10,12 +10,24 @@ use PDF;
 class pegawai extends Model
 {
     use softDeletes;
-
-    public function jabatan(){
-    	return $this->belongsto("App\Jabatan");
+    public function relJabatan()
+    {
+        return $this->belongsTo(\App\Jabatan::class, 'jabatan', 'id');
     }
-     public function cabang(){
-        return $this->belongsto('\App\Cabang');
+    
+    public function relCabang()
+    {
+        return $this->belongsTo(\App\Cabang::class, 'cabang', 'id');
+    }
+    
+    public function jabatan()
+    {
+        return $this->belongsTo(\App\Jabatan::class, 'jabatan', 'id');
+    }
+
+    public function cabang()
+    {
+        return $this->belongsTo(\App\Cabang::class, 'cabang', 'id');
     }
 
     public function pangkat(){

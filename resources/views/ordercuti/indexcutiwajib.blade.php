@@ -75,6 +75,7 @@
 					</td>
 					<td>
 
+						@if($order['statdiket']== "DISETUJUI" &&$order['status']== "SUBMIT" && $order['otosdm'] == "ADMIN")
 						<form method="POST" class="d-inline" onsubmit="return confirm('Setujui Permohonan Cuti')" action="{{route('ordercuti.setuju',[$order['id']])}}">
 							@csrf
 							<input type="submit" value="Setuju" class="btn btn-success btn-sm">
@@ -83,7 +84,7 @@
 							@csrf
 							<input type="submit" value="Tolak" class="btn btn-danger btn-sm">
 						</form>
-						@if($order['otosdm'] == "ADMIN")
+						
 						<a href="{{route('ordercuti.edit',[$order['id']])}}" class="btn btn-info btn-sm">Edit</a>
 						@endif
 						<br>
@@ -96,9 +97,10 @@
 			<tfoot>
 				<tr>
 				<td colspan="10">
-
+					{{$indexcuti->appends(Request::all())->links()}}
 				</td>
-			</tr>
+				</tr>
+			</tfoot>
 			</tfoot>
 		</table>
 

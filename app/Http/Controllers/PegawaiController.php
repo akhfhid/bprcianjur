@@ -11,11 +11,7 @@ use PDF;
 use Illuminate\Support\Facades\Gate;
 class PegawaiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function __construct(){
         $this->middleware(function($request, $next){
         if(gate::allows("ADMIN")) return $next($request);
@@ -24,15 +20,12 @@ class PegawaiController extends Controller
     }
     public function index(Request $request)
     {
-      //->paginate(10);
       $filterkeyword = $request->get("keyword");
         if($filterkeyword){
             $datapegawai = \App\Pegawai::with("jabatan","cabang")->where("name","LIKE", "%$filterkeyword%")->paginate(10);
         } else {
             $datapegawai = \App\Pegawai::with("jabatan","cabang")->paginate(10);
         }
-
-
       $data = [];
         $now= \Carbon\Carbon::now()->format("Y-m-d");
 
@@ -91,8 +84,6 @@ class PegawaiController extends Controller
         $pangkat = \App\Pangkat::pluck("name","id")->toArray();
         $cabang = \App\Cabang::pluck("name","id");
         $statuspeg= \App\statuspeg::pluck("name","id");
-
-
         return view ("pegawai.create",["jenkel"=>$jenkel,"agama"=>$agama,"nikah"=>$nikah,"pendidikan"=>$pendidikan,"jabatan"=>$jabatan,"cabang"=>$cabang,"statuspeg"=>$statuspeg]);
     }
 
@@ -105,24 +96,24 @@ class PegawaiController extends Controller
     public function store(Request $request)
     {
         $validation = \Validator::make($request->all(),[
-          "name"=>"required|min:5|max:100",
-          "nikpegawai"=>"required|min:5|unique:pegawais",
-          "nikpenduduk"=>"required|max:16|unique:pegawais",
-          "templahir"=>"required",
-          "tgllahir"=>"required",
-          "jenkel"=>"required",
-          "alamat"=>"required",
-          "agama"=>"required",
-          "status"=>"required",
-          "pendidikan"=>"required",
-          "tglmasuk"=>"required",
-          "pendidikan"=>"required",
-          "tglmasuk"=>"required",
-          "cabang"=>"required",
-          "jabatan"=>"required",
-          "pangkat"=>"required",
-          "email"=>"required|unique:pegawais",
-          "photo"=>"required"
+       //   "name"=>"required|min:5|max:100",
+          //"nikpegawai"=>"required|min:5|unique:pegawais",
+          //"nikpenduduk"=>"required|max:16|unique:pegawais",
+         // "templahir"=>"required",
+         // "tgllahir"=>"required",
+        //  "jenkel"=>"required",
+         // "alamat"=>"required",
+         // "agama"=>"required",
+        //  "status"=>"required",
+        //  "pendidikan"=>"required",
+        //  "tglmasuk"=>"required",
+        //  "pendidikan"=>"required",
+        //  "tglmasuk"=>"required",
+        //  "cabang"=>"required",
+        //  "jabatan"=>"required",
+        //  "pangkat"=>"required",
+         // "email"=>"required|unique:pegawais",
+         // "photo"=>"required"
 
 
         ])->validate();
@@ -209,6 +200,7 @@ class PegawaiController extends Controller
         $keluarga = \App\keluarga::where("pegawai_id",[$pegawai["id"]])->get();
         $anak = \App\keluarga::where('pegawai_id',$pegawai['id'])->where('hubungan','Anak')->get();
         $jumlahanak = count($anak);
+
         $nikah = \App\Keluarga::where([
             ['pegawai_id',$pegawai['id']],
             ['hubungan','Istri']
@@ -278,15 +270,21 @@ class PegawaiController extends Controller
                                         ['gol',"LIKE",$mkpangpeg]])->first();
 
           $tunpang = $jabatan['tunpang'];
-          $jmlkeluarga = $jumlahnikah+$jumlahanak;
+            if($jumlahanak > 2){
+                $jmlkeluarga = $jumlahnikah + 2;
+            }else{
+                $jmlkeluarga = $jumlahnikah + $jumlahanak;
+            }
+
+
           $tunis = $jabatan['tunis'];
         if ($statpegawai == 1){
             $pangan = 0;
         } else {
             if ($jmlkeluarga > 3) {
-                $pangan = $tunpang * 4;
+                $pangan = $tunpang * 0;
             } elseif ($jmlkeluarga <= 3){
-                $pangan = $tunpang * ($jumlahnikah+$jumlahanak+1);}
+                $pangan = $tunpang * ($jmlkeluarga+1);}
 
         }
 
@@ -384,9 +382,9 @@ class PegawaiController extends Controller
 
 
 
-        return view("pegawai.show",["pegawai"=>$pegawai,"cabang"=>$cabang,"kelamin"=>$kelamin,
+        return view("pegawai.show",["pegawai"=>$pegawai,"jmlkeluarga"=>$jmlkeluarga,"cabang"=>$cabang,"kelamin"=>$kelamin,
             "jabatan"=>$jabatan,"umur"=>$umur,"agama"=>$agama,"kawin"=>$kawin,"pendidikan"=>$pendidikan,
-            "pangkat"=>$pangkat,"cabang"=>$cabang,"keluarga"=>$datakel,"masakerja"=>$mkerja,
+            "pangkat"=>$pangkat,"keluarga"=>$datakel,"masakerja"=>$mkerja,
             "riwayatpendi"=>$datapend,"riwayatkerja"=>$datakerja,"tunjanganistri"=>$tunjanganistri,
             "tunjangananak"=>$tunjangananak,"tuncabang"=>$tuncabang,"total"=>$total,
             "pelatihan"=>$pelatihan,"ppensiun"=>$ppensiun,"smkerja"=>$smkerja,
@@ -457,7 +455,7 @@ class PegawaiController extends Controller
         $atasan2 = $jabatasan2->atasan;
 
         $pegawai = \App\Pegawai::findOrFail($id);
-        $iduser = \App\user::where("pegawai_id",$pegawai["id"])->first();
+        $iduser = \App\user::where("pegawai_id",$pegawai["id"])->get();
             //$userid = $iduser->user_id;
 
         //$user = \App\User::findOrFail($userid);
@@ -503,12 +501,12 @@ class PegawaiController extends Controller
            $new_photo_path = $newphoto->store("pegawai-photo","public");
            $pegawai->photo = $new_photo_path;
        }
-       if($newavatar){
-        if($iduser->avatar && file_exists(storage_path("app/public/".$iduser->avatar))){
-                \Storage::delete("public/".$iduser->avatar);
-                 $new_avatar_path = $newphoto->store("avatars","public");
-            $iduser->avatar = $new_avatar_path;}
-            }
+       //if($newavatar){
+        //if($iduser->avatar && file_exists(storage_path("app/public/".$iduser->avatar))){
+          //     \Storage::delete("public/".$iduser->avatar);
+            //     $new_avatar_path = $newphoto->store("avatars","public");
+            //$iduser->avatar = $new_avatar_path;}
+            //}
 
 
 
@@ -516,7 +514,7 @@ class PegawaiController extends Controller
            $pegawai->save();
            //$pegawai->pangkat()->attach($request->get("pangkat"));
           // $user->updated_by = \Auth::user()->id;
-           $iduser->save();
+           //$iduser->save();
 
            return redirect()->route("pegawai.index")->with("status","Data Pegawai Successfully Updated");
 
@@ -576,7 +574,7 @@ class PegawaiController extends Controller
 
       }
 
-        return view("pegawai.trash",["pegawai"=>$datadelete]);
+        return view("pegawai.trash",["pegawai"=>$datadelete,"deletedpegawai"=>$deletedpegawai]);
 
     }
     public function deletePermanent($id){

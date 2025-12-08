@@ -12,7 +12,7 @@
 {{session('status')}}
 </div>
 @endif
-<form action="{{route('staff.mintacuti')}}" method="POST" enctype="multipart/form-data" class="shadow-sm p-3 bg-white">
+<form action="{{route('supervisor.mintacuti')}}" method="POST" enctype="multipart/form-data" class="shadow-sm p-3 bg-white">
 			@csrf
 
 <label>Nama Pegawai</label><br>

@@ -90,69 +90,57 @@ class DireksiController extends Controller
     }
 
     public function indexpegawai(Request $request){
-        $idcabang = \Auth::user()->cabang;
-        $datpeg = \Auth::user()->pegawai_id;
-        $pegdiv = \App\Pegawai::where('id',$datpeg)->first();
-        $jabdiv = $pegdiv->jabatan;
-        $jab = \App\Jabatan::where('atasan',$jabdiv)->first();
-        $jabpeg = $jab->id;
-
-
-        $filterkeyword = $request->get('keyword');
-
+        $filterkeyword = $request->get("keyword");
         if($filterkeyword){
-            $datapegawai = \App\Pegawai::with('jabatan','cabang')->where("name","LIKE", "%$filterkeyword%")
-            ->where('cabang',$idcabang)
-            //->where('jabatan','in',$jabpeg)
-            ->paginate(10);
+            $datapegawai = \App\Pegawai::with("jabatan","cabang")->where("name","LIKE", "%$filterkeyword%")->paginate(10);
         } else {
-            $datapegawai = \App\Pegawai::with('jabatan','cabang')
-            ->where('cabang',$idcabang)
-            //->whereIN('jabatan',array($jabpeg))
-            ->paginate(10);
-
+            $datapegawai = \App\Pegawai::with("jabatan","cabang")->paginate(10);
         }
 
-      
-      $data = [];
-        $now= \Carbon\Carbon::now()->format('Y-m-d');
-        
-      foreach ($datapegawai as $x) {
-        $b_day = \Carbon\Carbon::parse($x['tgllahir']);
-        $umur =$b_day->diffinYears($now);
 
-        $masuk = \Carbon\Carbon::parse($x['tglmasuk']);
-        $mkerja =$masuk->diffinYears($now);
-        
-        $peg = \App\Jabatan::where('id',$x['jabatan'])->first();
-        $namajab = $peg['name'];
-        
-        $cab = \App\Cabang::where('id',$x['cabang'])->first();
-        $namacab = $cab['name'];
-        
-        $pang = \App\Pangkat::where('id',$x['pangkat'])->first();
-        $pangkat = $pang['name'];
+        $data = [];
+        $now= \Carbon\Carbon::now()->format("Y-m-d");
 
-        $data[] = [
-            "id"=>$x['id'],
-          "name"=>$x['name'],
-            "umur"=>$umur,
-            "mkerja"=>$mkerja,
-            "photo"=>$x['photo'],
-            "nikpegawai"=>$x['nikpegawai'],
-            "status"=>$x['spegawai'],
-            "pangkat"=>$pangkat,
-            "jabatan"=>$namajab,
-            "cabang"=>$namacab,
+        foreach ($datapegawai as $x) {
+            $b_day = \Carbon\Carbon::parse($x["tgllahir"]);
+            $umur =$b_day->diffinYears($now);
 
-            
-        ];
+            $masuk = \Carbon\Carbon::parse($x["tglmasuk"]);
+            $mkerja =$masuk->diffinYears($now);
 
-      }
-      // return $data;
+            $peg = \App\Jabatan::where("id",$x["jabatan"])->first();
+            $namajab = $peg["name"];
 
-      return view ('direksi.pegawai',['pegawai'=>$data]);
+            $cab = \App\Cabang::where("id",$x["cabang"])->first();
+            $namacab = $cab["name"];
+
+            $pang = \App\Pangkat::where("id",$x["pangkat"])->first();
+            $pangkat = $pang["name"];
+
+            $statspeg = \App\statuspeg::where("id",$x["spegawai"])->first();
+            $status= $statspeg["name"];
+
+            $data[] = [
+                "id"=>$x["id"],
+                "name"=>$x["name"],
+                "umur"=>$umur,
+                "mkerja"=>$mkerja,
+                "photo"=>$x["photo"],
+                "nikpegawai"=>$x["nikpegawai"],
+                "status"=>$status,
+                "pangkat"=>$pangkat,
+                "jabatan"=>$namajab,
+                "cabang"=>$namacab,
+
+
+            ];
+
+        }
+        // return $data;
+
+        return view ("direksi.pegawai",["pegawai"=>$data,"datapegawai"=>$datapegawai]);
     }
+
     public function profile()
     {
         $iduser = \Auth::user()->pegawai_id;
@@ -166,7 +154,7 @@ class DireksiController extends Controller
         $pangkat = \App\pangkat::where('id',$pegawai['pangkat'])->first();
         $cabang= \App\cabang::where('id',$pegawai['cabang'])->first();
         $keluarga = \App\keluarga::where('pegawai_id',[$pegawai['id']])->get();
-         $datakel=[];   
+         $datakel=[];
         $now= \Carbon\Carbon::now()->format('Y-m-d');
          $b_day = \Carbon\Carbon::parse($pegawai['tgllahir']);
             $umur =$b_day->diffinYears($now);
@@ -176,7 +164,7 @@ class DireksiController extends Controller
         foreach ($keluarga as $k) {
         $bday_kel = \Carbon\Carbon::parse($k['tgllahir']);
         $umurkel = $bday_kel->diffinYears($now);
-          
+
          $datakel[]=[
            'id'=> $k['id'],
             'name'=>$k['name'],
@@ -218,7 +206,7 @@ class DireksiController extends Controller
           $tunpang = $jabatan['tunpang'];
           $tuncab = $cabang['tunjangan'];
           $gapok = $pangkat['gapok'];
-          $tunjanganistri = $tunis * $gapok; 
+          $tunjanganistri = $tunis * $gapok;
           $tunjangananak = $tunak *$gapok;
           $tuncabang = $tuncab*$gapok;
           $total = $gapok+$tunjanganistri+$tunjangananak+$tunpang+$tunjab+$tuncabang;
@@ -236,7 +224,7 @@ class DireksiController extends Controller
           }
 
         return view('direksi.profile',['pegawai'=>$pegawai,'cabang'=>$cabang,'kelamin'=>$kelamin,'jabatan'=>$jabatan,'umur'=>$umur,'agama'=>$agama,'kawin'=>$kawin,'pendidikan'=>$pendidikan,'pangkat'=>$pangkat,'cabang'=>$cabang,'keluarga'=>$datakel,'masakerja'=>$mkerja, 'riwayatpendi'=>$datapend,'riwayatkerja'=>$datakerja,'tunjanganistri'=>$tunjanganistri,'tunjangananak'=>$tunjangananak,'tuncabang'=>$tuncabang,'total'=>$total,'pelatihan'=>$pelatihan]);
-    
+
 
     /**
      * Show the form for editing the specified resource.
@@ -246,93 +234,214 @@ class DireksiController extends Controller
      */
     }
     public function detailpegawai($id){
-        $pegawai = \App\Pegawai::findorfail($id);
-        $cabang = \App\cabang::where('id',$pegawai['cabang'])->first();
-        $kelamin = \App\jenkel::where('id',$pegawai['kelamin'])->first();
-        $jabatan = \App\jabatan::where('id',$pegawai['jabatan'])->first();
-        $agama = \App\Agama::where('id',$pegawai['agama'])->first();
-        $kawin = \App\Kawin::where('id',$pegawai['status'])->first();
-        $pendidikan = \App\pendidikan::where('id',$pegawai['pendidikan'])->first();
-        $pangkat = \App\pangkat::where('id',$pegawai['pangkat'])->first();
-        $cabang= \App\cabang::where('id',$pegawai['cabang'])->first();
-        $keluarga = \App\keluarga::where('pegawai_id',[$pegawai['id']])->get();
-         $datakel=[];   
-        $now= \Carbon\Carbon::now()->format('Y-m-d');
-         $b_day = \Carbon\Carbon::parse($pegawai['tgllahir']);
-            $umur =$b_day->diffinYears($now);
+        $pegawai = \App\Pegawai::findOrFail($id);
+        $cabang = \App\Cabang::where("id",$pegawai["cabang"])->first();
+        $kelamin = \App\Jenkel::where("id",$pegawai["kelamin"])->first();
+        $jabatan = \App\Jabatan::where("id",$pegawai["jabatan"])->first();
+        $agama = \App\Agama::where("id",$pegawai["agama"])->first();
+        $kawin = \App\Kawin::where("id",$pegawai["status"])->first();
+        $pendidikan = \App\Pendidikan::where("id",$pegawai["pendidikan"])->first();
+        $pangkat = \App\Pangkat::where("id",$pegawai["pangkat"])->first();
+        $cabang= \App\Cabang::where("id",$pegawai["cabang"])->first();
+        $tunkin = \App\Cabang::where("id",$pegawai['tuncab'])->first();
+        $spegawai = \App\statuspeg::where("id",$pegawai["spegawai"])->first();
+        $statuspegawai = \App\statuspeg::pluck("name","id");
+        $statpegawai = $pegawai['spegawai'];
+        $gaji = \App\gaji::where('idpeg',$pegawai['id'])->first();
+        $keluarga = \App\keluarga::where("pegawai_id",[$pegawai["id"]])->get();
+        $anak = \App\keluarga::where('pegawai_id',$pegawai['id'])->where('hubungan','Anak')->get();
+        $jumlahanak = count($anak);
+        $nikah = \App\Keluarga::where([
+            ['pegawai_id',$pegawai['id']],
+            ['hubungan','Istri']
+        ])->orwhere([['pegawai_id',$pegawai['id']],
+            ['hubungan','Suami']])->get();
+        $jumlahnikah = count($nikah);
+        $datakel=[];
+        $now= \Carbon\Carbon::now()->format("Y-m-d");
+        $b_day = \Carbon\Carbon::parse($pegawai["tgllahir"]);
+        $umur =$b_day->diff($now)->format('%y Tahun %m Bulan');
 
-          $masa = \Carbon\carbon::parse($pegawai['tglmasuk']);
-          $mkerja = $masa->diffinYears($now);
+        $masa = \Carbon\carbon::parse($pegawai["tglmasuk"]);
+        $mkerja = $masa->diff($now)->format('%y Tahun %m Bulan');
+
+        $ppensiun = $b_day->addYears(56)->format('Y-m-d');
+        $hpensiun = \Carbon\carbon::parse($ppensiun);
+
+        $smkerja = $hpensiun->diff($now)->format('%y Tahun %m Bulan');
+        //$smkeria=$pensiun-$mkerja;
         foreach ($keluarga as $k) {
-        $bday_kel = \Carbon\Carbon::parse($k['tgllahir']);
-        $umurkel = $bday_kel->diffinYears($now);
-          
-         $datakel[]=[
-           'id'=> $k['id'],
-            'name'=>$k['name'],
-            'hub'=>$k['hubungan'],
-            'templahir'=>$k['templahir'],
-            'tgllahir' => $k['tgllahir'],
-            'umurkel'=>$umurkel,
-            'alamat'=>$k['alamat']
-          ];
+            $bday_kel = \Carbon\Carbon::parse($k["tgllahir"]);
+            $umurkel = $bday_kel->diffinYears($now);
 
-          }
+            $datakel[]=[
+                "id"=> $k["id"],
+                "name"=>$k["name"],
+                "hub"=>$k["hubungan"],
+                "templahir"=>$k["templahir"],
+                "tgllahir" => $k["tgllahir"],
+                "umurkel"=>$umurkel,
+                "alamat"=>$k["alamat"]
+            ];
 
-          $riwayatpendi = \App\riwayatpendi::where('pegawai_id',$pegawai['id'])->get();
-          $datapend=[];
-          foreach ($riwayatpendi as $pend) {
+        }
+
+        $riwayatpendi = \App\riwayatpendi::where("pegawai_id",$pegawai["id"])->get();
+        $datapend=[];
+        foreach ($riwayatpendi as $pend) {
             $datapend[]=[
-              'id'=> $pend['id'],
-              'name'=>$pend['name'],
-              'pendidikan' =>$pend['pendidikan'],
-              'gelar'=>$pend['gelar'],
-              'thnlulus'=>$pend['thnlulus']
+                "id"=> $pend["id"],
+                "name"=>$pend["name"],
+                "jurusan"=>$pend["jurusan"],
+                "pendidikan" =>$pend["pendidikan"],
+                "gelar"=>$pend["gelar"],
+                "thnlulus"=>$pend["thnlulus"]
             ];
             //# code...
-          }
-          $riwayatkerja = \App\riwayatkerja::where('pegawai_id',$pegawai['id'])->get();
-          $datakerja=[];
-          foreach ($riwayatkerja as $kerja) {
+        }
+        $riwayatkerja = \App\riwayatkerja::where("pegawai_id",$pegawai["id"])->get();
+        $datakerja=[];
+        foreach ($riwayatkerja as $kerja) {
+            $awal = \Carbon\Carbon::parse($kerja["tglawal"]);
+            $akhir = \Carbon\Carbon::parse ($kerja["tglakhir"]);
+            $periode = $awal->diff($akhir)->format('%y Tahun %m Bulan');
             $datakerja[]=[
-              'id'=>$kerja['id'],
-              'name'=>$kerja['name'],
-              'kantorcabang'=>$kerja['kantorcabang'],
-              'thnangkat'=>$kerja['thnangkat']
+                "id"=>$kerja["id"],
+                "name"=>$kerja["name"],
+                "kantorcabang"=>$kerja["kantorcabang"],
+                "tglawal"=>$kerja["tglawal"],
+                "tglakhir" => $kerja["tglakhir"],
+                "periode"=>$periode,
             ];
-          }
+        }
+        $pangkatpeg = $pegawai['pangkat'];
+        $mkpangpeg = $pegawai['mkpang'];
+        $gapok = \App\berkala::where([['idpang',"LIKE",$pangkatpeg],
+            ['gol',"LIKE",$mkpangpeg]])->first();
 
-          $tunis = $jabatan['tunis'];
-          $tunak = $jabatan['tunak'];
-          $tunjab = $jabatan['tunjab'];
-          $tunpang = $jabatan['tunpang'];
-          $tuncab = $cabang['tunjangan'];
-          $gapok = $pangkat['gapok'];
-          $tunjanganistri = $tunis * $gapok; 
-          $tunjangananak = $tunak *$gapok;
-          $tuncabang = $tuncab*$gapok;
-          $total = $gapok+$tunjanganistri+$tunjangananak+$tunpang+$tunjab+$tuncabang;
+        $tunpang = $jabatan['tunpang'];
+        $jmlkeluarga = $jumlahnikah+$jumlahanak;
+        $tunis = $jabatan['tunis'];
+        if ($statpegawai == 1){
+            $pangan = 0;
+        } else {
+            if ($jmlkeluarga > 3) {
+                $pangan = $tunpang * 4;
+            } elseif ($jmlkeluarga <= 3){
+                $pangan = $tunpang * ($jumlahnikah+$jumlahanak+1);}
 
-          $pelatihan = \App\pelatihan::where('pegawai_id',$pegawai['id'])->get();
-          $datapelatihan=[];
-          foreach ($pelatihan as $lat) {
+        }
+
+        $tunak = $jabatan["tunak"];
+        $tunjab = $gaji["jabatan"];
+        if ($statpegawai == 3){
+            $tuncab = $tunkin["tunjangan"];}
+        else{
+            $tuncab = 0;
+        }
+
+
+        $fungsi = $gaji["fungsi"];
+        $gapokpeg = $gapok["gapok"];
+        $bpjsks = $gaji["bpjsks"];
+        $bpjstk = $gaji["bpjstk"];
+        $pensiun = $jabatan['pensiun'];
+        if ($statpegawai ==3){
+            $tunpen = $pensiun * $gapokpeg;}
+        else{
+            $tunpen = 0;
+        }
+        $pph = $gaji['pph'];
+        if ($statpegawai == 1){
+            $tunjanganistri = 0;
+        }else{
+            $tunjanganistri = $tunis * $gapokpeg *$jumlahnikah;
+
+        }
+
+        if ($jumlahanak <= 2) {
+            $tunjangananak = $tunak *$gapokpeg*$jumlahanak;
+        } elseif ($jumlahanak > 2) {
+            $tunjangananak = $tunak *$gapokpeg*2;
+        }elseif ($statpegawai !=3){
+            $tunjangananak = 0;
+        }
+
+
+        $tuncabang = $tuncab*$gapokpeg;
+        $total =$gapokpeg+$tunjanganistri+$tunjangananak+$pangan+$tunjab+$tuncabang+$bpjstk+$bpjsks+$pph+$fungsi+$tunpen;
+
+        $pelatihan = \App\pelatihan::where("pegawai_id",$pegawai["id"])->get();
+        $datapelatihan=[];
+        foreach ($pelatihan as $lat) {
             $datapelatihan[]=[
-              'id'=>$lat['id'],
-              'name'=>$lat['name'],
-              'penyelenggara'=>$lat['penyelenggara'],
-              'thnlatih'=>$lat['thnlatih'],
-              'image'=>$lat['image']
+                "id"=>$lat["id"],
+                "name"=>$lat["name"],
+                "penyelenggara"=>$lat["penyelenggara"],
+                "thnlatih"=>$lat["thnlatih"],
+                "image"=>$lat["image"]
             ];
-          }
+        }
 
-        return view('direksi.detailpegawai',['pegawai'=>$pegawai,'cabang'=>$cabang,'kelamin'=>$kelamin,'jabatan'=>$jabatan,'umur'=>$umur,'agama'=>$agama,'kawin'=>$kawin,'pendidikan'=>$pendidikan,'pangkat'=>$pangkat,'cabang'=>$cabang,'keluarga'=>$datakel,'masakerja'=>$mkerja, 'riwayatpendi'=>$datapend,'riwayatkerja'=>$datakerja,'tunjanganistri'=>$tunjanganistri,'tunjangananak'=>$tunjangananak,'tuncabang'=>$tuncabang,'total'=>$total,'pelatihan'=>$pelatihan]);
+        $riwayatangkat = \App\riwayatangkat::where('pegawai_id',[$pegawai['id']])->paginate(10);
+        $dataangkat=[];
+
+        foreach ($riwayatangkat as $angkat) {
+            $statuspeg = \App\statuspeg::where('id',[$angkat['status']])->first();
+            $statpeg = $statuspeg['name'];
+
+            $dataangkat[]=[
+                "id"=>$angkat['id'],
+                "status"=>$statpeg,
+                "tglangkat"=>$angkat['tglangkat'],
+                "nosk"=>$angkat['nosk']
+            ];
+        }
+        $sanksi = \App\sanksi::pluck("name","id");
+        $riwayatsanksi = \App\riwayatsanksi::where('id_peg',[$pegawai['id']])->paginate(10);
+        $datasanksi=[];
+
+        foreach ($riwayatsanksi as $rsanksi) {
+            $sanksipegawai = \App\sanksi::where('id', [$rsanksi['sanksi']])->first();
+            $sankpeg = $sanksipegawai['name'];
+
+            $datasanksi[] = [
+                "id" => $rsanksi['id'],
+                "sanksipeg" => $sankpeg,
+                "tglsanksi" => $rsanksi['tglsanksi'],
+                "nosanksi" => $rsanksi['nosanksi'],
+                "ket" => $rsanksi['ket']
+            ];
+        }
+
+        $tglpangkat = $pegawai['tglpangkat'];
+        $tglberkala = $pegawai['tglberkala'];
+        $tunda = $pegawai['tunda'];
+        $jdpangkat = \Carbon\carbon::parse($tglpangkat);
+        $jdberkala = \Carbon\carbon::parse($tglberkala);
+
+        $jdpang = $jdpangkat->addYears(4)->addmonths($tunda)->toDateString();
+        $jdber = $jdberkala->addYears(2)->addmonths($tunda)->toDateString();
+
+
+
+
+        return view("direksi.detailpegawai",["pegawai"=>$pegawai,"cabang"=>$cabang,"kelamin"=>$kelamin,
+            "jabatan"=>$jabatan,"umur"=>$umur,"agama"=>$agama,"kawin"=>$kawin,"pendidikan"=>$pendidikan,
+            "pangkat"=>$pangkat,"cabang"=>$cabang,"keluarga"=>$datakel,"masakerja"=>$mkerja,
+            "riwayatpendi"=>$datapend,"riwayatkerja"=>$datakerja,"tunjanganistri"=>$tunjanganistri,
+            "tunjangananak"=>$tunjangananak,"tuncabang"=>$tuncabang,"total"=>$total,
+            "pelatihan"=>$pelatihan,"ppensiun"=>$ppensiun,"smkerja"=>$smkerja,
+            "spegawai"=>$spegawai,'dataangkat'=>$dataangkat,'datasanksi'=>$datasanksi,'bpjstk'=>$bpjstk,
+            'bpjsks'=>$bpjsks,'pensiun'=>$pensiun,'pph'=>$pph,'fungsi'=>$fungsi,'gapokpeg'=>$gapokpeg,'gapok'=>$gapok,'tglpangkat'=>$tglpangkat,'tglberkala'=>$tglberkala,'tunda'=>$tunda,'jdpang'=>$jdpang,'jdber'=>$jdber,'jumlahanak'=>$jumlahanak,'pangan'=>$pangan,'tunpen'=>$tunpen,'tunjab'=>$tunjab]);
     }
+
      public function permohonancuti(){
         $user = \Auth::user()->pegawai_id;
         $pegawai = \App\Pegawai::where('id',$user)->first();
 
         return view('direksi.permohonancuti',['pega'=>$pegawai]);
-    
+
     }
      public function cutidirut(){
         $id_user = \Auth::user()->pegawai_id;
@@ -365,9 +474,9 @@ class DireksiController extends Controller
                 "status"=>$cuti['status']
             ];
              }
-        
+
         return view('direksi.cutikadiv',['orderc'=>$data]);
-   
+
     }
 
     public function mintacuti(Request $request){
@@ -377,12 +486,12 @@ class DireksiController extends Controller
         $akhirc= \Carbon\Carbon::parse($akhir);
         $jmlcuti = $awlc->diffinDays($akhirc);
         $user_id = \Auth::user()->pegawai_id;
-        $peg = \App\pegawai::where('id',$user_id)->first();
+        $peg = \App\Pegawai::where('id',$user_id)->first();
         $jabpeg = $peg->jabatan;
         $jabatan = \App\Jabatan::where('id',$jabpeg)->first();
         $jabatasan = $jabatan->atasan;
-        $jabket = \App\jabatan::where('id',$jabtatasan)->first();
-        $jabketat = $jabatan->atasan; 
+        $jabket = \App\jabatan::where('id',$jabatasan)->first();
+        $jabketat = $jabatan->atasan;
 
         $new_cuti  = new \App\ordercuti;
         $new_cuti->user_id = \Auth::user()->id;
@@ -394,7 +503,7 @@ class DireksiController extends Controller
         $new_cuti->alasan = $request->get('alasan');
         $new_cuti->status = 'SUBMIT';
         $new_cuti->otoatasan = $jabatasan;
-        $newcuti->statatasan = 'SUBMIT';
+        $new_cuti->statatasan = 'SUBMIT';
         $new_cuti->diketatasan = $jabatasan;
         $new_cuti->statdiket = 'SUBMIT';
         $new_cuti->save();
@@ -433,7 +542,7 @@ class DireksiController extends Controller
             ];
 
         }
-        
+
         return view('direksi.tolakcuti',['orderc'=>$data]);
 
     }
@@ -469,7 +578,7 @@ class DireksiController extends Controller
             ];
 
         }
-        
+
         return view('direksi.setujucuti',['orderc'=>$data]);
 
     }
@@ -477,7 +586,7 @@ class DireksiController extends Controller
 
         $idcabang = \Auth::user()->cabang;
         $idpeg = \Auth::user()->pegawai_id;
-        $peg = \App\pegawai::where('id',$idpeg)->first();
+        $peg = \App\Pegawai::where('id',$idpeg)->first();
         $jabpeg = $peg->jabatan;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
@@ -495,8 +604,9 @@ class DireksiController extends Controller
                             ['diketatasan',$jabpeg],
                             //['cabang',$idcabang]
                               ])
-                       
-                        ->where('cabang',$idcabang)->get();
+
+            //            ->where('cabang',$idcabang)
+            ->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -519,26 +629,62 @@ class DireksiController extends Controller
                 "tglakhir" => $cuti['tglakhir'],
                 "alasan" => $cuti['alasan'],
                 "namacab"=>$namacab,
-                "status"=>$cuti['status']
+                "status"=>$cuti['status'],
+                "statasan"=>$cuti['statasan']
             ];
 
         }
-        
+
         return view('direksi.cutiindex',['orderc'=>$data]);
-    
+
     }
     public function setuju($id){
         $ordercuti = \App\ordercuti::findorFail($id);
-        $pegawai = \App\pegawai::where('id',$ordercuti['pegawai_id'])->first();
-
+        $pegawai = \App\Pegawai::where('id',$ordercuti['pegawai_id'])->first();
+        $statasan = $ordercuti->statasan;
+        $stadiket = $ordercuti->statdiket;
         $ambilcuti = $ordercuti->jmlcuti;
+        $jeniscuti = $ordercuti->jeniscuti;
         $scuti = $pegawai->scuti;
-        $sisacuti = $scuti-$ambilcuti;
-        $ordercuti->status = 'DISETUJUI';
-        $ordercuti->statdiket = 'DISETUJUI';
+        $sisacuti = $scuti - $ambilcuti;
+        if($statasan == "SUBMIT"){
+            if ($jeniscuti == "Cuti Wajib") {
+                $ordercuti->statasan = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->save();
 
-        $pegawai->scuti = $sisacuti;
+            } elseif ($jeniscuti == "Cuti Tahunan") {
+                $ordercuti->status = 'DISETUJUI';
+                $ordercuti->statasan = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $pegawai->scuti = $sisacuti;
+                $ordercuti->save();
+                $pegawai->save();
+            } else {
 
+                $ordercuti->status = 'DISETUJUI';
+                $ordercuti->statasan = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->save();
+            }
+        }else{
+            if ($jeniscuti == "Cuti Wajib"){
+                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->save();
+
+            } elseif ($jeniscuti == "Cuti Tahunan") {
+                $ordercuti->status = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $pegawai->scuti = $sisacuti;
+                $ordercuti->save();
+                $pegawai->save();
+            } else {
+                $ordercuti->status = 'DISETUJUI';
+                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->save();
+            }
+
+        }
 
         $ordercuti->save();
         $pegawai->save();
@@ -547,7 +693,7 @@ class DireksiController extends Controller
     }
     public function tolak($id){
         $ordercuti = \App\ordercuti::findorFail($id);
-        $pegawai = \App\pegawai::where('id',$ordercuti['pegawai_id'])->first();
+        $pegawai = \App\Pegawai::where('id',$ordercuti['pegawai_id'])->first();
 
         //$ambilcuti = $ordercuti->jmlcuti;
        // $scuti = $pegawai->scuti;
@@ -564,17 +710,28 @@ class DireksiController extends Controller
     public function cutisetuju(Request $request){
         $idcabang = \Auth::user()->cabang;
         $idpeg = \Auth::user()->pegawai_id;
-        $peg = \App\pegawai::where('id',$idpeg)->first();
+        $peg = \App\Pegawai::where('id',$idpeg)->first();
         $jabpeg = $peg->jabatan;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($name){
-                            $query->where('name','LIKE',"%$name%");})
-                        ->where("status","like","DISETUJUI")
-                        ->where('diketatasan',$jabpeg)
-                        ->where('cabang',$idcabang)
+            ->wherehas('pegawai', function($query) use ($name){
+                $query->where('name','LIKE',"%$name%");})
+            ->where([
+                ['status',"LIKE","DISETUJUI"],
+                ['statasan',"like","DISETUJUI"],
+                ['otoatasan',$jabpeg],
+                //['cabang',$idcabang]
+            ])
+            ->orwhere([
+                ['status',"LIKE","DISETUJUI"],
+                ['statasan',"like","DISETUJUI"],
+                ['statdiket',"like","DISETUJUI"],
+                ['diketatasan',$jabpeg],
+                //['cabang',$idcabang]
+            ])
 
-                        ->get();
+            //->where('cabang',$idcabang)
+            ->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -601,21 +758,31 @@ class DireksiController extends Controller
             ];
 
         }
-        
         return view('direksi.cutisetuju',['orderc'=>$data]);
     }
     public function cutitolak (Request $request){
         $idcabang = \Auth::user()->cabang;
         $idpeg = \Auth::user()->pegawai_id;
-        $peg = \App\pegawai::where('id',$idpeg)->first();
+        $peg = \App\Pegawai::where('id',$idpeg)->first();
         $jabpeg = $peg->jabatan;
         $name = $request->get('name');
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($name){
-                            $query->where('name','LIKE',"%$name%");})
-                        ->where("status","like","DITOLAK")
-                        ->where('diketatasan',$jabpeg)
-                        ->where('cabang',$idcabang)->get();
+            ->wherehas('pegawai', function($query) use ($name){
+                $query->where('name','LIKE',"%$name%");})
+            ->where([
+                ['status',"LIKE","DITOLAK"],
+                ['otoatasan',$jabpeg],
+                //['cabang',$idcabang]
+            ])
+            ->orwhere([
+                ['status',"LIKE","DITOLAK"],
+
+                ['diketatasan',$jabpeg],
+                //['cabang',$idcabang]
+            ])
+
+            //->where('cabang',$idcabang)
+            ->get();
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -642,10 +809,10 @@ class DireksiController extends Controller
             ];
 
         }
-        
+
         return view('direksi.cutitolak',['orderc'=>$data]);
     }
-   
+
      public function peraturan(Request $request){
         $peraturan = \App\peraturan::paginate(10);
         $filterkeyword = $request->get('name');
@@ -654,15 +821,15 @@ class DireksiController extends Controller
         if($filterkeyword){
             $peraturan = \App\peraturan::where("name", "LIKE", "%$filterkeyword%")->paginate(10);
         }
-        
-        
+
+
         return view('direksi.peraturan',['peraturan'=>$peraturan]);
     }
     public function permohonandownload($id){
         $peraturan = \App\peraturan::findorfail($id);
         $idpeg=\Auth::user()->pegawai_id;
         $uscab = \Auth::user()->cabang;
-        $pegawai = \App\pegawai::where('id',$idpeg)->first();
+        $pegawai = \App\Pegawai::where('id',$idpeg)->first();
         $cab = \App\cabang::where('id',$uscab)->first();
 
         return view('direksi.permohonandownload',['peraturan'=>$peraturan,'pegawai'=>$pegawai,'cabang'=>$cab]);
@@ -680,14 +847,14 @@ class DireksiController extends Controller
        $orderatur->save();
        return redirect()->route('direksi.peraturan')->with('status','Permintaan akan diproses');
    }
-   
+
     public function statusatur(){
         $user = \Auth::user()->id;
         $orderatur = \App\orderatur::where('user_id',$user)->get();
 
         $data=[];
         foreach ($orderatur as $order) {
-        $pegawai = \App\pegawai::where('id',$order['pegawai_id'])->first();
+        $pegawai = \App\Pegawai::where('id',$order['pegawai_id'])->first();
         $namapeg = $pegawai['name'];
         $peraturan = \App\peraturan::where('id',$order['peraturan_id'])->first();
         $namaper = $peraturan['name'];
@@ -707,7 +874,7 @@ class DireksiController extends Controller
         ];
     }
         return view ('direksi.statusatur',['orderatur' => $data]);
-        
+
    }
    public function showatur($id)
     {
@@ -752,23 +919,23 @@ class DireksiController extends Controller
                             ->get();
         }
 
-      
+
       $data = [];
         $now= \Carbon\Carbon::now()->format('Y-m-d');
-        
+
       foreach ($datapegawai as $x) {
         $b_day = \Carbon\Carbon::parse($x['tgllahir']);
         $umur =$b_day->diffinYears($now);
 
         $masuk = \Carbon\Carbon::parse($x['tglmasuk']);
         $mkerja =$masuk->diffinYears($now);
-        
+
         $peg = \App\Jabatan::where('id',$x['jabatan'])->first();
         $namajab = $peg['name'];
-        
+
         $cab = \App\Cabang::where('id',$x['cabang'])->first();
         $namacab = $cab['name'];
-        
+
         $pang = \App\Pangkat::where('id',$x['pangkat'])->first();
         $pangkat = $pang['name'];
 
@@ -784,7 +951,7 @@ class DireksiController extends Controller
             "jabatan"=>$namajab,
             "cabang"=>$namacab,
 
-            
+
         ];
 
       }
@@ -793,7 +960,7 @@ class DireksiController extends Controller
       return view ('direksi.pegawairotasi',['pegawai'=>$data]);
     }
     public function mintarotasi($id){
-      $peg = \App\pegawai::findorfail($id);
+      $peg = \App\Pegawai::findorfail($id);
       $pegjab = $peg->jabatan;
       $jab = \App\jabatan::where('id',$pegjab)->first();
       $jabatan = $jab->name;
@@ -804,7 +971,7 @@ class DireksiController extends Controller
     }
     public function inputrotasi(Request $request){
         $idpeg = $request->get('idpeg');
-        $peg = \App\pegawai::where('id',$idpeg)->first();
+        $peg = \App\Pegawai::where('id',$idpeg)->first();
 
         $rotasi = new \App\mutasi;
         $rotasi->pegawai_id = $idpeg;
@@ -965,7 +1132,7 @@ class DireksiController extends Controller
         $pegawai = \App\Pegawai::where('id',$mutasi['pegawai_id'])->first();
         $jabatan = \App\Jabatan::where('id',$mutasi['jabatan'])->first();
         $atasan1 = $jabatan->atasan;
-        $jabatasan1 = \App\Jabatan::where('id',$jab)->first();
+        $jabatasan1 = \App\Jabatan::where('id',$jabatan)->first();
         $atasan2 = $jabatasan1->atasan;
         $atasan = $jabatan->atasan;
         $cabang = \App\Cabang::where('id',$mutasi['cabang'])->first();
@@ -1054,21 +1221,21 @@ class DireksiController extends Controller
                       ])->get();
         $data=[];
         $now= \Carbon\Carbon::now()->format('Y-m-d');
-        
+
         foreach ($mutasipangkat as $mp) {
         $pegawai = \App\Pegawai::where('id',$mp['pegawai_id'])->first();
         $namapeg= $pegawai->name;
         $idpeg = $pegawai->id;
         $masuk = \Carbon\Carbon::parse($pegawai['tglmasuk']);
         $mkerja =$masuk->diffinYears($now);
-        
+
         $pangsb = \App\Pangkat::where('id',$pegawai['pangkat'])->first();
         $pangkatseb = $pangsb->name;
         $pangm = \App\Pangkat::where('id',$mp['pangkat'])->first();
         $pangkat = $pangm->name;
 
         $data[]=[
-            "id" => $mp['id'], 
+            "id" => $mp['id'],
             "pegawai_id" => $idpeg,
             "namapeg" => $namapeg,
             "mkerja" => $mkerja,
@@ -1078,7 +1245,7 @@ class DireksiController extends Controller
         ];
         }
 
-        
+
 
 
         return view ('direksi.mutasipangkat',['mutasipangkat'=>$data]);
@@ -1111,21 +1278,21 @@ class DireksiController extends Controller
                         ->where("status","like","DISETUJUI")->get();
         $data=[];
         $now= \Carbon\Carbon::now()->format('Y-m-d');
-        
+
         foreach ($mutasipangkat as $mp) {
         $pegawai = \App\Pegawai::where('id',$mp['pegawai_id'])->first();
         $namapeg= $pegawai->name;
         $idpeg = $pegawai->id;
         $masuk = \Carbon\Carbon::parse($pegawai['tglmasuk']);
         $mkerja =$masuk->diffinYears($now);
-        
+
         $pangsb = \App\Pangkat::where('id',$pegawai['pangkat'])->first();
         $pangkatseb = $pangsb->name;
         $pangm = \App\Pangkat::where('id',$mp['pangkat'])->first();
         $pangkat = $pangm->name;
 
         $data[]=[
-            "id" => $mp['id'], 
+            "id" => $mp['id'],
             "pegawai_id" => $idpeg,
             "namapeg" => $namapeg,
             "mkerja" => $mkerja,
@@ -1146,21 +1313,21 @@ class DireksiController extends Controller
                         ->where("status","like","DITOLAK")->get();
         $data=[];
         $now= \Carbon\Carbon::now()->format('Y-m-d');
-        
+
         foreach ($mutasipangkat as $mp) {
         $pegawai = \App\Pegawai::where('id',$mp['pegawai_id'])->first();
         $namapeg= $pegawai->name;
         $idpeg = $pegawai->id;
         $masuk = \Carbon\Carbon::parse($pegawai['tglmasuk']);
         $mkerja =$masuk->diffinYears($now);
-        
+
         $pangsb = \App\Pangkat::where('id',$pegawai['pangkat'])->first();
         $pangkatseb = $pangsb->name;
         $pangm = \App\Pangkat::where('id',$mp['pangkat'])->first();
         $pangkat = $pangm->name;
 
         $data[]=[
-            "id" => $mp['id'], 
+            "id" => $mp['id'],
             "pegawai_id" => $idpeg,
             "namapeg" => $namapeg,
             "mkerja" => $mkerja,

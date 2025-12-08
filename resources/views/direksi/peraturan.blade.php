@@ -54,8 +54,8 @@
 					<td>{{$atur->tgllaku}}</td>
 					<td>{{$atur->uraian}}</td>
 					<td>
-						<a href="{{route('direksi.showatur',$atur['idatur'])}}" class="btn btn-primary">Detail</a>
-						<a href="{{route('direksi.permohonandownload',$atur->id)}}" class="btn btn-primary btn-sm">Print</a>
+						<a href="{{route('direksi.showatur',$atur['id'])}}" class="btn btn-primary">Detail</a>
+						
 					</td>
 				</tr>
 			</tbody>

@@ -4,29 +4,19 @@
 
 <div class="row">
 	<div class="col-md-12">
-		<form action="{{route('direksi.cutisetuju')}}" >
-			<div class="row">
-				<div class="col-md-5">
-					<input value="{{Request::get('name')}}" name="name" type="text" class="form-control" placeholder="Search By Name">
-				</div>
-				<div class="col-md-2">
-					<input type="submit" value="Filter" class="btn btn-primary">
-				</div>
-			</div>
-
-		</form>
+		
 		<div class="row">
 		<div class="col-md-12">
 		<hr class="my-3">
 		<div class="row mb-3">
 		<div class="col-md-12 text-right">
-		<a href="{{route('direksi.cutiindex')}}" class="btn btn-primary">Kembali</a>
+		<a href="{{route('dirbis.cutiindex')}}" class="btn btn-primary">Kembali</a>
 	</div>
 	</div>
 		<table class="table table-stripped table-bordered">
 			<thead>
 				<tr align="center">
-					
+
 					<th><b>Nama Pegawai</b></th>
 					<th><b>Kantor Cabang</b></th>
 					<th><b>Jumlah Cuti</b></th>
@@ -34,13 +24,13 @@
 					<th><b>Tanggal Akhir Cuti</b></th>
 					<th><b>Alasan Cuti</b></th>
 					<th><b>Status</b></th>
-					
+
 				</tr>
 			</thead>
 			<tbody>
 				@foreach($orderc as $order)
 				<tr>
-					
+
 					<td>{{$order['namapeg']}}</td>
 					<td>{{$order['namacab']}}</td>
 					<td>{{$order['jmlcuti']}}</td>
@@ -58,7 +48,7 @@
 						<span class="badge bg-dark text-light">{{$order['status']}}</span>
 						@endif
 					</td>
-					
+
 				</tr>
 			</tbody>
 			@endforeach
@@ -69,7 +59,7 @@
 			</tr>
 			</tfoot>
 		</table>
-		
+
 	</div>
 </div>
 

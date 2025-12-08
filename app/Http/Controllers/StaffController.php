@@ -298,9 +298,7 @@ class StaffController extends Controller
             'bpjsks'=>$bpjsks,'pensiun'=>$pensiun,'pph'=>$pph,'fungsi'=>$fungsi,'gapokpeg'=>$gapokpeg,'gapok'=>$gapok,'tglpangkat'=>$tglpangkat,'tglberkala'=>$tglberkala,'tunda'=>$tunda,'jdpang'=>$jdpang,'jdber'=>$jdber,'jumlahanak'=>$jumlahanak,'pangan'=>$pangan,'tunpen'=>$tunpen,'tunjab'=>$tunjab]);
 
 
-
-
-    /**
+        /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
@@ -360,14 +358,15 @@ class StaffController extends Controller
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc= \Carbon\Carbon::parse($akhir);
         $jeniscuti= $request->get('jeniscuti');
-        $jmlcuti = $awlc->diffinDays($akhirc);
+        $jumlahcuti = $awlc->diffinDays($akhirc);
         $user_id = \Auth::user()->pegawai_id;
-        $peg = \App\pegawai::where('id',$user_id)->first();
+        $peg = \App\Pegawai::where('id',$user_id)->first();
         $jabpeg = $peg->jabatan;
         $jabatan = \App\Jabatan::where('id',$jabpeg)->first();
         $jabatasan = $jabatan->atasan;
-        $jabket = \App\Jabatan::where('id',$jabatasan)->first();
+        $jabket = \App\jabatan::where('id',$jabatasan)->first();
         $jabketat = $jabket->atasan;
+        $jmlcuti = $jumlahcuti+1;
         if ($jeniscuti == "Cuti Tahunan") {
         $new_cuti  = new \App\ordercuti;
         $new_cuti->user_id = \Auth::user()->id;
@@ -403,7 +402,7 @@ class StaffController extends Controller
             $new_cuti->user_id = \Auth::user()->id;
             $new_cuti->cabang = \Auth::user()->cabang;
             $new_cuti->pegawai_id = $request->get('idpeg');
-            $new_cuti->jmlcuti = $jmlcuti;
+            $new_cuti->jmlcuti = 3;
             $new_cuti->tglawal = $awal;
             $new_cuti->tglakhir = $akhir;
             $new_cuti->jeniscuti = $jeniscuti;
@@ -508,8 +507,8 @@ class StaffController extends Controller
         $peraturan = \App\peraturan::findorfail($id);
         $idpeg=\Auth::user()->pegawai_id;
         $uscab = \Auth::user()->cabang;
-        $pegawai = \App\pegawai::where('id',$idpeg)->first();
-        $cab = \App\Cabang::where('id',$uscab)->first();
+        $pegawai = \App\Pegawai::where('id',$idpeg)->first();
+        $cab = \App\cabang::where('id',$uscab)->first();
 
         return view('staff.permohonandownload',['peraturan'=>$peraturan,'pegawai'=>$pegawai,'cabang'=>$cab]);
     }
@@ -532,7 +531,7 @@ class StaffController extends Controller
 
         $data=[];
         foreach ($orderatur as $order) {
-        $pegawai = \App\pegawai::where('id',$order['pegawai_id'])->first();
+        $pegawai = \App\Pegawai::where('id',$order['pegawai_id'])->first();
         $namapeg = $pegawai['name'];
         $peraturan = \App\peraturan::where('id',$order['peraturan_id'])->first();
         $namaper = $peraturan['name'];

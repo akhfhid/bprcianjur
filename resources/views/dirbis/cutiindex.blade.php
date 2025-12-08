@@ -26,14 +26,14 @@
 <hr class="my-3">
 <div class="row mb-3">
 	<div class="col-md-12 text-right">
-		<a href="{{route('direksi.cutisetuju')}}" class="btn btn-primary">Disetujui</a>
-		<a href="{{route('direksi.cutitolak')}}" class="btn btn-primary">Ditolak</a>
+		<a href="{{route('dirbis.cutisetuju')}}" class="btn btn-primary">Disetujui</a>
+		<a href="{{route('dirbis.cutitolak')}}" class="btn btn-primary">Ditolak</a>
 	</div>
 </div>
 		<table class="table table-stripped table-bordered">
 			<thead>
 				<tr align="center">
-					
+
 					<th><b>Nama Pegawai</b></th>
 					<th><b>Kantor Cabang</b></th>
 					<th><b>Jumlah Cuti</b></th>
@@ -47,7 +47,7 @@
 			<tbody>
 				@foreach($orderc as $order)
 				<tr>
-					
+
 					<td>{{$order['namapeg']}}</td>
 					<td>{{$order['namacab']}}</td>
 					<td>{{$order['jmlcuti']}}</td>
@@ -66,18 +66,25 @@
 						@endif
 					</td>
 					<td>
-						
-						<form method="POST" class="d-inline" onsubmit="return confirm('Setujui Permohonan Cuti')" action="{{route('kadiv.setuju',[$order['id']])}}">
+
+						@if($order['statasan']=="DISETUJUI")
+						<form method="POST" class="d-inline" onsubmit="return confirm('Proses Permohonan Cuti')" action="{{route('dirbis.setuju',[$order['id']])}}">
+							@csrf
+							<input type="submit" value="Diketahui" class="btn btn-success btn-sm">
+						</form>
+						@elseif($order['statasan']=="SUBMIT")
+						<form method="POST" class="d-inline" onsubmit="return confirm('Proses Permohonan Cuti')" action="{{route('dirbis.setuju',[$order['id']])}}">
 							@csrf
 							<input type="submit" value="Setuju" class="btn btn-success btn-sm">
 						</form>
-						<form method="POST" class="d-inline" onsubmit="return confirm('Tolak Permohonan Cuti')" action="{{route('kadiv.tolak',[$order['id']])}}">
+						<form method="POST" class="d-inline" onsubmit="return confirm('Tolak Permohonan Cuti')" action="{{route('dirbis.tolak',[$order['id']])}}">
 							@csrf
 							<input type="submit" value="Tolak" class="btn btn-danger btn-sm">
 						</form>
+						@endif
 
 						<br>
-						
+
 
 					</td>
 				</tr>
@@ -86,12 +93,12 @@
 			<tfoot>
 				<tr>
 				<td colspan="10">
-					
+
 				</td>
 			</tr>
 			</tfoot>
 		</table>
-		
+
 	</div>
 </div>
 

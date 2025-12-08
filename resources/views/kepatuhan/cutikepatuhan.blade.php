@@ -14,7 +14,9 @@
 <hr class="my-3">
 <div class="row mb-3">
 	<div class="col-md-12 text-right">
-		<a href="{{route('kepatuhan.permohonancuti')}}" class="btn btn-primary">Permohonan Cuti</a>
+		<a href="{{route('kepatuhan.permohonancuti')}}" class="btn btn-primary">Permohonan Cuti Tahunan</a>
+        <a href="{{route('kepatuhan.cutiwajib')}}" class="btn btn-primary">Permohonan Cuti Wajib</a>
+        <a href="{{route('kepatuhan.cutilainnya')}}" class="btn btn-primary">Permohonan Cuti Lainnya</a>
 		<a href="{{route('kepatuhan.setujucuti')}}" class="btn btn-primary">Disetujui</a>
 		<a href="{{route('kepatuhan.tolakcuti')}}" class="btn btn-primary">Ditolak</a>
 	</div>
@@ -22,7 +24,7 @@
 		<table class="table table-stripped table-bordered">
 			<thead>
 				<tr align="center">
-					
+
 					<th><b>Nama Pegawai</b></th>
 					<th><b>Kantor Cabang</b></th>
 					<th><b>Jumlah Cuti</b></th>
@@ -35,7 +37,7 @@
 			<tbody>
 				@foreach($orderc as $order)
 				<tr>
-					
+
 					<td>{{$order['namapeg']}}</td>
 					<td>{{$order['namacab']}}</td>
 					<td>{{$order['jmlcuti']}}</td>
@@ -53,8 +55,6 @@
 						<span class="badge bg-dark text-light">{{$order['status']}}</span>
 						@endif
 					</td>
-
-					</td>
 				</tr>
 			</tbody>
 			@endforeach
@@ -65,7 +65,7 @@
 			</tr>
 			</tfoot>
 		</table>
-		
+
 	</div>
 </div>
 

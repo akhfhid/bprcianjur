@@ -13,6 +13,7 @@
 					<input type="submit" value="Filter" class="btn btn-primary">
 				</div>
 			</div>
+
 		</form>
 		<div class="row">
 	<div class="col-md-12">
@@ -25,6 +26,7 @@
 <hr class="my-3">
 <div class="row mb-3">
 	<div class="col-md-12 text-right">
+
 		<a href="{{route('supervisor.cutisetuju')}}" class="btn btn-primary">Disetujui</a>
 		<a href="{{route('supervisor.cutitolak')}}" class="btn btn-primary">Ditolak</a>
 	</div>

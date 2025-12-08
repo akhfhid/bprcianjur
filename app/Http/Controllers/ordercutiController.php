@@ -17,7 +17,7 @@ class ordercutiController extends Controller
         if(gate::allows('ADMIN')) return $next($request);
         abort(403,'Anda tidak memiliki hak akses');});
     }
-    
+
     public function index(Request $request)
     {
 
@@ -50,7 +50,8 @@ class ordercutiController extends Controller
                 "jenis" => $cuti['jeniscuti'],
                 "namacab" => $namacab,
                 "status" => $cuti['status'],
-                "otosdm" => $cuti['otosdm']
+                "otosdm" => $cuti['otosdm'],
+                "statdiket" => $cuti['statdiket']
             ];
 
         }
@@ -84,13 +85,13 @@ class ordercutiController extends Controller
         $jeniscuti = $request->get("jeniscuti");
         $awal = $request->get('tglawal');
         $akhir = $request->get('tglakhir');
-        
+
 
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc= \Carbon\Carbon::parse($akhir);
         $jmlcuti = $awlc->diffinDays($akhirc);
         $user_id = \Auth::user()->pegawai_id;
-        $peg = \App\pegawai::where('id',$user_id)->first();
+        $peg = \App\Pegawai::where('id',$user_id)->first();
         $jabpeg = $peg->jabatan;
         $jabatan = \App\Jabatan::where('id',$jabpeg)->first();
         $jabatasan = $jabatan->atasan;
@@ -98,9 +99,9 @@ class ordercutiController extends Controller
         $jabketat = $jabket->atasan;
         $useradm = \App\User::where('roles',"ADMIN")->first();
         $adm = $useradm->pegawai_id;
-        
-        
-            
+
+
+
         if ($jeniscuti == "Cuti Wajib"){
             $new_cuti  = new \App\ordercuti;
             $new_cuti->user_id = \Auth::user()->id;
@@ -118,7 +119,7 @@ class ordercutiController extends Controller
             $new_cuti->statdiket = "SUBMIT";
             $new_cuti->otosdm = "ADMIN";
             $new_cuti->statsdm = "SUBMIT";
-            
+
         }elseif($jeniscuti == "Cuti Lainnya") {
             $new_cuti  = new \App\ordercuti;
             $new_cuti->user_id = \Auth::user()->id;
@@ -134,7 +135,7 @@ class ordercutiController extends Controller
             $new_cuti->statasan = "SUBMIT";
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = "SUBMIT";
-            
+
         } else {
             $new_cuti  = new \App\ordercuti;
             $new_cuti->user_id = \Auth::user()->id;
@@ -151,7 +152,7 @@ class ordercutiController extends Controller
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = "SUBMIT";
         }
-        
+
         $new_cuti->save();
 
         return redirect()->route('ordercuti.index')->with('status','Permohonan Berhasil Diinput');
@@ -196,18 +197,19 @@ class ordercutiController extends Controller
         $jeniscuti = $request->get("jeniscuti");
         $awal = $request->get('tglawal');
         $akhir = $request->get('tglakhir');
-        
+
 
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc= \Carbon\Carbon::parse($akhir);
         $jmlcuti = $awlc->diffinDays($akhirc);
         $user_id = \Auth::user()->pegawai_id;
-        
+
         $useradm = \App\User::where('roles',"ADMIN")->first();
         $adm = $useradm->pegawai_id;
 
         $ordercuti->tglawal = $awal;
         $ordercuti->tglakhir= $akhir;
+        $ordercuti->jmlcuti = 3;
         $ordercuti->save();
         return redirect()->route('ordercuti.index')->with('status','Permohonan Berhasil diperbaharui');
 
@@ -226,7 +228,7 @@ class ordercutiController extends Controller
 
     public function setuju($id){
         $ordercuti = \App\ordercuti::findorFail($id);
-        $pegawai = \App\pegawai::where('id',$ordercuti['pegawai_id'])->first();
+        $pegawai = \App\Pegawai::where('id',$ordercuti['pegawai_id'])->first();
 
         $ambilcuti = $ordercuti->jmlcuti;
         $scuti = $pegawai->scuti;
@@ -242,7 +244,7 @@ class ordercutiController extends Controller
     }
     public function tolak($id){
         $ordercuti = \App\ordercuti::findorFail($id);
-        $pegawai = \App\pegawai::where('id',$ordercuti['pegawai_id'])->first();
+        $pegawai = \App\Pegawai::where('id',$ordercuti['pegawai_id'])->first();
 
         //$ambilcuti = $ordercuti->jmlcuti;
        // $scuti = $pegawai->scuti;
@@ -283,7 +285,8 @@ class ordercutiController extends Controller
                 "tglakhir" => $cuti['tglakhir'],
                 "alasan" => $cuti['alasan'],
                 "namacab"=>$namacab,
-                "status"=>$cuti['status']
+                "status"=>$cuti['status'],
+
             ];
 
         }
@@ -350,19 +353,20 @@ class ordercutiController extends Controller
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
                         ->wherehas('pegawai', function($query) use ($name){
                             $query->where('name','LIKE',"%$name%");})
-                        ->where('otosdm','LIKE',"$role")->get();
+                        ->where('otosdm','LIKE',"$role")->orderby('status', 'DESC')->paginate(10);
                 }
         elseif($date){
             $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        
+
                         ->where('otosdm','LIKE',"$role")
                         ->where('tglawal','LIKE',"%$date%")
+                        ->orderby('id', 'DESC')
                         ->paginate(10);
         }else{
             $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        
+
                         ->where('otosdm','LIKE',"$role")
-                        
+                        ->orderby('id', 'DESC')
                         ->paginate(10);
         }
         $data=[];
@@ -389,12 +393,13 @@ class ordercutiController extends Controller
                 "jenis" => $cuti['jeniscuti'],
                 "namacab" => $namacab,
                 "status" => $cuti['status'],
-                "otosdm" => $cuti['otosdm']
+                "otosdm" => $cuti['otosdm'],
+                "statdiket" => $cuti['statdiket']
             ];
 
         }
 
-        return view('ordercuti.indexcutiwajib',['orderc'=>$data]);
+        return view('ordercuti.indexcutiwajib',['orderc'=>$data,'indexcuti'=>$ordercuti]);
 
     }
     public function indexcuti(Request $request)
@@ -406,7 +411,7 @@ class ordercutiController extends Controller
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
                         ->wherehas('pegawai', function($query) use ($name){
                             $query->where('name','LIKE',"%$name%");})
-                        
+
                         ->paginate(10);
         }elseif ($date) {
             $ordercuti = \App\ordercuti::with('pegawai','cabang')
@@ -414,11 +419,11 @@ class ordercutiController extends Controller
                         ->peginate(10);
         }
 
-        
+
 
         else{
             $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        
+
                         ->paginate(10);
         }
 
@@ -446,7 +451,8 @@ class ordercutiController extends Controller
                 "jenis" => $cuti['jeniscuti'],
                 "namacab" => $namacab,
                 "status" => $cuti['status'],
-                "otosdm" => $cuti['otosdm']
+                "otosdm" => $cuti['otosdm'],
+                "statdiket" => $cuti['statdiket']
             ];
 
         }
@@ -455,10 +461,10 @@ class ordercutiController extends Controller
     }
     public function indexcutilainnya(Request $request)
     {
-       
+
         $name = $request->get('name');
         $date = $request->get('tanggal');
-        
+
 
         if($name){
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
@@ -473,7 +479,7 @@ class ordercutiController extends Controller
         }
         else
         {
-            $ordercuti = \App\ordercuti::with('pegawai','cabang')                        
+            $ordercuti = \App\ordercuti::with('pegawai','cabang')
                         ->where('jeniscuti','LIKE','Cuti Lainnya')->paginate(10);
         }
         $data=[];
@@ -500,7 +506,7 @@ class ordercutiController extends Controller
                 "jenis" => $cuti['jeniscuti'],
                 "namacab" => $namacab,
                 "status" => $cuti['status'],
-                
+
             ];
 
         }
@@ -523,10 +529,10 @@ class ordercutiController extends Controller
         }
         else
         {
-            $ordercuti = \App\ordercuti::with('pegawai','cabang')                        
+            $ordercuti = \App\ordercuti::with('pegawai','cabang')
                         ->where('jeniscuti','LIKE','Cuti Tahunan')->paginate(10);
         }
-        
+
         $data=[];
         foreach ($ordercuti as $cuti) {
             //$order=\App\ordercuti::where('status','SUBMIT');
@@ -551,7 +557,7 @@ class ordercutiController extends Controller
                 "jenis" => $cuti['jeniscuti'],
                 "namacab" => $namacab,
                 "status" => $cuti['status'],
-               
+
             ];
 
         }

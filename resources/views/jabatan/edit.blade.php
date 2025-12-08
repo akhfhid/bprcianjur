@@ -1,19 +1,6 @@
 @extends ('layouts.global')
 @section('title') Edit Jabatan @endsection
-@section('footer-scripts')
 
-<link href="\node_modules\select2\dist\css\select2.min.css" rel="stylesheet" />
-<script src="\node_modules\select2\dist\js\select2.min.js"></script>
-
-	<script>
-				$('#atasan').select2({ajax: { url: '/ajax/jabatan/search',
-processResults: function(data){ return {results: data.map(function(item){return {id: item.id, text:item.name} })
-					}
-				}
-			}
-		});
-	</script>
-@endsection
 
 @section('content')
 
@@ -33,20 +20,25 @@ processResults: function(data){ return {results: data.map(function(item){return 
 		<label>Nama Jabatan</label>
 		<input type="text" class="form-control" value="{{$jabatan->name}}" name="name">
 		<br>
+
 		<label>Kantor</label><br>
 		<select name="kantor" class="form-control">
-			<option>Pilih Kantor</option>
+			<option value="{{$jabatan->kantor}}">Pilih Kantor</option>
 			<option value="pusat">Kantor Pusat</option>
-			<option> value="cabang">Kantor Cabang</option>
+			<option value="cabang">Kantor Cabang</option>
 		</select>
 		<br>
 		<label>Jabatan Atasan</label>
 			<select class="form-control select2" name="atasan" id="atasan">
-			</select>
+			<option value="{{$jabatan->atasan}}">{{$jabname}}</option>
+                @foreach($atasan as $atas => $name)
+                <option value="{{$atas}}">{{$name}}</option>
+                @endforeach
+            </select>
 			<br>
 			<br>
 		<label>Tunjangan Program Pensiun</label>
-		<input type="text" class="form-control" value="{{$jabatan->pensiun}}" name="tunjab">
+		<input type="text" class="form-control" value="{{$jabatan->pensiun}}" name="pensiun">
 		<br>
 		<label>Tunjangan Istri / Suami</label>
 		<input type="text" class="form-control" value="{{$jabatan->tunis}}" name="tunis">
@@ -60,7 +52,7 @@ processResults: function(data){ return {results: data.map(function(item){return 
 		<label>Uang Makan</label>
 		<input type="text" class="form-control" value="{{$jabatan->umak}}" name="umak">
 		<br>
-		
+
 		<input type="submit" class="btn btn-primary" value="update">
 
 	</form>
