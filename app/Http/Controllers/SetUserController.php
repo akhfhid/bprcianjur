@@ -6,57 +6,51 @@ use Illuminate\Http\Request;
 use App\Pegawai;
 use App\Jabatan;
 use App\Cabang;
+use Gate;
 
 class SetUserController extends Controller
 {
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (\Gate::allows('ADMIN')) {
+            if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM')) {
                 return $next($request);
             }
+
             abort(403, 'Anda tidak memiliki hak akses');
+
         });
     }
 
-public function index(Request $request)
-{
-    $cabangFilter = (int)$request->cabang;   // 🔥 cast ke integer
-    $keyword      = $request->keyword;
+    public function index(Request $request)
+    {
+        $cabangFilter = (int) $request->cabang; // 🔥 cast ke integer
+        $keyword = $request->keyword;
 
-    $pegawai = Pegawai::with('relJabatan', 'relCabang', 'relUser')
-        ->where('status_active', 1)  
-        ->whereHas('relUser', function($q){
-            $q->where('status', 'ACTIVE');
-        })
-        ->when($cabangFilter, function ($query) use ($cabangFilter) {
-            $query->where('cabang', $cabangFilter);
-        })
-        ->when($keyword, function ($query) use ($keyword) {
-            $query->where('name', 'LIKE', "%$keyword%");
-        })
-        ->paginate(15)
-        ->appends($request->all());
+        $pegawai = Pegawai::with('relJabatan', 'relCabang', 'relUser')
+            ->where('status_active', 1)
+            ->whereHas('relUser', function ($q) {
+                $q->where('status', 'ACTIVE');
+            })
+            ->when($cabangFilter, function ($query) use ($cabangFilter) {
+                $query->where('cabang', $cabangFilter);
+            })
+            ->when($keyword, function ($query) use ($keyword) {
+                $query->where('name', 'LIKE', "%$keyword%");
+            })
+            ->paginate(15)
+            ->appends($request->all());
 
-    $cabangs = Cabang::pluck('name', 'id');
+        $cabangs = Cabang::pluck('name', 'id');
 
-    foreach ($pegawai as $p) {
+        foreach ($pegawai as $p) {
+            $p->atasan1_data = Pegawai::where('jabatan', $p->atasan1)->where('cabang', $p->cabang)->first() ?? Pegawai::where('jabatan', $p->atasan1)->first();
 
-        $p->atasan1_data = Pegawai::where('jabatan', $p->atasan1)
-            ->where('cabang', $p->cabang)
-            ->first()
-            ?? Pegawai::where('jabatan', $p->atasan1)->first();
+            $p->atasan2_data = Pegawai::where('jabatan', $p->atasan2)->where('cabang', $p->cabang)->first() ?? Pegawai::where('jabatan', $p->atasan2)->first();
+        }
 
-        $p->atasan2_data = Pegawai::where('jabatan', $p->atasan2)
-            ->where('cabang', $p->cabang)
-            ->first()
-            ?? Pegawai::where('jabatan', $p->atasan2)->first();
+        return view('setuser.index', compact('pegawai', 'cabangs', 'cabangFilter'));
     }
-
-    return view('setuser.index', compact('pegawai', 'cabangs', 'cabangFilter'));
-}
-
-
 
     public function edit($id)
     {

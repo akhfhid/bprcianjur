@@ -11,25 +11,30 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct(){
-        $this->middleware(function($request, $next){
-        if(gate::allows('ADMIN')) return $next($request);
-        abort(403,'Anda tidak memiliki hak akses');
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM')) {
+                return $next($request);
+            }
+
+            abort(403, 'Anda tidak memiliki hak akses');
+
+            abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-        public function index(Request $request)
+    public function index(Request $request)
     {
-        $status =$request->get('status');
+        $status = $request->get('status');
         $filterkeyword = $request->get('keyword');
-        if($filterkeyword){
-            $users = \App\User::where('name','LIKE',"%$filterkeyword%")
-            //->where('status', $status)
-            ->paginate(10);
-        }else{
+        if ($filterkeyword) {
             $users = \App\User::where('name', 'LIKE', "%$filterkeyword%")
-                    ->paginate(10);
+                //->where('status', $status)
+                ->paginate(10);
+        } else {
+            $users = \App\User::where('name', 'LIKE', "%$filterkeyword%")->paginate(10);
         }
-        return view('users.index',['users'=>$users]);
+        return view('users.index', ['users' => $users]);
     }
 
     /**
@@ -39,8 +44,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = \App\roles::pluck('name','ket');
-        return view("users.create",['roles'=>$roles]);
+        $roles = \App\roles::pluck('name', 'ket');
+        return view('users.create', ['roles' => $roles]);
     }
 
     /**
@@ -51,22 +56,22 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $new_user = new \App\User;
-        $new_user->name =$request->get('name');
+        $new_user = new \App\User();
+        $new_user->name = $request->get('name');
         $new_user->username = $request->get('username');
-        $new_user->roles = $request->get("roles");
+        $new_user->roles = $request->get('roles');
         $new_user->address = $request->get('address');
         $new_user->phone = $request->get('phone');
-        $new_user->email=$request->get('email');
+        $new_user->email = $request->get('email');
         $new_user->loguser = $request->get('log');
         $new_user->password = \Hash::make($request->get('password'));
 
-        if ($request->file('avatar')){
-            $file = $request->file('avatar')->store('avatars','public');
+        if ($request->file('avatar')) {
+            $file = $request->file('avatar')->store('avatars', 'public');
             $new_user->avatar = $file;
         }
         $new_user->save();
-        return redirect()->route('users.create')->with('status','User Succesfully Created');
+        return redirect()->route('users.create')->with('status', 'User Succesfully Created');
     }
 
     /**
@@ -78,8 +83,8 @@ class UserController extends Controller
     public function show($id)
     {
         $user = \App\User::findOrFail($id);
-       // $pegawai = \App\Pegawai::where('name',$user['name'])->get();
-        return view('users.show',['user'=>$user]);
+        // $pegawai = \App\Pegawai::where('name',$user['name'])->get();
+        return view('users.show', ['user' => $user]);
     }
 
     /**
@@ -91,9 +96,9 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = \App\User::findOrFail($id);
-        $pegawai = \App\Pegawai::where('name',$user['name'])->first();
-        $roles = \App\roles::pluck('name','ket');
-        return view('users.edit',['user'=>$user, 'roles'=>$roles,'pegawai'=>$pegawai]);
+        $pegawai = \App\Pegawai::where('name', $user['name'])->first();
+        $roles = \App\roles::pluck('name', 'ket');
+        return view('users.edit', ['user' => $user, 'roles' => $roles, 'pegawai' => $pegawai]);
         //return view('users.edit',['user'=>$user, 'roles'=>$roles]);
     }
 
@@ -115,13 +120,12 @@ class UserController extends Controller
         //$user->status = $request->get('status');
         //$user->pegawai_id = $request->get('pegawai_id');
 
-
         //if($request->file('avatar')){
-          //  if($user->avatar && file_exists(storage_path('app/public/'.$user->avatar))){
-              //  \Storage::delete('public/'.$user->avatar);
-            //}
-            //$file =  $request->file('avatar')->store('avatar','public');
-            //$user->avatar = $file;
+        //  if($user->avatar && file_exists(storage_path('app/public/'.$user->avatar))){
+        //  \Storage::delete('public/'.$user->avatar);
+        //}
+        //$file =  $request->file('avatar')->store('avatar','public');
+        //$user->avatar = $file;
         //}
         //$user->save();
 
@@ -133,7 +137,7 @@ class UserController extends Controller
         $user->pegawai_id = $request->get('pegawai_id');
         $user->status = $request->get('status');
         $user->save();
-        return redirect()->route('users.index')->with('status','User Berhasil Diaktifkan');
+        return redirect()->route('users.index')->with('status', 'User Berhasil Diaktifkan');
     }
 
     /**
@@ -146,16 +150,18 @@ class UserController extends Controller
     {
         $user = \App\User::findOrFail($id);
         $user->delete();
-        return redirect()->route('users.index')->with('status','User Succesfully Deleted');
+        return redirect()->route('users.index')->with('status', 'User Succesfully Deleted');
     }
-    public function active($id){
+    public function active($id)
+    {
         $user = \App\User::findOrFail($id);
-        $pegawai = \App\Pegawai::where('name',$user['username'])->first();
+        $pegawai = \App\Pegawai::where('name', $user['username'])->first();
         //$user_id = $pegawai->id;
-        $roles = \App\roles::pluck('name','ket');
-         return view('users.active',['user'=>$user,'pegawai'=>$pegawai,'roles'=>$roles]);
+        $roles = \App\roles::pluck('name', 'ket');
+        return view('users.active', ['user' => $user, 'pegawai' => $pegawai, 'roles' => $roles]);
     }
-    public function aktif(Request $request,$id){
+    public function aktif(Request $request, $id)
+    {
         $user = \App\User::findOrFail($id);
         $user->name = $request->get('name');
         $user->password = \Hash::make($request->get('password'));
@@ -163,30 +169,32 @@ class UserController extends Controller
         $user->pegawai_id = $request->get('pegawai_id');
         $user->status = $request->get('status');
         $user->save();
-        return view('users.index')->with('status','User Berhasil Diaktifkan');
+        return view('users.index')->with('status', 'User Berhasil Diaktifkan');
     }
 
-    public function updateuser(Request $request,$id){
+    public function updateuser(Request $request, $id)
+    {
         $user = \App\User::findorfail($id);
 
         $user->name = $request->get('name');
-        $user->roles =$request->get('roles');
+        $user->roles = $request->get('roles');
         $user->address = $request->get('address');
         $user->phone = $request->get('phone');
         $user->status = $request->get('status');
         $user->loguser = $request->get('log');
         $user->pegawai_id = $request->get('pegawai_id');
 
-
-        if($request->file('avatar')){
-        if($user->avatar && file_exists(storage_path('app/public/'.$user->avatar))){
-        \Storage::delete('public/'.$user->avatar);
-        }
-        $file =  $request->file('avatar')->store('avatar','public');
-        $user->avatar = $file;
+        if ($request->file('avatar')) {
+            if ($user->avatar && file_exists(storage_path('app/public/' . $user->avatar))) {
+                \Storage::delete('public/' . $user->avatar);
+            }
+            $file = $request->file('avatar')->store('avatar', 'public');
+            $user->avatar = $file;
         }
         $user->save();
 
-        return redirect()->route('users.index',[$id])->with('status','User Succesfully Updated');
+        return redirect()
+            ->route('users.index', [$id])
+            ->with('status', 'User Succesfully Updated');
     }
 }

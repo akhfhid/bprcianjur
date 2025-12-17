@@ -25,29 +25,32 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Gate::define('ADMIN', function ($user){
+        Gate::define('ADMIN', function ($user) {
             return $user->roles === 'ADMIN';
         });
-        Gate::define('SUPERVISOR', function ($user){
+        Gate::define('SUPERVISOR', function ($user) {
             return $user->roles === 'SUPERVISOR';
         });
-        Gate::define('USER', function ($user){
+        Gate::define('USER', function ($user) {
             return $user->roles === 'USER';
         });
-        Gate::define('PINCAB', function ($user){
+        Gate::define('PINCAB', function ($user) {
             return $user->roles === 'PINCAB';
         });
-        Gate::define('KADIV', function ($user){
+        Gate::define('KADIV', function ($user) {
             return $user->roles === 'KADIV';
         });
-        Gate::define('DIRUT', function ($user){
+        Gate::define('DIRUT', function ($user) {
             return $user->roles === 'DIRUT';
         });
-        Gate::define('DIRBIS', function ($user){
+        Gate::define('DIRBIS', function ($user) {
             return $user->roles === 'DIRBIS';
         });
-         Gate::define('PATUH', function ($user){
+        Gate::define('PATUH', function ($user) {
             return $user->roles === 'PATUH';
+        });
+        Gate::define('ADMIN_SDM', function ($user) {
+            return $user->roles === 'ADMIN_SDM';
         });
     }
 }

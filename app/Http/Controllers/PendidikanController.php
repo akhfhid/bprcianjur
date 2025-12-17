@@ -12,10 +12,14 @@ class PendidikanController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct(){
-        $this->middleware(function($request, $next){
-        if(gate::allows('ADMIN')) return $next($request);
-        abort(403,'Anda tidak memiliki hak akses');
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM')) {
+                return $next($request);
+            }
+
+            abort(403, 'Anda tidak memiliki hak akses');
         });
     }
     public function index()

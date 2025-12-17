@@ -16,37 +16,32 @@ class peraturanController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct(){
-        $this->middleware(function($request, $next){
-        if(gate::allows('PATUH')) return $next($request);
-        abort(403,'Anda tidak memiliki hak akses');
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (gate::allows('PATUH')) {
+                return $next($request);
+            }
+            abort(403, 'Anda tidak memiliki hak akses');
         });
     }
     public function index(Request $request)
-   {
-         if($request->ajax())
-        {
+    {
+        if ($request->ajax()) {
             $data = peraturan::latest()->get();
-            
-
-
-
 
             return DataTables::of($data)
-            ->addColumn('action', function ($data) {
-                        
-                      $button = '<a href="peraturan/'.$data->id.'/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>' ;
-                      $button .= '<a href="peraturan/'.$data->id.'"> <button class="btn btn-success btn-sm">Detail</button></a>' ; 
-                      $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
-                      return $button;
-                     
-
-            })
-            ->editColumn('id', 'ID: {{$id}}')
-            ->make(true);
+                ->addColumn('action', function ($data) {
+                    $button = '<a href="peraturan/' . $data->id . '/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>';
+                    $button .= '<a href="peraturan/' . $data->id . '"> <button class="btn btn-success btn-sm">Detail</button></a>';
+                    $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
+                    return $button;
+                })
+                ->editColumn('id', 'ID: {{ $id }}')
+                ->make(true);
             //return datatables()->of($data)->toJson();
         }
-        return view ('peraturan.index');
+        return view('peraturan.index');
     }
     /**
      * Show the form for creating a new resource.
@@ -66,10 +61,9 @@ class peraturanController extends Controller
      */
     public function store(Request $request)
     {
-        
         // $description=$request->get('description');
         // $dom = new \DomDocument();
-        // $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);    
+        // $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         // $images = $dom->getElementsByTagName('img');
 
         // foreach($images as $k => $img){
@@ -83,49 +77,47 @@ class peraturanController extends Controller
         //     $path = public_path() . $image_name;
 
         //     file_put_contents($path, $data);
-            
+
         //     $img->removeAttribute('src');
         //     $img->setAttribute('src', $image_name);
         // }
 
         // $description = $dom->saveHTML();
 
-    // Validasi untuk memastikan file PDF diterima jika ada
-    // $request->validate([
-    //     'name' => 'required|string|max:255',
-    //     'nosk' => 'required|string|max:255',
-    //     'tglsk' => 'required|date',
-    //     'tgllaku' => 'required|date',
-    //     'uraian' => 'required|string',
-    //     'pdf' => 'nullable|file|mimes:pdf|max:10240', // Hanya menerima file PDF jika ada
-    // ]);
+        // Validasi untuk memastikan file PDF diterima jika ada
+        // $request->validate([
+        //     'name' => 'required|string|max:255',
+        //     'nosk' => 'required|string|max:255',
+        //     'tglsk' => 'required|date',
+        //     'tgllaku' => 'required|date',
+        //     'uraian' => 'required|string',
+        //     'pdf' => 'nullable|file|mimes:pdf|max:10240', // Hanya menerima file PDF jika ada
+        // ]);
 
-    // Membuat instance baru untuk peraturan
-    $new_peraturan = new \App\peraturan;
+        // Membuat instance baru untuk peraturan
+        $new_peraturan = new \App\peraturan();
 
-    // Mengisi data dari request
-    $new_peraturan->name = $request->get('name');
-    $new_peraturan->nosk = $request->get('nosk');
-    $new_peraturan->tglsk = $request->get('tglsk');
-    $new_peraturan->tgllaku = $request->get('tgllaku');
-    $new_peraturan->uraian = $request->get('uraian');
+        // Mengisi data dari request
+        $new_peraturan->name = $request->get('name');
+        $new_peraturan->nosk = $request->get('nosk');
+        $new_peraturan->tglsk = $request->get('tglsk');
+        $new_peraturan->tgllaku = $request->get('tgllaku');
+        $new_peraturan->uraian = $request->get('uraian');
 
-    // Menangani file PDF jika ada
-    if ($request->hasFile('pdf')) {
-        $file = $request->file('pdf');
-        $filename = time() . '.' . $file->getClientOriginalExtension(); // Menentukan nama file
-        $file->storeAs('pdfs', $filename, 'public'); // Menyimpan file ke folder pdfs dalam public storage
-        $new_peraturan->pdf = $filename; // Menyimpan nama file PDF ke kolom 'pdf'
-    }
+        // Menangani file PDF jika ada
+        if ($request->hasFile('pdf')) {
+            $file = $request->file('pdf');
+            $filename = time() . '.' . $file->getClientOriginalExtension(); // Menentukan nama file
+            $file->storeAs('pdfs', $filename, 'public'); // Menyimpan file ke folder pdfs dalam public storage
+            $new_peraturan->pdf = $filename; // Menyimpan nama file PDF ke kolom 'pdf'
+        }
 
-    // Menyimpan peraturan yang baru
-    $new_peraturan->created_by = \Auth::user()->id; // Menyimpan ID user yang membuat
-    $new_peraturan->save(); // Menyimpan ke database
+        // Menyimpan peraturan yang baru
+        $new_peraturan->created_by = \Auth::user()->id; // Menyimpan ID user yang membuat
+        $new_peraturan->save(); // Menyimpan ke database
 
-    // Mengarahkan kembali ke halaman index dengan pesan sukses
-    return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Ditambahkan');
-
-
+        // Mengarahkan kembali ke halaman index dengan pesan sukses
+        return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Ditambahkan');
     }
 
     /**
@@ -138,9 +130,9 @@ class peraturanController extends Controller
     {
         $peraturan = \App\peraturan::findorFail($id);
         $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
-        $new_loguser = new \App\loguser;
+        $new_loguser = new \App\loguser();
         $user = \Auth::user()->pegawai_id;
-        $pegawai = \App\Pegawai::where('id',$user)->first();
+        $pegawai = \App\Pegawai::where('id', $user)->first();
         $new_loguser->nampeg = $pegawai->name;
         $new_loguser->keterangan = $peraturan->name;
         //$new_loguser->waktu = $time;
@@ -150,7 +142,7 @@ class peraturanController extends Controller
         //return $pdf->stream();
         //exit(0);
 
-        return view('peraturan.show',['peraturan'=>$peraturan,'time'=>$time]);
+        return view('peraturan.show', ['peraturan' => $peraturan, 'time' => $time]);
     }
 
     /**
@@ -162,7 +154,7 @@ class peraturanController extends Controller
     public function edit($id)
     {
         $edit_peraturan = \App\peraturan::findorFail($id);
-        return view('peraturan.edit',['peraturan'=>$edit_peraturan]);
+        return view('peraturan.edit', ['peraturan' => $edit_peraturan]);
     }
 
     /**
@@ -174,37 +166,33 @@ class peraturanController extends Controller
      */
     public function simpanedit(Request $request, $id)
     {
-        
-
         $edit_peraturan = \App\peraturan::findorFail($id);
-        $description=$request->get('description');
-        $dom = new \DomDocument('1.0','UTF-8');
+        $description = $request->get('description');
+        $dom = new \DomDocument('1.0', 'UTF-8');
         libxml_use_internal_errors(true);
-        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);    
+        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         $images = $dom->getElementsByTagName('img');
-        $bs64='base64';
+        $bs64 = 'base64';
 
-        foreach($images as $k => $img){
+        foreach ($images as $k => $img) {
             $data = $img->getAttribute('src');
-            if (strpos($data, $bs64) == true)
-            {
-            $data = base64_decode(preg_replace('#^data:image/\w+;base64.#i','',$data));
-            //list($type, $data) = explode(';', $data);
-            //list(, $data)      = explode(',', $data);
-            
+            if (strpos($data, $bs64) == true) {
+                $data = base64_decode(preg_replace('#^data:image/\w+;base64.#i', '', $data));
+                //list($type, $data) = explode(';', $data);
+                //list(, $data)      = explode(',', $data);
 
-            $image_name= "/storage/peraturan/" . 'post_' . time().$k.'.png';
-            $path = public_path() . $image_name;
+                $image_name = '/storage/peraturan/' . 'post_' . time() . $k . '.png';
+                $path = public_path() . $image_name;
 
-            file_put_contents($path, $data);
-            
-            $img->removeAttribute('src');
-            $img->setAttribute('src', $image_name);
-        }else{
-            $image_name="/".$data;
-            $img->setAttribute('src',$image_name);    
+                file_put_contents($path, $data);
+
+                $img->removeAttribute('src');
+                $img->setAttribute('src', $image_name);
+            } else {
+                $image_name = '/' . $data;
+                $img->setAttribute('src', $image_name);
+            }
         }
-        };
 
         $description_save = $dom->saveHTML();
 
@@ -213,12 +201,12 @@ class peraturanController extends Controller
         $edit_peraturan->tglsk = $request->get('tglsk');
         $edit_peraturan->tgllaku = $request->get('tgllaku');
         $edit_peraturan->uraian = $request->get('uraian');
-        
+
         //$edit_peraturan->pdf = $description_save;
-        
+
         $edit_peraturan->updated_by = \Auth::user()->id;
         $edit_peraturan->save();
-        return redirect()->route('peraturan.index')->with('status','Peraturan Berhasil Diperbaharui');
+        return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Diperbaharui');
     }
 
     /**
@@ -232,40 +220,38 @@ class peraturanController extends Controller
         $peraturan = \App\peraturan::findOrFail($id);
         $peraturan->delete();
 
-        return redirect()->route('peraturan.index')
-        ->with('status','Peraturan Successfully moved to trash');
+        return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
     }
 
-    public function trash(){
+    public function trash()
+    {
         $deletedperaturan = \App\peraturan::onlyTrashed()->paginate(10);
-        return view('peraturan.trash', ['peraturan'=>$deletedperaturan]);
-
+        return view('peraturan.trash', ['peraturan' => $deletedperaturan]);
     }
-    public function restore($id){
+    public function restore($id)
+    {
         $peraturan = \App\peraturan::withTrashed()->findOrFail($id);
 
-        if($peraturan->trashed()){
+        if ($peraturan->trashed()) {
             $peraturan->restore();
         } else {
-            return redirect()->route('peraturan.index')
-            ->with('status','peraturan is not in trash');
+            return redirect()->route('peraturan.index')->with('status', 'peraturan is not in trash');
         }
 
-        return redirect()->route('peraturan.index')
-        ->with('status','peraturan Successfully Restored');
+        return redirect()->route('peraturan.index')->with('status', 'peraturan Successfully Restored');
     }
 
-    public function deletePermanent($id){
+    public function deletePermanent($id)
+    {
         $peraturan = \App\peraturan::withTrashed()->findOrFail($id);
 
-       // if($peraturan->trashed()){
-         //   return redirect()->route('peraturan.index')
-           // ->with('status'.'Cannot Delete Permanent Active peraturan');
+        // if($peraturan->trashed()){
+        //   return redirect()->route('peraturan.index')
+        // ->with('status'.'Cannot Delete Permanent Active peraturan');
         //} else {
-            $peraturan->forceDelete();
+        $peraturan->forceDelete();
 
-            return redirect()->route('peraturan.trash')
-            ->with('status','peraturan Permanently Deleted');
+        return redirect()->route('peraturan.trash')->with('status', 'peraturan Permanently Deleted');
         //}
     }
     public function show_pdf($id)
@@ -277,6 +263,6 @@ class peraturanController extends Controller
         //return $pdf->stream();
         //exit(0);
 
-        return view('peraturan.show_pdf',['peraturan'=>$peraturan,'time'=>$time]);
+        return view('peraturan.show_pdf', ['peraturan' => $peraturan, 'time' => $time]);
     }
 }

@@ -66,6 +66,7 @@ route::middleware(['auth'])->group(function () {
     Route::get('/pegawai/trash', 'PegawaiController@trash')->name('pegawai.trash');
     Route::delete('/pegawai/{pegawai}/delete-permanent', 'PegawaiController@deletePermanent')->name('pegawai.delete-permanent');
     Route::post('/pegawai/{pegawai}/restore', 'PegawaiController@restore')->name('pegawai.restore');
+    
     route::get('pegawai/{id}/cetak', 'PegawaiController@cetakpdf')->name('pegawai.cetak');
     route::post('Pegawai/Simpan', 'PegawaiController@simpan')->name('pegawai.simpan');
     route::get('Pegawai/Input', 'PegawaiController@input')->name('pegawai.input');

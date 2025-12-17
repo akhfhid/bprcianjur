@@ -13,9 +13,11 @@ class KeluargaController extends Controller
      */
     public function __cinstruct(){
         $this->middleware(function($request, $next){
-        if(gate::allows('ADMIN')) 
-            return $next($request);
-        abort(403,'Anda tidak memiliki hak akses');
+      if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM')) {
+                return $next($request);
+            }
+
+            abort(403, 'Anda tidak memiliki hak akses');
         });
     }
     public function index()

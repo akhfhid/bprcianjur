@@ -4,7 +4,7 @@
     <div class="container">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="mb-0">Set User</h3> <br>
+            <h3 class="mb-0">Setup Otorisasi Cuti</h3> <br>
             @if ($cabangFilter)
                 <div class="alert alert-info">
                     Daftar pegawai pada cabang <strong>{{ $cabangs[$cabangFilter] ?? '' }}</strong>
