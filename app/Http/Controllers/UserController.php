@@ -25,16 +25,23 @@ class UserController extends Controller
     }
     public function index(Request $request)
     {
-        $status = $request->get('status');
-        $filterkeyword = $request->get('keyword');
+        $filterkeyword = $request->keyword;
+        $loginUser = auth()->user();
+
+        $query = \App\User::query();
         if ($filterkeyword) {
-            $users = \App\User::where('name', 'LIKE', "%$filterkeyword%")
-                //->where('status', $status)
-                ->paginate(10);
-        } else {
-            $users = \App\User::where('name', 'LIKE', "%$filterkeyword%")->paginate(10);
+            $query->where('name', 'like', "%{$filterkeyword}%");
         }
-        return view('users.index', ['users' => $users]);
+        if ($loginUser->id != 1) {
+            $query->whereNotIn('id', [1, 10, 178]);
+            // 1  = Administrator
+            // 10 = Admin Kepatuhan
+            // 178 = Admin SDM
+        }
+
+        $users = $query->paginate(10);
+
+        return view('users.index', compact('users'));
     }
 
     /**

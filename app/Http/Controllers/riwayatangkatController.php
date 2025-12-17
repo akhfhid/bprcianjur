@@ -37,9 +37,9 @@ class riwayatangkatController extends Controller
         $status = $request->get('speg');
         $idpeg = $request->get('idpeg');
         $tglangkat = $request->get('tglangkat');
-        $nosk= $request->get('nosk');
-        $new_riwayatangkat = new \App\riwayatangkat;
-        $pegawai = \App\Pegawai::where('id',$idpeg)->first();
+        $nosk = $request->get('nosk');
+        $new_riwayatangkat = new \App\riwayatangkat();
+        $pegawai = \App\Pegawai::where('id', $idpeg)->first();
         $new_riwayatangkat->status = $status;
         $new_riwayatangkat->tglangkat = $tglangkat;
         $new_riwayatangkat->nosk = $nosk;
@@ -50,7 +50,7 @@ class riwayatangkatController extends Controller
         }
         $pegawai->save();
         $new_riwayatangkat->save();
-        return redirect()->route('riwayatangkat.list',$request->get('idpeg'))->with('status','data riwayat kepegawaian berhasil');
+        return redirect()->route('riwayatangkat.list', $request->get('idpeg'))->with('status', 'data riwayat kepegawaian berhasil');
     }
 
     /**
@@ -73,15 +73,12 @@ class riwayatangkatController extends Controller
     public function edit($id)
     {
         $riwayatangkat = \App\riwayatangkat::findorfail($id);
-        $statuspegawai = \App\statuspeg::pluck("name","id");
-        $pegawai = \App\Pegawai::where('id',$riwayatangkat['pegawai_id'])->first();
-        $spegawai = \App\statuspeg::where('id',[$riwayatangkat['status']])->first();
+        $statuspegawai = \App\statuspeg::pluck('name', 'id');
+        $pegawai = \App\Pegawai::where('id', $riwayatangkat['pegawai_id'])->first();
+        $spegawai = \App\statuspeg::where('id', [$riwayatangkat['status']])->first();
         $statpeg = $spegawai['name'];
 
-        return view('riwayatangkat.edit',['riwayatangkat'=>$riwayatangkat,'statuspegawai'=>$statuspegawai,
-                                                'pegawai'=>$pegawai,'spegawai'=>$spegawai,'statpeg'=>$statpeg]);
-
-
+        return view('riwayatangkat.edit', ['riwayatangkat' => $riwayatangkat, 'statuspegawai' => $statuspegawai, 'pegawai' => $pegawai, 'spegawai' => $spegawai, 'statpeg' => $statpeg]);
     }
 
     /**
@@ -96,9 +93,9 @@ class riwayatangkatController extends Controller
         $status = $request->get('speg');
         $idpeg = $request->get('idpeg');
         $tglangkat = $request->get('tglangkat');
-        $nosk= $request->get('nosk');
+        $nosk = $request->get('nosk');
         $riwayatangkat = \App\riwayatangkat::findorfail($id);
-        $pegawai = \App\Pegawai::where('id',$idpeg)->first();
+        $pegawai = \App\Pegawai::where('id', $idpeg)->first();
         $riwayatangkat->status = $status;
         $riwayatangkat->tglangkat = $tglangkat;
         $riwayatangkat->nosk = $nosk;
@@ -109,7 +106,7 @@ class riwayatangkatController extends Controller
         }
         $pegawai->save();
         $riwayatangkat->save();
-        return redirect()->route('riwayatangkat.list',$request->get('idpeg'))->with('status','data riwayat kepegawaian berhasil');
+        return redirect()->route('riwayatangkat.list', $request->get('idpeg'))->with('status', 'data riwayat kepegawaian berhasil');
     }
 
     /**
@@ -122,36 +119,39 @@ class riwayatangkatController extends Controller
     {
         //
     }
-    public function list($id){
+    public function list($id)
+    {
         $pegawai = \App\Pegawai::findorfail($id);
-        $statuspegawai = \App\statuspeg::pluck("name","id");
-        $riwayatangkat = \App\riwayatangkat::where('pegawai_id',[$pegawai['id']])->paginate(10);
-        $dataangkat=[];
+        $statuspegawai = \App\statuspeg::pluck('name', 'id');
+        $riwayatangkat = \App\riwayatangkat::where('pegawai_id', [$pegawai['id']])->paginate(10);
+        $dataangkat = [];
 
         foreach ($riwayatangkat as $angkat) {
-            $spegawai = \App\statuspeg::where('id',[$angkat['status']])->first();
+            $spegawai = \App\statuspeg::where('id', [$angkat['status']])->first();
             $statpeg = $spegawai['name'];
 
-            $dataangkat[]=[
-                "id"=>$angkat['id'],
-                "status"=>$statpeg,
-                "tglangkat"=>$angkat['tglangkat'],
-                "nosk"=>$angkat['nosk']
+            $dataangkat[] = [
+                'id' => $angkat['id'],
+                'status' => $statpeg,
+                'tglangkat' => $angkat['tglangkat'],
+                'tglmasuk'=> $angkat['tglmasuk'],
+                'nosk' => $angkat['nosk'],
             ];
         }
 
-        return view('riwayatangkat.index',['dataangkat'=>$dataangkat,'pegawai'=>$pegawai]);
+        return view('riwayatangkat.index', ['dataangkat' => $dataangkat, 'pegawai' => $pegawai]);
     }
-    public function tambah($id){
+    public function tambah($id)
+    {
         $pegawai = \App\Pegawai::findorfail($id);
-        $spegawai = \App\statuspeg::pluck('name','id');
-        return view('riwayatangkat.create',['pegawai'=>$pegawai, 'spegawai'=>$spegawai]);
-
+        $spegawai = \App\statuspeg::pluck('name', 'id');
+        return view('riwayatangkat.create', ['pegawai' => $pegawai, 'spegawai' => $spegawai]);
     }
-    public function deletePermanent($id){
-        $riwayatangkat= \App\riwayatangkat::findOrFail($id);
-        $pegawai = \App\Pegawai::where('id',$riwayatangkat['pegawai_id'])->first();
+    public function deletePermanent($id)
+    {
+        $riwayatangkat = \App\riwayatangkat::findOrFail($id);
+        $pegawai = \App\Pegawai::where('id', $riwayatangkat['pegawai_id'])->first();
         $riwayatangkat->forcedelete();
-        return redirect()->route('riwayatangkat.list',$pegawai)->with('status','Data Pegawai Successfully Deleted');
+        return redirect()->route('riwayatangkat.list', $pegawai)->with('status', 'Data Pegawai Successfully Deleted');
     }
 }

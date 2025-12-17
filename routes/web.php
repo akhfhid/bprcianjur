@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\CutiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,13 @@ Auth::routes();
 route::match(['GET', 'POST'], '/register', function () {
     return redirect('/login');
 })->name('register');
+
+Route::middleware(['auth'])->prefix('cuti')->group(function () {
+    Route::get('/', [CutiController::class, 'index'])->name('cuti.index');
+    Route::get('/{id}', [CutiController::class, 'show'])->name('cuti.show');
+    Route::get('/{id}/edit', [CutiController::class, 'edit'])->name('cuti.edit');
+    Route::put('/{id}', [CutiController::class, 'update'])->name('cuti.update');
+});
 
 route::middleware(['auth'])->group(function () {
     Route::prefix('set-user')

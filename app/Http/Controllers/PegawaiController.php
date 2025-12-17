@@ -189,6 +189,7 @@ class PegawaiController extends Controller
         $pendidikan = \App\Pendidikan::where('id', $pegawai['pendidikan'])->first();
         $pangkat = \App\Pangkat::where('id', $pegawai['pangkat'])->first();
         $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
+        
         $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
         $spegawai = \App\statuspeg::where('id', $pegawai['spegawai'])->first();
         $statuspegawai = \App\statuspeg::pluck('name', 'id');
@@ -373,6 +374,7 @@ class PegawaiController extends Controller
             'jmlkeluarga' => $jmlkeluarga,
             'cabang' => $cabang,
             'kelamin' => $kelamin,
+            'tglmasuk' => $masa,
             'jabatan' => $jabatan,
             'umur' => $umur,
             'agama' => $agama,
