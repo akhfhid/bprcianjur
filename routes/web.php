@@ -33,8 +33,7 @@ route::middleware(['auth'])->group(function () {
             Route::get('/edit/{id}', 'SetUserController@edit')->name('setuser.edit');
             Route::post('/update/{id}', 'SetUserController@update')->name('setuser.update');
         });
-Route::post('/pegawai/toggle-active/{id}', 'PegawaiController@toggleActive')
-    ->name('pegawai.toggle-active');
+    Route::post('/pegawai/toggle-active/{id}', 'PegawaiController@toggleActive')->name('pegawai.toggle-active');
 
     route::get('users/{id}/active', 'UserController@active')->name('users.active');
     route::post('users/{id}/update', 'UserController@updateuser')->name('users.updateuser');
@@ -368,7 +367,6 @@ Route::post('/pegawai/toggle-active/{id}', 'PegawaiController@toggleActive')
     route::post('riwayatangkat/{id}', 'riwayatangkatController@update')->name('riwayatangkat.update');
     route::delete('/riwayatangkat/{riwayatangkat}/delete-permanent', 'riwayatangkatController@deletePermanent')->name('riwayatangkat.delete-permanent');
     Route::resource('riwayatangkat', 'riwayatangkatController');
-
     route::get('riwayatsanksi/{id}', 'riwayatsanksiController@tambah')->name('riwayatsanksi.tambah');
     route::get('riwayatsanksi/{id}/list', 'riwayatsanksiController@list')->name('riwayatsanksi.list');
     route::post('riwayatsanksi/simpan', 'riwayatsanksiController@simpan')->name('riwayatsanksi.simpan');
@@ -386,3 +384,4 @@ Route::post('/pegawai/toggle-active/{id}', 'PegawaiController@toggleActive')
 
     route::resource('penghasilan', 'PenghasilanController');
 });
+

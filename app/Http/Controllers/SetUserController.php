@@ -19,27 +19,44 @@ class SetUserController extends Controller
         });
     }
 
-    public function index(Request $request)
-    {
-        $cabangFilter = $request->get('cabang');
-        $keyword = $request->keyword;
-        $pegawai = Pegawai::with('relJabatan','relCabang')
-        ->when($cabangFilter, function($query) use ($cabangFilter){
+public function index(Request $request)
+{
+    $cabangFilter = (int)$request->cabang;   // 🔥 cast ke integer
+    $keyword      = $request->keyword;
+
+    $pegawai = Pegawai::with('relJabatan', 'relCabang', 'relUser')
+        ->where('status_active', 1)  
+        ->whereHas('relUser', function($q){
+            $q->where('status', 'ACTIVE');
+        })
+        ->when($cabangFilter, function ($query) use ($cabangFilter) {
             $query->where('cabang', $cabangFilter);
         })
-        ->when($keyword, function($query) use ($keyword){
-            $query->where('name','LIKE',"%$keyword%");
+        ->when($keyword, function ($query) use ($keyword) {
+            $query->where('name', 'LIKE', "%$keyword%");
         })
         ->paginate(15)
         ->appends($request->all());
 
-        $cabangs = Cabang::pluck('name', 'id');
-        foreach ($pegawai as $p) {
-            $p->atasan1_data = Pegawai::where('jabatan', $p->atasan1)->first();
-            $p->atasan2_data = Pegawai::where('jabatan', $p->atasan2)->first();
-        }
-        return view('setuser.index', compact('pegawai', 'cabangs', 'cabangFilter'));
+    $cabangs = Cabang::pluck('name', 'id');
+
+    foreach ($pegawai as $p) {
+
+        $p->atasan1_data = Pegawai::where('jabatan', $p->atasan1)
+            ->where('cabang', $p->cabang)
+            ->first()
+            ?? Pegawai::where('jabatan', $p->atasan1)->first();
+
+        $p->atasan2_data = Pegawai::where('jabatan', $p->atasan2)
+            ->where('cabang', $p->cabang)
+            ->first()
+            ?? Pegawai::where('jabatan', $p->atasan2)->first();
     }
+
+    return view('setuser.index', compact('pegawai', 'cabangs', 'cabangFilter'));
+}
+
+
 
     public function edit($id)
     {
@@ -52,23 +69,21 @@ class SetUserController extends Controller
         return view('setuser.edit', compact('pegawai', 'jabatan', 'cabang', 'atasan1', 'atasan2'));
     }
 
-   public function update(Request $request, $id)
-{
-    $pegawai = Pegawai::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $pegawai = Pegawai::findOrFail($id);
 
-    $pegawai->jabatan = $request->get('jabatan');
-    $pegawai->cabang  = $request->get('cabang');
-    $pegawai->atasan1 = $request->get('atasan1');
-    $pegawai->atasan2 = $request->get('atasan2');
-    $pegawai->save();
-    $user = \App\User::where('pegawai_id', $pegawai->id)->first();
-    if ($user) {
-        $user->cabang = $request->get('cabang');
-        $user->save();
+        $pegawai->jabatan = $request->get('jabatan');
+        $pegawai->cabang = $request->get('cabang');
+        $pegawai->atasan1 = $request->get('atasan1');
+        $pegawai->atasan2 = $request->get('atasan2');
+        $pegawai->save();
+        $user = \App\User::where('pegawai_id', $pegawai->id)->first();
+        if ($user) {
+            $user->cabang = $request->get('cabang');
+            $user->save();
+        }
+
+        return redirect()->route('setuser.index')->with('status', 'User berhasil diperbarui!');
     }
-
-    return redirect()->route('setuser.index')
-        ->with('status', 'User berhasil diperbarui!');
-}
-
 }

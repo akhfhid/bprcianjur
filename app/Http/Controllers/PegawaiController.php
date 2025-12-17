@@ -21,56 +21,59 @@ class PegawaiController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-    public function index(Request $request)
-    {
-        $filterkeyword = $request->get('keyword');
-        if ($filterkeyword) {
-            $datapegawai = \App\Pegawai::with('jabatan', 'cabang')
-                ->where('name', 'LIKE', "%$filterkeyword%")
-                ->paginate(10);
-        } else {
-            $datapegawai = \App\Pegawai::with('jabatan', 'cabang')->paginate(10);
-        }
-        $data = [];
-        $now = \Carbon\Carbon::now()->format('Y-m-d');
+public function index(Request $request)
+{
+    $filterkeyword = $request->get('keyword');
 
-        foreach ($datapegawai as $x) {
-            $b_day = \Carbon\Carbon::parse($x['tgllahir']);
-            $umur = $b_day->diffinYears($now);
+    // base query: hanya pegawai aktif
+    $query = \App\Pegawai::with('jabatan', 'cabang')
+                ->where('status_active', 1);
 
-            $masuk = \Carbon\Carbon::parse($x['tglmasuk']);
-            $mkerja = $masuk->diffinYears($now);
-
-            $peg = \App\Jabatan::where('id', $x['jabatan'])->first();
-            $namajab = $peg['name'];
-
-            $cab = \App\Cabang::where('id', $x['cabang'])->first();
-            $namacab = $cab['name'];
-
-            $pang = \App\Pangkat::where('id', $x['pangkat'])->first();
-            $pangkat = $pang['name'];
-
-            $statspeg = \App\statuspeg::where('id', $x['spegawai'])->first();
-            $status = $statspeg['name'];
-
-            $data[] = [
-                'id' => $x['id'],
-                'name' => $x['name'],
-                'umur' => $umur,
-                'mkerja' => $mkerja,
-                'photo' => $x['photo'],
-                'nikpegawai' => $x['nikpegawai'],
-                'status' => $status,
-                'pangkat' => $pangkat,
-                'jabatan' => $namajab,
-                'cabang' => $namacab,
-                 "status_active" => $x["status_active"] ?? 0
-            ];
-        }
-        // return $data;
-
-        return view('pegawai.index', ['pegawai' => $data, 'datapegawai' => $datapegawai]);
+    // filter keyword jika ada
+    if ($filterkeyword) {
+        $query->where('name', 'LIKE', "%$filterkeyword%");
     }
+
+    // paginate
+    $datapegawai = $query->paginate(10);
+
+    $data = [];
+    $now = \Carbon\Carbon::now()->format('Y-m-d');
+
+    foreach ($datapegawai as $x) {
+
+        $b_day  = \Carbon\Carbon::parse($x['tgllahir']);
+        $umur   = $b_day->diffInYears($now);
+
+        $masuk  = \Carbon\Carbon::parse($x['tglmasuk']);
+        $mkerja = $masuk->diffInYears($now);
+
+        $peg    = \App\Jabatan::find($x['jabatan']);
+        $cab    = \App\Cabang::find($x['cabang']);
+        $pang   = \App\Pangkat::find($x['pangkat']);
+        $statspeg = \App\statuspeg::find($x['spegawai']);
+
+        $data[] = [
+            'id'           => $x['id'],
+            'name'         => $x['name'],
+            'umur'         => $umur,
+            'mkerja'       => $mkerja,
+            'photo'        => $x['photo'],
+            'nikpegawai'   => $x['nikpegawai'],
+            'status'       => $statspeg['name'] ?? '-',
+            'pangkat'      => $pang['name'] ?? '-',
+            'jabatan'      => $peg['name'] ?? '-',
+            'cabang'       => $cab['name'] ?? '-',
+            'status_active'=> $x['status_active'] ?? 0
+        ];
+    }
+
+    return view('pegawai.index', [
+        'pegawai' => $data,
+        'datapegawai' => $datapegawai
+    ]);
+}
+
 
     /**
      * Show the form for creating a new resource.
@@ -547,45 +550,49 @@ class PegawaiController extends Controller
         return redirect()->route('pegawai.index')->with('status', 'Data Pegawai moved to trash');
     }
 
-    public function trash()
-    {
-        $deletedpegawai = \App\Pegawai::onlyTrashed()->paginate(10);
+ public function trash()
+{
+    $now = \Carbon\Carbon::now()->format('Y-m-d');
 
-        $datadelete = [];
-        $now = \Carbon\Carbon::now()->format('Y-m-d');
+    // combine deleted + inactive
+    $pegawaiMerge = \App\Pegawai::onlyTrashed()
+        ->union(\App\Pegawai::where('status_active', 0))
+        ->paginate(10);
 
-        foreach ($deletedpegawai as $x) {
-            $b_day = \Carbon\Carbon::parse($x['tgllahir']);
-            $umur = $b_day->diffinYears($now);
+    $datadelete = [];
 
-            $masuk = \Carbon\Carbon::parse($x['tglmasuk']);
-            $mkerja = $masuk->diffinYears($now);
+    foreach ($pegawaiMerge as $x) {
 
-            $peg = \App\Jabatan::where('id', $x['jabatan'])->first();
-            $namajab = $peg['name'];
+        $b_day  = \Carbon\Carbon::parse($x['tgllahir']);
+        $umur   = $b_day->diffInYears($now);
 
-            $cab = \App\Cabang::where('id', $x['cabang'])->first();
-            $namacab = $cab['name'];
+        $masuk  = \Carbon\Carbon::parse($x['tglmasuk']);
+        $mkerja = $masuk->diffInYears($now);
 
-            $pang = \App\Pangkat::where('id', $x['pangkat'])->first();
-            $pangkat = $pang['name'];
+        $peg    = \App\Jabatan::find($x['jabatan']);
+        $cab    = \App\Cabang::find($x['cabang']);
+        $pang   = \App\Pangkat::find($x['pangkat']);
 
-            $datadelete[] = [
-                'id' => $x['id'],
-                'name' => $x['name'],
-                'umur' => $umur,
-                'mkerja' => $mkerja,
-                'photo' => $x['photo'],
-                'nikpegawai' => $x['nikpegawai'],
-                'status' => $x['spegawai'],
-                'pangkat' => $pangkat,
-                'jabatan' => $namajab,
-                'cabang' => $namacab,
-            ];
-        }
-
-        return view('pegawai.trash', ['pegawai' => $datadelete, 'deletedpegawai' => $deletedpegawai]);
+        $datadelete[] = [
+            'id' => $x['id'],
+            'name' => $x['name'],
+            'umur' => $umur,
+            'mkerja' => $mkerja,
+            'photo' => $x['photo'],
+            'nikpegawai' => $x['nikpegawai'],
+            'status' => $x['spegawai'],
+            'pangkat' => $pang['name'] ?? '-',
+            'jabatan' => $peg['name'] ?? '-',
+            'cabang' => $cab['name'] ?? '-',
+        ];
     }
+
+    return view('pegawai.trash', [
+        'pegawai' => $datadelete,
+        'deletedpegawai' => $pegawaiMerge
+    ]);
+}
+
     public function deletePermanent($id)
     {
         $pegawai = \App\Pegawai::withTrashed()->findOrFail($id);

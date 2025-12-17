@@ -4,7 +4,17 @@
     <div class="container">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="mb-0">Set User</h3>
+            <h3 class="mb-0">Set User</h3> <br>
+            @if ($cabangFilter)
+                <div class="alert alert-info">
+                    Daftar pegawai pada cabang <strong>{{ $cabangs[$cabangFilter] ?? '' }}</strong>
+                </div>
+            @else
+                <div class="alert alert-info">
+                    Daftar pegawai pada <strong>Semua Cabang</strong>
+                </div>
+            @endif
+
         </div>
 
         @if (session('status'))
@@ -24,7 +34,7 @@
                         <select name="cabang" class="form-control">
                             <option value="">Semua Cabang</option>
                             @foreach ($cabangs as $id => $name)
-                                <option value="{{ $id }}" @selected(request('cabang') == $id)>
+                                <option value="{{ $id }}" @selected($cabangFilter == $id)>
                                     {{ $name }}
                                 </option>
                             @endforeach
@@ -49,15 +59,16 @@
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Nama</th>
-                            <th>Jabatan</th>
-                            <th>Cabang</th>
-                            <th>Atasan 1</th>
-                            <th>Atasan 2</th>
-                            <th width="130">Aksi</th>
+                        <tr style="text-align:center; background:#f2f2f2;">
+                            <th style="padding:10px;font-weight:bold; border-bottom:2px solid #ccc;">No</th>
+                            <th style="padding:10px;font-weight:bold; border-bottom:2px solid #ccc;">Nama</th>
+                            <th style="padding:10px;font-weight:bold; border-bottom:2px solid #ccc;">Jabatan</th>
+                            <th style="padding:10px;font-weight:bold; border-bottom:2px solid #ccc;">Cabang</th>
+                            <th style="padding:10px;font-weight:bold; border-bottom:2px solid #ccc;">Atasan 1</th>
+                            <th style="padding:10px;font-weight:bold; border-bottom:2px solid #ccc;">Atasan 2</th>
+                            <th width="130" style="padding:10px;font-weight:bold; border-bottom:2px solid #ccc;">Aksi</th>
                         </tr>
+
                     </thead>
                     <tbody>
                         @forelse($pegawai as $p)

@@ -78,7 +78,11 @@ class pegawai extends Model
     public function gaji(){
         return $this->hashone('App\gaji');
     }
-    
+    public function relUser()
+{
+    return $this->hasOne(\App\User::class, 'pegawai_id', 'id');
+}
+
 
    // public function AtributUmur(){
    // $now = \Carbon::now();

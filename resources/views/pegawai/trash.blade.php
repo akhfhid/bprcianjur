@@ -21,7 +21,7 @@
 				<a class="nav-link" href="{{route('pegawai.index')}}">Published</a>
 			</li>
 			<li class="nav-item">
-			<a class="nav-link active" href="{{route('pegawai.trash')}}">Trash</a>
+			<a class="nav-link active" href="{{route('pegawai.trash')}}">Berhenti/Tidak Aktif</a>
 		</li>
 		</ul>
 	</div>

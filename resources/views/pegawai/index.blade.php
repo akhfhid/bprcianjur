@@ -35,7 +35,7 @@
                 <a class="nav-link active" href="{{ route('pegawai.index') }}">Published</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('pegawai.trash') }}">Trash</a>
+                <a class="nav-link " href="{{ route('pegawai.trash') }}">Berhenti/Tidak Aktif</a>
             </li>
         </ul>
     </div>
@@ -76,15 +76,15 @@
                             <td>{{ $p['pangkat'] }}</td>
                             <td>{{ $p['jabatan'] }}</td>
                             <td>{{ $p['cabang'] }}</td>
-<td>
-    <form method="POST" action="{{ route('pegawai.toggle-active', $p['id']) }}">
-        @csrf
+                            <td>
+                                <form method="POST" action="{{ route('pegawai.toggle-active', $p['id']) }}">
+                                    @csrf
 
-        <button class="btn btn-sm {{ $p['status_active'] ? 'btn-success' : 'btn-secondary' }}">
-            {{ $p['status_active'] ? 'Aktif' : 'Nonaktif' }}
-        </button>
-    </form>
-</td>
+                                    <button class="btn btn-sm {{ $p['status_active'] ? 'btn-success' : 'btn-secondary' }}">
+                                        {{ $p['status_active'] ? 'Aktif' : 'Nonaktif' }}
+                                    </button>
+                                </form>
+                            </td>
 
 
                             <td>
