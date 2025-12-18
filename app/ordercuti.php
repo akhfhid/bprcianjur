@@ -22,4 +22,13 @@ class ordercuti extends Model
     {
         return $this->belongsTo(\App\Cabang::class, 'cabang');
     }
+    public function atasan1()
+    {
+        return $this->belongsTo(\App\Pegawai::class, 'otoatasan', 'id');
+    }
+
+    public function atasan2()
+    {
+        return $this->belongsTo(\App\Pegawai::class, 'diketatasan', 'id');
+    }
 }

@@ -7,18 +7,31 @@ use App\ordercuti;
 use App\Cabang;
 use App\Pegawai;
 use Carbon\Carbon;
+// use App\Ordercuti;
 
 class CutiController extends Controller
 {
+
+
     public function index(Request $request)
     {
-        $query = ordercuti::with(['pegawai', 'cabang', 'user'])->orderByDesc('created_at');
+        $query = ordercuti::with([
+            'pegawai.relCabang', 
+            'user',
+        ])->orderByDesc('created_at');
 
+        // filter cabang lewat pegawai
         if ($request->filled('cabang')) {
-            $query->where('cabang', $request->cabang);
+            $query->whereHas('pegawai', function ($q) use ($request) {
+                $q->where('cabang', $request->cabang);
+            });
         }
+
         $cutis = $query->get()->groupBy('pegawai_id');
-        $cabangs = Cabang::orderBy('name')->get();
+
+        // samakan dengan controller setuser
+        $cabangs = Cabang::pluck('name', 'id');
+
         return view('cuti.index', compact('cutis', 'cabangs'));
     }
 
@@ -44,6 +57,7 @@ class CutiController extends Controller
     public function show($id)
     {
         $cuti = ordercuti::with(['user', 'pegawai', 'cabang'])->findOrFail($id);
+
         return view('cuti.show', compact('cuti'));
     }
     public function edit($id)

@@ -1,19 +1,22 @@
 @extends('layouts.global')
+
 @section('title')
     Data Cuti Pegawai
 @endsection
 
 @section('content')
+    {{-- FILTER CABANG --}}
     <form method="GET" class="mb-3">
         <div class="row">
             <div class="col-md-4">
                 <select name="cabang" class="form-control">
                     <option value="">-- Semua Kantor --</option>
-                    @foreach ($cabangs as $cab)
-                        <option value="{{ $cab->id }}" {{ request('cabang') == $cab->id ? 'selected' : '' }}>
-                            {{ $cab->name }}
+                    @foreach ($cabangs as $id => $name)
+                        <option value="{{ $id }}" {{ request('cabang') == $id ? 'selected' : '' }}>
+                            {{ $name }}
                         </option>
                     @endforeach
+
                 </select>
             </div>
             <div class="col-md-2">
@@ -22,31 +25,39 @@
         </div>
     </form>
 
-    <table class="table table-bordered">
-        <thead class="text-center">
+    {{-- TABLE --}}
+    <table class="table table-bordered table-sm">
+        <thead class="text-center font-weight-bold">
             <tr>
-                <th>No</th>
+                <th width="40">No</th>
                 <th>Nama Pegawai</th>
                 <th>Kantor</th>
-                <th>Total Pengajuan</th>
-                <th>Aksi</th>
+                <th width="130">Total Pengajuan</th>
+                <th width="90">Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($cutis as $pegawaiId => $items)
+            @forelse ($cutis as $pegawaiId => $items)
                 @php
-                    $first = $items->first();
-                    $pegawai = $first->pegawai ?? null;
-                    $cabang = $first->cabang ?? null;
+                    $pegawai = optional($items->first())->pegawai;
+                    $cabang = optional($pegawai)->relCabang;
                 @endphp
 
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
+
                     <td>
                         <b>{{ $pegawai->name ?? '-' }}</b>
                     </td>
-                    <td>{{ $cabang->name ?? '-' }}</td>
-                    <td>{{ $items->count() }}</td>
+
+                    <td>
+                        {{ $cabang->name ?? '-' }}
+                    </td>
+
+                    <td class="text-center">
+                        {{ $items->count() }}
+                    </td>
+
                     <td class="text-center">
                         @if ($pegawai)
                             <a href="{{ route('cuti.pegawai', [
@@ -63,11 +74,12 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="text-center text-muted">
+                    <td colspan="5" class="text-center text-muted">
                         Tidak ada data cuti
                     </td>
                 </tr>
             @endforelse
         </tbody>
+
     </table>
 @endsection
