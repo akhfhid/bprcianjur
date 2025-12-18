@@ -7,11 +7,11 @@
             <h3 class="mb-0">Setup Otorisasi Cuti</h3> <br>
             @if ($cabangFilter)
                 <div class="alert alert-info">
-                    Daftar pegawai pada cabang <strong>{{ $cabangs[$cabangFilter] ?? '' }}</strong>
+                    Daftar pegawai pada <strong>{{ $cabangs[$cabangFilter] ?? '' }}</strong>
                 </div>
             @else
                 <div class="alert alert-info">
-                    Daftar pegawai pada <strong>Semua Cabang</strong>
+                    Daftar pegawai pada <strong>Semua Kantor</strong>
                 </div>
             @endif
 
@@ -32,7 +32,7 @@
 
                     <div class="col-md-4">
                         <select name="cabang" class="form-control">
-                            <option value="">Semua Cabang</option>
+                            <option value="">Semua Kantor</option>
                             @foreach ($cabangs as $id => $name)
                                 <option value="{{ $id }}" @selected($cabangFilter == $id)>
                                     {{ $name }}

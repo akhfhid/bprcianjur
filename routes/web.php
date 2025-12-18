@@ -29,8 +29,11 @@ route::match(['GET', 'POST'], '/register', function () {
 Route::middleware(['auth'])->prefix('cuti')->group(function () {
     Route::get('/', [CutiController::class, 'index'])->name('cuti.index');
     Route::get('/{id}', [CutiController::class, 'show'])->name('cuti.show');
+    Route::get('/pegawai/{pegawai}', [CutiController::class, 'pegawai'])->name('cuti.pegawai');
     Route::get('/{id}/edit', [CutiController::class, 'edit'])->name('cuti.edit');
     Route::put('/{id}', [CutiController::class, 'update'])->name('cuti.update');
+    Route::delete('/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');
+
 });
 
 route::middleware(['auth'])->group(function () {

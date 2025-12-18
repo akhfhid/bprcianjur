@@ -4,55 +4,85 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\ordercuti;
+use App\Cabang;
+use App\Pegawai;
 use Carbon\Carbon;
 
 class CutiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $cutis = ordercuti::with(['user', 'pegawai', 'cabang'])
-            ->orderByDesc('created_at')
-            ->paginate(10);
+        $query = ordercuti::with(['pegawai', 'cabang', 'user'])->orderByDesc('created_at');
 
-        return view('cuti.index', compact('cutis'));
+        if ($request->filled('cabang')) {
+            $query->where('cabang', $request->cabang);
+        }
+        $cutis = $query->get()->groupBy('pegawai_id');
+        $cabangs = Cabang::orderBy('name')->get();
+        return view('cuti.index', compact('cutis', 'cabangs'));
     }
 
+    public function pegawai(Request $request, $pegawaiId)
+    {
+        $pegawai = Pegawai::findOrFail($pegawaiId);
+
+        $query = ordercuti::where('pegawai_id', $pegawaiId)->orderByDesc('created_at');
+
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function ($sub) use ($q) {
+                $sub->where('jeniscuti', 'like', "%$q%")
+                    ->orWhere('status', 'like', "%$q%")
+                    ->orWhere('alasan', 'like', "%$q%");
+            });
+        }
+
+        $cutis = $query->paginate(10)->withQueryString();
+
+        return view('cuti.pegawai', compact('pegawai', 'cutis'));
+    }
     public function show($id)
     {
         $cuti = ordercuti::with(['user', 'pegawai', 'cabang'])->findOrFail($id);
-
         return view('cuti.show', compact('cuti'));
     }
-
     public function edit($id)
     {
-        $cuti = ordercuti::with(['user', 'pegawai'])->findOrFail($id);
+        $cuti = ordercuti::with('pegawai')->findOrFail($id);
 
-        return view('cuti.edit', compact('cuti'));
+        return view('cuti.edit', [
+            'cuti' => $cuti,
+            'pegawaiId' => $cuti->pegawai_id,
+        ]);
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'tglawal'  => 'required|date',
+            'tglawal' => 'required|date',
             'tglakhir' => 'required|date|after_or_equal:tglawal',
-            'alasan'   => 'required|string',
+            'alasan' => 'required|string',
         ]);
 
         $cuti = ordercuti::findOrFail($id);
 
-        $awal  = Carbon::parse($request->tglawal);
+        $awal = Carbon::parse($request->tglawal);
         $akhir = Carbon::parse($request->tglakhir);
 
-        $cuti->tglawal  = $request->tglawal;
-        $cuti->tglakhir = $request->tglakhir;
-        $cuti->jmlcuti  = $awal->diffInDays($akhir) + 1;
-        $cuti->alasan   = $request->alasan;
+        $cuti->update([
+            'tglawal' => $request->tglawal,
+            'tglakhir' => $request->tglakhir,
+            'jmlcuti' => $awal->diffInDays($akhir) + 1,
+            'alasan' => $request->alasan,
+        ]);
 
-        $cuti->save();
+        return redirect()->route('cuti.pegawai', $cuti->pegawai_id)->with('status', 'Data cuti berhasil diperbarui');
+    }
+    public function destroy(Request $request, $id)
+    {
+        $cuti = ordercuti::findOrFail($id);
+        $cuti->delete();
 
-        return redirect()
-            ->route('cuti.index')
-            ->with('status', 'Data cuti berhasil diperbarui');
+        return redirect($request->redirect_to ?? route('cuti.index'))->with('status', 'Data cuti berhasil dihapus');
     }
 }

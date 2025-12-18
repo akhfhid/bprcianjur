@@ -12,6 +12,7 @@ header('Access-Control-Allow-Origin: localhost');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>SIKAP @yield('title')</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('polished/polished.min.css') }}">
     <link rel="stylesheet" href="{{ asset('polished/iconic/css/open-iconic-bootstrap.min.css') }}">
     <!-- 	<link rel="stylesheet" href="{{ asset('summernote/summernote-bs4.css') }}">

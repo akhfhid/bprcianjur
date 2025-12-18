@@ -24,7 +24,7 @@ class SetUserController extends Controller
 
     public function index(Request $request)
     {
-        $cabangFilter = (int) $request->cabang; // 🔥 cast ke integer
+        $cabangFilter = (int) $request->cabang; 
         $keyword = $request->keyword;
 
         $pegawai = Pegawai::with('relJabatan', 'relCabang', 'relUser')
