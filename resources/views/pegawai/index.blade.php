@@ -96,12 +96,12 @@
                                     Detail
                                 </a>
 
-                                <form method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus?')"
+                                {{-- <form method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus?')"
                                     action="{{ route('pegawai.destroy', $p['id']) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-danger btn-sm w-100">Hapus</button>
-                                </form>
+                                </form> --}}
                             </td>
                         </tr>
                     @endforeach

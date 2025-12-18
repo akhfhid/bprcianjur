@@ -39,12 +39,12 @@
                     <th>Hari</th>
                     <th>Alasan</th>
                     <th>Status</th>
-                    <th>Atasan 1</th>
+                    {{-- <th>Atasan 1</th> --}}
                     <th>Stat A1</th>
-                    <th>Atasan 2</th>
+                    {{-- <th>Atasan 2</th> --}}
                     <th>Stat A2</th>
-                    {{-- <th>SDM</th> --}}
-                    {{-- <th>Stat SDM</th> --}}
+                    <th>SDM</th>
+                    <th>Stat SDM</th>
                     <th width="130">Aksi</th>
                 </tr>
             </thead>
@@ -71,12 +71,12 @@
                             </span>
                         </td>
 
-                        <td>{{ $cuti->otoatasan ?? '-' }}</td>
+                        {{-- <td>{{ $cuti->otoatasan ?? '-' }}</td> --}}
                         <td>{{ $cuti->statasan ?? '-' }}</td>
-                        <td>{{ $cuti->diketatasan ?? '-' }}</td>
+                        {{-- <td>{{ $cuti->diketatasan ?? '-' }}</td> --}}
                         <td>{{ $cuti->statdiket ?? '-' }}</td>
-                        {{-- <td>{{ $cuti->otosdm ?? '-' }}</td>
-            <td>{{ $cuti->statsdm ?? '-' }}</td> --}}
+                        <td>{{ $cuti->otosdm ?? '-' }}</td>
+                        <td>{{ $cuti->statsdm ?? '-' }}</td>
 
                         <td>
                             <a href="{{ route('cuti.edit', $cuti->id) }}" class="btn btn-warning btn-sm px-1">

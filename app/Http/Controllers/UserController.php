@@ -26,12 +26,21 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $filterkeyword = $request->keyword;
+        $filterstatus = $request->status;
         $loginUser = auth()->user();
 
         $query = \App\User::query();
+
         if ($filterkeyword) {
-            $query->where('name', 'like', "%{$filterkeyword}%");
+            $query->where(function ($q) use ($filterkeyword) {
+                $q->where('name', 'like', "%{$filterkeyword}%")->orWhere('username', 'like', "%{$filterkeyword}%");
+            });
         }
+
+        if ($filterstatus) {
+            $query->where('status', $filterstatus);
+        }
+
         if ($loginUser->id != 1) {
             $query->whereNotIn('id', [1, 10, 178]);
             // 1  = Administrator

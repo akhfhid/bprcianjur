@@ -5,7 +5,6 @@
 @endsection
 
 @section('content')
-    {{-- FILTER CABANG --}}
     <form method="GET" class="mb-3">
         <div class="row">
             <div class="col-md-4">
@@ -25,7 +24,6 @@
         </div>
     </form>
 
-    {{-- TABLE --}}
     <table class="table table-bordered table-sm">
         <thead class="text-center font-weight-bold">
             <tr>
