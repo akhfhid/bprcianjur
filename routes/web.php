@@ -35,6 +35,13 @@ Route::middleware(['auth'])->prefix('cuti')->group(function () {
     Route::delete('/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');
 
 });
+Route::middleware(['auth'])->group(function () {
+    Route::put('/users/{user}/activate', 'UserStatusController@activate')
+        ->name('users.activate');
+
+    Route::put('/users/{user}/deactivate', 'UserStatusController@deactivate')
+        ->name('users.deactivate');
+});
 
 route::middleware(['auth'])->group(function () {
     Route::prefix('set-user')
@@ -47,7 +54,7 @@ route::middleware(['auth'])->group(function () {
     Route::post('/pegawai/toggle-active/{id}', 'PegawaiController@toggleActive')->name('pegawai.toggle-active');
 
     route::get('users/{id}/active', 'UserController@active')->name('users.active');
-    route::post('users/{id}/update', 'UserController@updateuser')->name('users.updateuser');
+    route::post('users/{id}/update', 'UserController@updateuser')->name('users.update');
     route::get('users/{id}/edit' . 'UserController@edit')->name('users.edit');
     Route::resource('users', 'UserController');
     Route::get('/home', 'HomeController@index');

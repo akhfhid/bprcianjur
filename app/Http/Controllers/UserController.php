@@ -181,7 +181,7 @@ class UserController extends Controller
         $user = \App\User::findOrFail($id);
         $user->name = $request->get('name');
         $user->password = \Hash::make($request->get('password'));
-        $user->roles = $request->get('roles');
+        // $user->roles = $request->get('roles');
         $user->pegawai_id = $request->get('pegawai_id');
         $user->status = $request->get('status');
         $user->save();

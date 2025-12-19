@@ -8,6 +8,7 @@ use App\Pangkat;
 use App\Cabang;
 use App\Pegawai;
 use App\berkala;
+use App\Helpers\AuditHelper;
 use PDF;
 use Illuminate\Support\Facades\Gate;
 class PegawaiController extends Controller
@@ -189,7 +190,7 @@ class PegawaiController extends Controller
         $pendidikan = \App\Pendidikan::where('id', $pegawai['pendidikan'])->first();
         $pangkat = \App\Pangkat::where('id', $pegawai['pangkat'])->first();
         $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
-        
+
         $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
         $spegawai = \App\statuspeg::where('id', $pegawai['spegawai'])->first();
         $statuspegawai = \App\statuspeg::pluck('name', 'id');
@@ -558,10 +559,7 @@ class PegawaiController extends Controller
         if ($request->keyword) {
             $query->where('name', 'like', '%' . $request->keyword . '%');
         }
-        $pegawaiPaginate = $query
-            ->orderByRaw('deleted_at IS NULL')
-            ->orderByDesc('updated_at') 
-            ->paginate(10);
+        $pegawaiPaginate = $query->orderByRaw('deleted_at IS NULL')->orderByDesc('updated_at')->paginate(10);
 
         $pegawai = [];
 
@@ -927,7 +925,6 @@ class PegawaiController extends Controller
                 $row['jdpang'] = $jdpang;
                 $row['jdber'] = $jdber;
                 $row['cabang'] = $cabang;
-                //$row["jabatan"] = $jabatan;
                 $row['now'] = $now;
                 $databerkala[] = $row;
             }
@@ -939,9 +936,10 @@ class PegawaiController extends Controller
     {
         $pegawai = \App\Pegawai::withTrashed()->findOrFail($id);
 
+        $oldStatus = $pegawai->status_active;
+
         $pegawai->status_active = !$pegawai->status_active;
 
-        // kalau diaktifkan dari trash → restore
         if ($pegawai->status_active && $pegawai->trashed()) {
             $pegawai->restore();
         }
@@ -953,6 +951,8 @@ class PegawaiController extends Controller
             $user->status = $pegawai->status_active ? 'ACTIVE' : 'INACTIVE';
             $user->save();
         }
+
+        AuditHelper::log('toggle_active_pegawai', $pegawai, ['status_active' => $oldStatus], ['status_active' => $pegawai->status_active]);
 
         $msg = $pegawai->status_active ? "{$pegawai->name} berhasil diaktifkan." : "{$pegawai->name} berhasil dinonaktifkan.";
 
