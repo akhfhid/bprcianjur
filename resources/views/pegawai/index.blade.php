@@ -1,140 +1,155 @@
 @extends('layouts.global')
+
 @section('title', 'List Pegawai')
-<style>
-    <style>.toggle-active {
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
-</style>
-</style>
+
 @section('content')
+<style>
+    /* UI Custom Styles konsisten dengan modul sebelumnya */
+    .page-header { background: #fff; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
+    .filter-section { background: #f8fafc; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0; }
+    
+    .table-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.07); overflow: hidden; }
+    .table thead th { background: #f1f5f9; color: #475569; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; border: none; padding: 15px; }
+    .table td { padding: 12px 15px; vertical-align: middle !important; font-size: 0.85rem; }
+    
+    .btn-rounded { border-radius: 50px; padding-left: 1.2rem; padding-right: 1.2rem; }
+    .form-control-custom { border-radius: 8px; border: 1px solid #e2e8f0; }
+    
+    /* Status Badge */
+    .badge-status { padding: 5px 12px; border-radius: 50px; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
+    
+    /* Nav Pills Custom */
+    .nav-pills .nav-link { border-radius: 50px; padding: 8px 20px; font-weight: 600; color: #64748b; margin-right: 10px; border: 1px solid transparent; }
+    .nav-pills .nav-link.active { background-color: #3b82f6 !important; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2); }
+    .nav-pills .nav-link:not(.active):hover { border-color: #cbd5e1; background: #f1f5f9; }
+</style>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <form action="{{ route('pegawai.index') }}" class="flex-grow-1 mr-2">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Filter by Nama Pegawai"
-                    value="{{ Request::get('keyword') }}" name="keyword">
-
-                <div class="input-group-append">
-                    <button class="btn btn-primary">Filter</button>
-                </div>
-            </div>
-        </form>
-
+<div class="container-fluid pb-5">
+    <div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
         <div>
-            <a href="{{ route('pegawai.create') }}" class="btn btn-primary">
-                + Tambah Pegawai
+            <h4 class="font-weight-bold text-dark mb-1">Manajemen Data Pegawai</h4>
+            <p class="text-muted mb-0">Kelola informasi dasar dan status keaktifan pegawai</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ route('pegawai.create') }}" class="btn btn-primary btn-rounded shadow-sm">
+                <span class="oi oi-plus mr-2"></span> Tambah Pegawai
             </a>
         </div>
     </div>
 
-    <div>
-        <ul class="nav nav-pills mb-3">
+    <div class="mb-4">
+        <ul class="nav nav-pills">
             <li class="nav-item">
-                <a class="nav-link active" href="{{ route('pegawai.index') }}">Published</a>
+                <a class="nav-link {{ Route::is('pegawai.index') ? 'active' : '' }}" href="{{ route('pegawai.index') }}">
+                    <span class="oi oi-people mr-2"></span> Aktif
+                </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link " href="{{ route('pegawai.trash') }}">Berhenti/Tidak Aktif</a>
+                <a class="nav-link {{ Route::is('pegawai.trash') ? 'active' : '' }}" href="{{ route('pegawai.trash') }}">
+                    <span class="oi oi-trash mr-2"></span> Berhenti/Tidak Aktif
+                </a>
             </li>
         </ul>
     </div>
 
     @if (session('status'))
-        <div class="alert alert-success">
-            {{ session('status') }}
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <span class="oi oi-check mr-2"></span> {{ session('status') }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
         </div>
     @endif
 
-    <div class="card">
-        <div class="card-body table-responsive">
+    <div class="filter-section shadow-sm">
+        <form action="{{ route('pegawai.index') }}">
+            <div class="row align-items-end">
+                <div class="col-md-9 mb-2 mb-md-0">
+                    <label class="small font-weight-bold text-muted text-uppercase">Cari Pegawai</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-custom" placeholder="Ketik nama atau NIK pegawai..."
+                            value="{{ Request::get('keyword') }}" name="keyword">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary px-4" style="border-radius: 0 8px 8px 0;">
+                                <span class="oi oi-magnifying-glass"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ route('pegawai.index') }}" class="btn btn-outline-secondary btn-block btn-rounded">
+                        Reset Filter
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
 
-            <table class="table table-bordered table-hover mb-0">
-                <thead class="thead-light">
+    <div class="table-container shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 text-center">
+                <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nama</th>
-                        <th>NIK</th>
-                        <th>Status</th>
+                        <th width="50">ID</th>
+                        <th class="text-left">Nama & NIK</th>
                         <th>Masa Kerja</th>
-                        <th>Pangkat</th>
-                        <th>Jabatan</th>
+                        <th>Jabatan & Pangkat</th>
                         <th>Kantor</th>
-                        <th>Status Peg</th>
-                        <th width="130">Aksi</th>
+                        <th>Status Aktif</th>
+                        <th width="150">Aksi</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    @foreach ($pegawai as $p)
+                    @forelse ($pegawai as $p)
                         <tr>
-                            <td>{{ $p['id'] }}</td>
-                            <td>{{ $p['name'] }}</td>
-                            <td>{{ $p['nikpegawai'] }}</td>
-                            <td>{{ $p['status'] }}</td>
-                            <td>{{ $p['mkerja'] }} Tahun</td>
-                            <td>{{ $p['pangkat'] }}</td>
-                            <td>{{ $p['jabatan'] }}</td>
-                            <td>{{ $p['cabang'] }}</td>
-                            <td>
+                            <td class="text-muted small align-middle">{{ $p['id'] }}</td>
+                            <td class="text-left align-middle">
+                                <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">{{ $p['name'] }}</div>
+                                <small class="text-muted"><span class="oi oi-person mr-1"></span> NIK: {{ $p['nikpegawai'] }}</small>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge badge-light border px-2 py-1">{{ $p['mkerja'] }} Tahun</span>
+                            </td>
+                            <td class="align-middle">
+                                <div class="text-dark font-weight-500">{{ $p['jabatan'] }}</div>
+                                <small class="text-secondary">{{ $p['pangkat'] }}</small>
+                            </td>
+                            <td class="align-middle text-muted">
+                                <span class="oi oi-map-marker mr-1 small"></span> {{ $p['cabang'] }}
+                            </td>
+                            <td class="align-middle">
                                 <form method="POST" action="{{ route('pegawai.toggle-active', $p['id']) }}">
                                     @csrf
-
-                                    <button class="btn btn-sm {{ $p['status_active'] ? 'btn-success' : 'btn-secondary' }}">
-                                        {{ $p['status_active'] ? 'Aktif' : 'Nonaktif' }}
+                                    <button class="btn btn-sm btn-rounded shadow-sm px-3 {{ $p['status_active'] ? 'btn-success' : 'btn-secondary' }}" 
+                                            style="font-size: 0.7rem; font-weight: 800;">
+                                        {{ $p['status_active'] ? 'AKTIF' : 'NONAKTIF' }}
                                     </button>
                                 </form>
                             </td>
-
-
-                            <td>
-                                <a href="{{ route('pegawai.edit', $p['id']) }}" class="btn btn-warning btn-sm mb-1 w-100">
-                                    Edit
-                                </a>
-
-                                <a href="{{ route('pegawai.show', $p['id']) }}" class="btn btn-primary btn-sm mb-1 w-100">
-                                    Detail
-                                </a>
-
-                                {{-- <form method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus?')"
-                                    action="{{ route('pegawai.destroy', $p['id']) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-danger btn-sm w-100">Hapus</button>
-                                </form> --}}
+                            <td class="align-middle">
+                                <div class="btn-group">
+                                    <a href="{{ route('pegawai.edit', $p['id']) }}" class="btn btn-sm btn-outline-warning border-0" title="Edit">
+                                        <span class="oi oi-pencil"></span>
+                                    </a>
+                                    <a href="{{ route('pegawai.show', $p['id']) }}" class="btn btn-sm btn-outline-primary border-0" title="Detail">
+                                        <span class="oi oi-eye"></span>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-5 text-center text-muted">
+                                <span class="oi oi-info mb-2" style="font-size: 2rem; opacity: 0.2;"></span>
+                                <p>Data pegawai tidak ditemukan</p>
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
-
             </table>
-
-            <div class="mt-3">
-                {{ $datapegawai->appends(Request::all())->links() }}
-            </div>
         </div>
     </div>
 
+    <div class="mt-4 d-flex justify-content-center">
+        {{ $datapegawai->appends(Request::all())->links() }}
+    </div>
+</div>
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.toggle-active').forEach(el => {
-                el.addEventListener('change', function() {
-                    let id = this.dataset.id;
-
-                    fetch('/pegawai/toggle-active/' + id, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': `{{ csrf_token() }}`,
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(res => res.json())
-                        .then(console.log);
-                });
-            });
-        });
-    </script>
-@endpush

@@ -7,29 +7,24 @@ use App\ordercuti;
 use App\Cabang;
 use App\Pegawai;
 use Carbon\Carbon;
-// use App\Ordercuti;
 
 class CutiController extends Controller
 {
-
-
     public function index(Request $request)
     {
-        $query = ordercuti::with([
-            'pegawai.relCabang', 
-            'user',
-        ])->orderByDesc('created_at');
+        $query = ordercuti::with(['pegawai.relCabang', 'user'])->orderByDesc('created_at');
 
-        // filter cabang lewat pegawai
         if ($request->filled('cabang')) {
             $query->whereHas('pegawai', function ($q) use ($request) {
                 $q->where('cabang', $request->cabang);
             });
         }
-
+        if ($request->filled('q')) {
+            $query->whereHas('pegawai', function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->q . '%');
+            });
+        }
         $cutis = $query->get()->groupBy('pegawai_id');
-
-        // samakan dengan controller setuser
         $cabangs = Cabang::pluck('name', 'id');
 
         return view('cuti.index', compact('cutis', 'cabangs'));
@@ -38,9 +33,10 @@ class CutiController extends Controller
     public function pegawai(Request $request, $pegawaiId)
     {
         $pegawai = Pegawai::findOrFail($pegawaiId);
-
         $query = ordercuti::where('pegawai_id', $pegawaiId)->orderByDesc('created_at');
-
+        if ($request->filled('jenis')) {
+            $query->where('jeniscuti', 'LIKE', '%' . $request->jenis . '%');
+        }
         if ($request->filled('q')) {
             $q = $request->q;
             $query->where(function ($sub) use ($q) {
@@ -54,6 +50,7 @@ class CutiController extends Controller
 
         return view('cuti.pegawai', compact('pegawai', 'cutis'));
     }
+
     public function show($id)
     {
         $cuti = ordercuti::with(['user', 'pegawai', 'cabang'])->findOrFail($id);

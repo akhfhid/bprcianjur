@@ -937,25 +937,25 @@ class PegawaiController extends Controller
         $pegawai = \App\Pegawai::withTrashed()->findOrFail($id);
 
         $oldStatus = $pegawai->status_active;
+        $newStatus = $pegawai->status_active ? 0 : 1;
+        $pegawai->status_active = $newStatus;
 
-        $pegawai->status_active = !$pegawai->status_active;
-
-        if ($pegawai->status_active && $pegawai->trashed()) {
+        if ($newStatus === 1 && $pegawai->trashed()) {
             $pegawai->restore();
         }
 
-        $pegawai->save();
-
-        $user = \App\User::where('pegawai_id', $id)->first();
-        if ($user) {
-            $user->status = $pegawai->status_active ? 'ACTIVE' : 'INACTIVE';
-            $user->save();
+        if ($newStatus === 0 && !$pegawai->trashed()) {
+            $pegawai->delete(); // soft delete
         }
 
-        AuditHelper::log('toggle_active_pegawai', $pegawai, ['status_active' => $oldStatus], ['status_active' => $pegawai->status_active]);
-
-        $msg = $pegawai->status_active ? "{$pegawai->name} berhasil diaktifkan." : "{$pegawai->name} berhasil dinonaktifkan.";
-
+        $pegawai->save();
+        $user = \App\User::where('pegawai_id', $pegawai->id)->first();
+        if ($user) {
+            $user->status = $newStatus === 1 ? 'ACTIVE' : 'INACTIVE';
+            $user->save();
+        }
+        AuditHelper::log('toggle_active_pegawai', $pegawai, ['status_active' => $oldStatus], ['status_active' => $newStatus]);
+        $msg = $newStatus === 1 ? "{$pegawai->name} berhasil diaktifkan." : "{$pegawai->name} berhasil dinonaktifkan.";
         return back()->with('status', $msg);
     }
 }

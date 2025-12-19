@@ -21,7 +21,6 @@ class SetUserController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-
     public function index(Request $request)
     {
         $cabangFilter = (int) $request->cabang;
@@ -57,7 +56,6 @@ class SetUserController extends Controller
 
         return view('setuser.index', compact('pegawai', 'cabangs', 'cabangFilter'));
     }
-
     public function edit($id)
     {
         $pegawai = Pegawai::findOrFail($id);
