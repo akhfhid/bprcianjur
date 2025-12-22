@@ -58,7 +58,6 @@
             Pangkat
         </a>
     </li>
-
     <div class="sidebar-section">CUTI</div>
     <li>
         <a href="{{ route('cuti.index') }}">
