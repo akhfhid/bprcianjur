@@ -76,7 +76,7 @@
     <li>
         <a href="{{ route('setuser.index') }}">
             <span class="oi oi-lock-locked"></span>
-            Otorisasi Cuti
+           Setup Otorisasi Cuti
         </a>
     </li>
     <div class="sidebar-section">KEUANGAN</div>

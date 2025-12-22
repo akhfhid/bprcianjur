@@ -130,8 +130,8 @@
     
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h3 class="page-title mb-0">Manajemen Cuti</h3>
-            <p class="text-muted small mb-0">Kelola dan tinjau seluruh permohonan cuti pegawai</p>
+            <h3 class="page-title mb-0">Approval Cuti</h3>
+            <p class="text-muted small mb-0">Kelola dan tinjau permohonan cuti wajib pegawai</p>
         </div>
         
         @if(request()->has('status') || request()->has('jenis') || request()->has('name') || request()->has('tanggal'))
