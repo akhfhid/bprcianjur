@@ -75,7 +75,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <a href="{{ route('pegawai.index') }}" class="btn btn-outline-secondary btn-block btn-rounded">
+                    <a href="{{ route('pegawai.index') }}" class="btn btn-primary btn-block btn-rounded">
                         Reset Filter
                     </a>
                 </div>

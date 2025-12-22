@@ -21,47 +21,50 @@ class ordercutiController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');});
     }
 
-    public function index(Request $request)
-    {
-
-        $id_user = \Auth::user()->pegawai_id;
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-                        ->wherehas('pegawai', function($query) use ($id_user){
-                            $query->where('name',$id_user);})
-                        ->get();
-        $data=[];
-        foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id',$cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
-
-            $cabang = \App\Cabang::where('id',$cuti['cabang'])->first();
-            $namacab=$cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
-
-            $data[] = [
-                "id" => $cuti['id'],
-                "namapeg" => $namapeg,
-                "tglmohon"=> $cuti['created_at'],
-                "jmlcuti" => $cuti['jmlcuti'],
-                "tglawal" => $cuti['tglawal'],
-                "tglakhir" => $cuti['tglakhir'],
-                "alasan" => $cuti['alasan'],
-                "jenis" => $cuti['jeniscuti'],
-                "namacab" => $namacab,
-                "status" => $cuti['status'],
-                "otosdm" => $cuti['otosdm'],
-                "statdiket" => $cuti['statdiket']
-            ];
-
-        }
-
-        return view('ordercuti.index',['orderc'=>$data]);
-
+   public function index(Request $request)
+{
+    $query = \App\ordercuti::with(['pegawai','cabang']);
+    if ($request->filled('name')) {
+        $query->whereHas('pegawai', function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->name . '%');
+        });
     }
+    if ($request->filled('tanggal')) {
+        $query->whereDate('tglawal', $request->tanggal);
+    }
+
+    if ($request->filled('jenis')) {
+        $query->where('jeniscuti', $request->jenis);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+    $ordercuti = $query->orderBy('created_at', 'DESC')->paginate(10);
+    $data = [];
+    foreach ($ordercuti as $cuti) {
+        $data[] = [
+            'id'        => $cuti->id,
+            'namapeg'   => $cuti->pegawai->name ?? '-',
+            'namacab'   => $cuti->cabang->name ?? '-',
+            'tglmohon'  => $cuti->created_at,
+            'jmlcuti'   => $cuti->jmlcuti,
+            'tglawal'   => $cuti->tglawal,
+            'tglakhir'  => $cuti->tglakhir,
+            'alasan'    => $cuti->alasan,
+            'jenis'     => $cuti->jeniscuti,
+            'status'    => $cuti->status,
+            'otosdm'    => $cuti->otosdm,
+            'statdiket' => $cuti->statdiket,
+        ];
+    }
+
+    return view('ordercuti.indexcuti', [
+        'orderc'    => $data,
+        'ordercuti'=> $ordercuti
+    ]);
+}
+
 
     /**
      * Show the form for creating a new resource.

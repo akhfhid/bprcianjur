@@ -54,7 +54,7 @@
                         <td style="height: 10px;"><b>Status Kepegawaian<b></td><td>:</td><td>{{$spegawai->name}}</td>
                     </tr>
                     <tr>
-                        <td style="height: 10px;"><b>TMT</b></td><td>:</td><td>{{$pegawai->tglangkat}}</td>
+                        <td style="height: 10px;"><b>TMT</b></td><td>:</td><td>{{$pegawai->tglmasuk}}</td>
                     </tr>
                     <tr>
                         <td style="height: 10px;"><b>Masa Kerja<b></td><td>:</td><td>{{$masakerja}}</td>

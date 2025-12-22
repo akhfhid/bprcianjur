@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ordercuti extends Model
 {
     protected $table = 'ordercutis';
-
+    protected $guarded = ['id'];
     public function user()
     {
         return $this->belongsTo(\App\User::class, 'user_id');
