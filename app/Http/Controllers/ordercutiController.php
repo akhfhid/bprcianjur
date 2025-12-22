@@ -204,7 +204,7 @@ class ordercutiController extends Controller
         $jmlcuti = $awlc->diffinDays($akhirc);
         $user_id = \Auth::user()->pegawai_id;
 
-        $useradm = \App\User::where('roles', 'ADMIN')->first();
+        $useradm = \App\User::where('roles', 'ADMIN','ADMIN_SDM')->first();
         $adm = $useradm->pegawai_id;
 
         $ordercuti->tglawal = $awal;
