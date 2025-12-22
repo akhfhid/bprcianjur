@@ -15,7 +15,6 @@
 
     body { background-color: #f1f5f9; }
 
-    /* Layout Cards */
     .card-custom {
         background: #ffffff;
         border: none;
@@ -24,14 +23,12 @@
         margin-bottom: 1.5rem;
     }
 
-    /* Header Styling */
     .page-title {
         font-weight: 800;
         color: #1e293b;
         letter-spacing: -0.025em;
     }
 
-    /* Filter Section */
     .filter-wrapper {
         padding: 1.5rem;
         background: #ffffff;
@@ -59,7 +56,6 @@
         box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     }
 
-    /* Status & Pills */
     .filter-pills-group {
         display: flex;
         gap: 8px;
@@ -106,7 +102,6 @@
     .employee-name { font-weight: 600; color: #1e293b; margin-bottom: 0; }
     .office-name { font-size: 0.75rem; color: #94a3b8; }
 
-    /* Status Badge Modern */
     .badge-soft {
         padding: 6px 12px;
         border-radius: 6px;
@@ -118,7 +113,6 @@
     .status-disetujui { background: #dcfce7; color: #166534; }
     .status-ditolak { background: #fee2e2; color: #991b1b; }
 
-    /* Action Buttons */
     .btn-action {
         width: 32px;
         height: 32px;
@@ -129,13 +123,11 @@
         border-radius: 8px;
     }
 
-    /* Loading Effect */
     .loading-shimmer { opacity: 0.5; pointer-events: none; transition: 0.3s; }
 </style>
 
 <div class="container-fluid py-4">
     
-    {{-- TITLE & HEADER --}}
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
             <h3 class="page-title mb-0">Manajemen Cuti</h3>
@@ -301,7 +293,6 @@
 
 @push('scripts')
 <script>
-    // Tetap mempertahankan logic original Anda agar tidak merusak fungsionalitas
     $('#filterForm').on('submit',function(e){
         e.preventDefault();
         loadData($(this).serialize());
