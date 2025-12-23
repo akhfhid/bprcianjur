@@ -15,7 +15,7 @@ class SetUserController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM')) {
+            if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM') || Gate::allows('STAFF_SDM')) {
                 return $next($request);
             }
             abort(403, 'Anda tidak memiliki hak akses');

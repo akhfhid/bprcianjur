@@ -36,7 +36,7 @@ class LoginController extends Controller
 
         if ($user->status !== 'ACTIVE') {
             throw ValidationException::withMessages([
-                'email' => ['Akun Anda tidak aktif. Silakan hubungi SDM untuk aktivasi akun.'],
+                'email' => ['Akun Anda tidak aktif. Silakan hubungi bagian SDM untuk aktivasi akun anda.'],
             ]);
         }
 

@@ -12,4 +12,8 @@ class Jabatan extends Model
     public function pegawai(){
     	return $this->hashone("\App\Pegawai");
     }
+        public function atasanJabatan()
+    {
+        return $this->belongsTo(Jabatan::class, 'atasan');
+    }
 }

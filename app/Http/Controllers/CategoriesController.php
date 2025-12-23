@@ -11,6 +11,10 @@ class CategoriesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+        public function cat()
+    {
+        return 'OK';
+    }
     public function index(Request $request)
     {
         $categories = \App\Category::paginate(10);

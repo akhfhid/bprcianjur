@@ -99,26 +99,30 @@ header('Access-Control-Allow-Origin: localhost');
                 <ul class="polished-sidebar-menu ml-0 pt-4 p-0 d-md-block">
                     <input class="border-dark form-control d-block d-md-none mb-4" type="text" placeholder="Search"
                         aria-label="Search" />
-                    @if (auth()->user()->roles == 'ADMIN')
-                        <x-sidebar>
-                        </x-sidebar>
-                    @elseif(auth()->user()->roles == 'SUPERVISOR')
-                        <x-sidebar-supervisor></x-sidebar-supervisor>
-                    @elseif(auth()->user()->roles == 'USER')
-                        <x-sidebar-user></x-sidebar-user>
-                    @elseif(auth()->user()->roles == 'PINCAB')
-                        <x-sidebar-pincab></x-sidebar-pincab>
-                    @elseif (auth()->user()->roles == 'KADIV')
-                        <x-sidebar-kadiv></x-sidebar-kadiv>
-                    @elseif (auth()->user()->roles == 'PATUH')
-                        <x-sidebar-kepatuhan></x-sidebar-kepatuhan>
-                    @elseif (auth()->user()->roles == 'DIRUT')
-                        <x-sidebar-direksi></x-sidebar-direksi>
-                    @elseif (auth()->user()->roles == 'DIRBIS')
-                        <x-sidebar-dirbis></x-sidebar-dirbis>
-                    @elseif (auth()->user()->roles == 'ADMIN_SDM')
-                        <x-sidebar-s-d-m />
+                    @if (Auth::check())
+                        @if (auth()->user()->roles == 'ADMIN')
+                            <x-sidebar />
+                        @elseif (auth()->user()->roles == 'SUPERVISOR')
+                            <x-sidebar-supervisor />
+                        @elseif (auth()->user()->roles == 'USER')
+                            <x-sidebar-user />
+                        @elseif (auth()->user()->roles == 'PINCAB')
+                            <x-sidebar-pincab />
+                        @elseif (auth()->user()->roles == 'KADIV')
+                            <x-sidebar-kadiv />
+                        @elseif (auth()->user()->roles == 'PATUH')
+                            <x-sidebar-kepatuhan />
+                        @elseif (auth()->user()->roles == 'DIRUT')
+                            <x-sidebar-direksi />
+                        @elseif (auth()->user()->roles == 'DIRBIS')
+                            <x-sidebar-dirbis />
+                        @elseif (auth()->user()->roles == 'STAFF_SDM')
+                            <x-sidebar-staff-s-d-m />
+                        @elseif (auth()->user()->roles == 'ADMIN_SDM')
+                            <x-sidebar-s-d-m />
+                        @endif
                     @endif
+
                     <div class="d-block d-md-none">
                         <div class="dropdown-divider"></div>
                         <li><a href="">Profile</a></li>

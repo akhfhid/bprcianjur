@@ -15,7 +15,7 @@ class ordercutiController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM')) {
+            if (Gate::allows('ADMIN') || Gate::allows('ADMIN_SDM') || Gate::allows('STAFF_SDM')) {
                 return $next($request);
             }
 
@@ -76,7 +76,6 @@ class ordercutiController extends Controller
     {
         $user = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id', $user)->first();
-
         return view('ordercuti.create', ['pegawai' => $peg]);
     }
 
@@ -155,7 +154,7 @@ class ordercutiController extends Controller
         }
 
         $new_cuti->save();
-
+        app(\App\Http\Controllers\OrderCutiNotificationController::class)->send($new_cuti->id);
         return redirect()->route('ordercuti.index')->with('status', 'Permohonan Berhasil Diinput');
     }
 
@@ -204,7 +203,7 @@ class ordercutiController extends Controller
         $jmlcuti = $awlc->diffinDays($akhirc);
         $user_id = \Auth::user()->pegawai_id;
 
-        $useradm = \App\User::where('roles', 'ADMIN','ADMIN_SDM')->first();
+        $useradm = \App\User::where('roles', 'ADMIN', 'ADMIN_SDM')->first();
         $adm = $useradm->pegawai_id;
 
         $ordercuti->tglawal = $awal;
@@ -419,8 +418,7 @@ class ordercutiController extends Controller
                 ->where('tglawal', 'LIKE', "%$date%")
                 ->peginate(10);
         } else {
-            $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
-            ->paginate(10);
+            $ordercuti = \App\ordercuti::with('pegawai', 'cabang')->paginate(10);
         }
 
         $data = [];

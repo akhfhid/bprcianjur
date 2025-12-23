@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\CutiController;
-
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OrderCutiNotificationController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,22 +26,34 @@ Auth::routes();
 route::match(['GET', 'POST'], '/register', function () {
     return redirect('/login');
 })->name('register');
+// Route::post('/ordercuti/{id}/notif',
+//     'OrderCutiNotificationController@send'
+// )->middleware('auth');
+Route::get('/ordercuti/{id}/notif', [OrderCutiNotificationController::class, 'send']);
+Route::get('/test-gmail', function () {
+    Mail::raw('Test Gmail SMTP', function ($message) {
+        $message->to('neoaffan2@gmail.com')
+                ->subject('Test Gmail Untuk Notifikasi Approval Cuti ');
+    });
 
-Route::middleware(['auth'])->prefix('cuti')->group(function () {
-    Route::get('/', [CutiController::class, 'index'])->name('cuti.index');
-    Route::get('/{id}', [CutiController::class, 'show'])->name('cuti.show');
-    Route::get('/pegawai/{pegawai}', [CutiController::class, 'pegawai'])->name('cuti.pegawai');
-    Route::get('/{id}/edit', [CutiController::class, 'edit'])->name('cuti.edit');
-    Route::put('/{id}', [CutiController::class, 'update'])->name('cuti.update');
-    Route::delete('/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');
-
+    return response()->json(['status' => 'ok']);
 });
-Route::middleware(['auth'])->group(function () {
-    Route::put('/users/{user}/activate', 'UserStatusController@activate')
-        ->name('users.activate');
 
-    Route::put('/users/{user}/deactivate', 'UserStatusController@deactivate')
-        ->name('users.deactivate');
+
+Route::middleware(['auth'])
+    ->prefix('cuti')
+    ->group(function () {
+        Route::get('/', [CutiController::class, 'index'])->name('cuti.index');
+        Route::get('/{id}', [CutiController::class, 'show'])->name('cuti.show');
+        Route::get('/pegawai/{pegawai}', [CutiController::class, 'pegawai'])->name('cuti.pegawai');
+        Route::get('/{id}/edit', [CutiController::class, 'edit'])->name('cuti.edit');
+        Route::put('/{id}', [CutiController::class, 'update'])->name('cuti.update');
+        Route::delete('/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');
+    });
+Route::middleware(['auth'])->group(function () {
+    Route::put('/users/{user}/activate', 'UserStatusController@activate')->name('users.activate');
+
+    Route::put('/users/{user}/deactivate', 'UserStatusController@deactivate')->name('users.deactivate');
 });
 
 route::middleware(['auth'])->group(function () {
@@ -84,7 +97,7 @@ route::middleware(['auth'])->group(function () {
     Route::get('/pegawai/trash', 'PegawaiController@trash')->name('pegawai.trash');
     Route::delete('/pegawai/{pegawai}/delete-permanent', 'PegawaiController@deletePermanent')->name('pegawai.delete-permanent');
     Route::post('/pegawai/{pegawai}/restore', 'PegawaiController@restore')->name('pegawai.restore');
-    
+
     route::get('pegawai/{id}/cetak', 'PegawaiController@cetakpdf')->name('pegawai.cetak');
     route::post('Pegawai/Simpan', 'PegawaiController@simpan')->name('pegawai.simpan');
     route::get('Pegawai/Input', 'PegawaiController@input')->name('pegawai.input');
@@ -374,7 +387,7 @@ route::middleware(['auth'])->group(function () {
     Route::get('/ajax/pegawai/search', 'PegawaiController@ajaxsearch')->name('pegawai.ajaxsearch');
     Route::get('/ajax/jabatan/search', 'JabatanController@ajaxsearch')->name('jabatan.ajaxsearch');
     Route::get('/ajax/cabang/search', 'KantorController@ajaxsearch')->name('kantor.ajaxsearch');
-    Route::get('/cat', 'CategoryController@cat')->name('categories.cat');
+    // Route::get('/cat', 'CategoryController@cat')->name('categories.cat');
     Route::get('/SubCat/{id}', 'peraturanController@subcat');
 
     Route::Get('resetpassword/{id}/edit', 'ResetController@edit')->name('resetpassword.edit');
@@ -403,4 +416,3 @@ route::middleware(['auth'])->group(function () {
 
     route::resource('penghasilan', 'PenghasilanController');
 });
-
