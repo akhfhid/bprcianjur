@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
+use App\Http\Controllers\OrderCutiNotificationController;
 class ordercutiController extends Controller
 {
     /**
@@ -154,7 +155,15 @@ class ordercutiController extends Controller
         }
 
         $new_cuti->save();
-        app(\App\Http\Controllers\OrderCutiNotificationController::class)->send($new_cuti->id);
+        try {
+            // Gunakan resolve() atau app() dengan path lengkap jika perlu
+            app(OrderCutiNotificationController::class)->send($new_cuti->id);
+        } catch (\Throwable $e) {
+            \Log::error('GAGAL PANGGIL NOTIF CUTI', [
+                'order_id' => $new_cuti->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
         return redirect()->route('ordercuti.index')->with('status', 'Permohonan Berhasil Diinput');
     }
 
@@ -224,21 +233,37 @@ class ordercutiController extends Controller
         //
     }
 
-    public function setuju($id)
-    {
-        $ordercuti = \App\ordercuti::findorFail($id);
-        $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
+public function setuju($id)
+{
+    $ordercuti = \App\ordercuti::findOrFail($id);
+    $pegawai = \App\Pegawai::findOrFail($ordercuti->pegawai_id);
 
-        $ambilcuti = $ordercuti->jmlcuti;
-        $scuti = $pegawai->scuti;
-        $sisacuti = $scuti - $ambilcuti;
+    $tahunCuti = \Carbon\Carbon::parse($ordercuti->tglawal)->year;
+    $tahunSekarang = now()->year;
+
+    // ❗ Kalau cuti untuk tahun depan → JANGAN potong sekarang
+    if ($tahunCuti > $tahunSekarang) {
         $ordercuti->status = 'DISETUJUI';
-        $pegawai->scuti = $sisacuti;
-
         $ordercuti->save();
-        $pegawai->save();
-        return redirect()->route('ordercuti.index')->with('status', 'Data Cuti Successfully Updated');
+
+        return back()->with('status', 'Cuti tahun depan disetujui (akan dipotong saat tahun berjalan)');
     }
+
+    // Validasi sisa cuti
+    if ($pegawai->scuti < $ordercuti->jmlcuti) {
+        return back()->withErrors('Sisa cuti tidak mencukupi');
+    }
+
+    // Potong cuti tahun berjalan
+    $pegawai->scuti -= $ordercuti->jmlcuti;
+    $pegawai->save();
+
+    $ordercuti->status = 'DISETUJUI';
+    $ordercuti->save();
+
+    return back()->with('status', 'Cuti disetujui & sisa cuti dikurangi');
+}
+
     public function tolak($id)
     {
         $ordercuti = \App\ordercuti::findorFail($id);

@@ -22,9 +22,29 @@ class Kernel extends ConsoleKernel
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
-    protected function schedule(Schedule $schedule)
+    protected function schedule(\Illuminate\Console\Scheduling\Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule
+            ->call(function () {
+                $tahunSekarang = now()->year;
+
+                $pegawais = \App\Pegawai::all();
+
+                foreach ($pegawais as $pegawai) {
+                    $pegawai->scuti = 12;
+
+                    $cutiTahunIni = \App\ordercuti::where('pegawai_id', $pegawai->id)->where('status', 'DISETUJUI')->whereYear('tglawal', $tahunSekarang)->sum('jmlcuti');
+
+                    $pegawai->scuti -= $cutiTahunIni;
+
+                    if ($pegawai->scuti < 0) {
+                        $pegawai->scuti = 0;
+                    }
+
+                    $pegawai->save();
+                }
+            })
+            ->yearlyOn(1, 1, '00:01');
     }
 
     /**
@@ -34,7 +54,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

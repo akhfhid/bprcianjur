@@ -66,11 +66,11 @@
             Manajemen Cuti
         </a>
     </li>
-    <li><a href="{{ route('ordercuti.indexcuti') }}">
+    {{-- <li><a href="{{ route('ordercuti.indexcuti') }}">
             <span class=" oi oi-inbox"></span>
             Approve Cuti
         </a>
-    </li>
+    </li> --}}
 
     <li>
         <a href="{{ route('setuser.index') }}">

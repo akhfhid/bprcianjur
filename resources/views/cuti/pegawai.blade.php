@@ -266,22 +266,69 @@
                                 <td class="align-middle">
                                     <div class="btn-group">
                                         <a href="{{ route('cuti.edit', $cuti->id) }}"
-                                            class="btn btn-sm btn-light border-0">
+                                            class="btn btn-sm btn-light border-0 shadow-sm mr-1" style="border-radius: 8px;"
+                                            title="Edit">
                                             <span class="oi oi-pencil text-warning"></span>
                                         </a>
 
-                                        <form action="{{ route('cuti.destroy', $cuti->id) }}" method="POST"
-                                            onsubmit="return confirm('Hapus data ini?')" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <input type="hidden" name="redirect_to" value="{{ url()->full() }}">
-                                            <button class="btn btn-sm btn-light border-0">
-                                                <span class="oi oi-trash text-danger"></span>
-                                            </button>
-                                        </form>
+                                        {{-- Tombol pemicu modal --}}
+                                        <button type="button" class="btn btn-sm btn-light border-0 shadow-sm"
+                                            style="border-radius: 8px;" data-toggle="modal"
+                                            data-target="#hapusCutiModal{{ $cuti->id }}" title="Hapus">
+                                            <span class="oi oi-trash text-danger"></span>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
+                            <div class="modal fade" id="hapusCutiModal{{ $cuti->id }}" tabindex="-1" role="dialog"
+                                aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+
+                                        <form action="{{ route('cuti.destroy', $cuti->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <input type="hidden" name="redirect_to" value="{{ url()->full() }}">
+
+                                            <div class="modal-header border-0 pt-4 px-4">
+                                                <h5 class="font-weight-bold text-dark">Konfirmasi Hapus</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+
+                                            <div class="modal-body px-4">
+                                                <div class="alert alert-warning border-0 small mb-3"
+                                                    style="background: #fffbeb; color: #92400e; border-radius: 10px;">
+                                                    <span class="oi oi-info mr-2"></span> Data ini akan dihapus dari
+                                                    riwayat aktif (Soft Delete).
+                                                </div>
+
+                                                <p class="text-muted mb-3">Anda akan menghapus pengajuan
+                                                    <strong>{{ $cuti->jeniscuti }}</strong>. Mohon berikan alasan
+                                                    penghapusan:</p>
+
+                                                <div class="form-group">
+                                                    <textarea name="alasan_hapus" class="form-control border-light shadow-sm" rows="3"
+                                                        style="border-radius: 10px; background: #f8fafc;" placeholder="Tulis alasan di sini (misal: Salah input data)..."
+                                                        required></textarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer border-0 pb-4 px-4">
+                                                <button type="button" class="btn btn-light px-4" data-dismiss="modal"
+                                                    style="border-radius: 50px; font-weight: 500;">Batal</button>
+                                                <button type="submit" class="btn btn-danger px-4 shadow-sm"
+                                                    style="border-radius: 50px; font-weight: 500;">
+                                                    Hapus Data
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
                         @empty
                             <tr>
                                 <td colspan="9" class="py-5 text-center text-muted">
