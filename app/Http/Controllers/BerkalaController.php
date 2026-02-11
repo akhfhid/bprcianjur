@@ -139,8 +139,6 @@ class BerkalaController extends Controller
     }
 
     public function tambah($id){
-        //$berkala = \App\berkala::findorfail($id);
-        //$pangkat = \App\Pangkat::where('id',[$berkala['idpang']])->get();
         $pangkat = \App\Pangkat::findOrFail($id);
         return view ("berkala.create",["pangkat"=>$pangkat]);
     }
