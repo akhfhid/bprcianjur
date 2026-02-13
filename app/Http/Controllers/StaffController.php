@@ -75,24 +75,11 @@ class StaffController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         //
@@ -284,12 +271,6 @@ class StaffController extends Controller
 
         return view('staff.profile', ['pegawai' => $pegawai, 'cabang' => $cabang, 'kelamin' => $kelamin, 'jabatan' => $jabatan, 'umur' => $umur, 'agama' => $agama, 'kawin' => $kawin, 'pendidikan' => $pendidikan, 'pangkat' => $pangkat, 'cabang' => $cabang, 'keluarga' => $datakel, 'masakerja' => $mkerja, 'riwayatpendi' => $datapend, 'riwayatkerja' => $datakerja, 'tunjanganistri' => $tunjanganistri, 'tunjangananak' => $tunjangananak, 'tuncabang' => $tuncabang, 'total' => $total, 'pelatihan' => $pelatihan, 'ppensiun' => $ppensiun, 'smkerja' => $smkerja, 'spegawai' => $spegawai, 'dataangkat' => $dataangkat, 'datasanksi' => $datasanksi, 'bpjstk' => $bpjstk, 'bpjsks' => $bpjsks, 'pensiun' => $pensiun, 'pph' => $pph, 'fungsi' => $fungsi, 'gapokpeg' => $gapokpeg, 'gapok' => $gapok, 'tglpangkat' => $tglpangkat, 'tglberkala' => $tglberkala, 'tunda' => $tunda, 'jdpang' => $jdpang, 'jdber' => $jdber, 'jumlahanak' => $jumlahanak, 'pangan' => $pangan, 'tunpen' => $tunpen, 'tunjab' => $tunjab]);
 
-        /**
-         * Show the form for editing the specified resource.
-         *
-         * @param  int  $id
-         * @return \Illuminate\Http\Response
-         */
     }
 
     public function cuti()
@@ -337,82 +318,69 @@ class StaffController extends Controller
         return view('staff.permohonancuti', ['pega' => $pegawai]);
     }
 
-    public function mintacuti(Request $request)
-    {
-        $awal = $request->get('tglawal');
-        $akhir = $request->get('tglakhir');
-        $awlc = \Carbon\Carbon::parse($awal);
-        $akhirc = \Carbon\Carbon::parse($akhir);
-        $jeniscuti = $request->get('jeniscuti');
-        $jumlahcuti = $awlc->diffinDays($akhirc);
-        $user_id = \Auth::user()->pegawai_id;
-        $peg = \App\Pegawai::where('id', $user_id)->first();
-        $jabpeg = $peg->jabatan;
-        $jabatan = \App\Jabatan::where('id', $jabpeg)->first();
-        $jabatasan = $jabatan->atasan;
-        $jabket = \App\jabatan::where('id', $jabatasan)->first();
-        $jabketat = $jabket->atasan;
-        $jmlcuti = $jumlahcuti + 1;
-        if ($jeniscuti == 'Cuti Tahunan') {
-            $new_cuti = new \App\ordercuti();
-            $new_cuti->user_id = \Auth::user()->id;
-            $new_cuti->cabang = \Auth::user()->cabang;
-            $new_cuti->pegawai_id = $request->get('idpeg');
-            $new_cuti->jmlcuti = $jmlcuti;
-            $new_cuti->tglawal = $awal;
-            $new_cuti->tglakhir = $akhir;
-            $new_cuti->jeniscuti = $jeniscuti;
-            $new_cuti->alasan = $request->get('alasan');
-            $new_cuti->status = 'SUBMIT';
-            $new_cuti->otoatasan = $jabatasan;
-            $new_cuti->statasan = 'SUBMIT';
-            $new_cuti->diketatasan = $jabketat;
-            $new_cuti->statdiket = 'SUBMIT';
-        } elseif ($jeniscuti == 'Cuti Lainnya') {
-            $new_cuti = new \App\ordercuti();
-            $new_cuti->user_id = \Auth::user()->id;
-            $new_cuti->cabang = \Auth::user()->cabang;
-            $new_cuti->pegawai_id = $request->get('idpeg');
-            $new_cuti->jmlcuti = $jmlcuti;
-            $new_cuti->tglawal = $awal;
-            $new_cuti->tglakhir = $akhir;
-            $new_cuti->jeniscuti = $jeniscuti;
-            $new_cuti->alasan = $request->get('alasan');
-            $new_cuti->status = 'SUBMIT';
-            $new_cuti->otoatasan = $jabatasan;
-            $new_cuti->statasan = 'SUBMIT';
-            $new_cuti->diketatasan = $jabketat;
-            $new_cuti->statdiket = 'SUBMIT';
-        } else {
-            $new_cuti = new \App\ordercuti();
-            $new_cuti->user_id = \Auth::user()->id;
-            $new_cuti->cabang = \Auth::user()->cabang;
-            $new_cuti->pegawai_id = $request->get('idpeg');
-            $new_cuti->jmlcuti = 3;
-            $new_cuti->tglawal = $awal;
-            $new_cuti->tglakhir = $akhir;
-            $new_cuti->jeniscuti = $jeniscuti;
-            $new_cuti->alasan = $request->get('alasan');
-            $new_cuti->status = 'SUBMIT';
-            $new_cuti->otoatasan = $jabatasan;
-            $new_cuti->statasan = 'SUBMIT';
-            $new_cuti->diketatasan = $jabketat;
-            $new_cuti->statdiket = 'SUBMIT';
-            $new_cuti->otosdm = 'ADMIN';
-            $new_cuti->statsdm = 'SUBMIT';
-        }
+ public function mintacuti(Request $request)
+{
+    $awal = $request->get('tglawal');
+    $akhir = $request->get('tglakhir');
+    $jeniscuti = $request->get('jeniscuti');
+    $awlc = \Carbon\Carbon::parse($awal);
+    $akhirc = \Carbon\Carbon::parse($akhir);
+    $jmlcuti = $awlc->diffInDays($akhirc) + 1;
+    $user_id = \Auth::user()->pegawai_id; 
+    $peg = \App\Pegawai::findOrFail($user_id);
 
-        $new_cuti->save();
-        // try {
-        //     app(OrderCutiNotificationController::class)->send($new_cuti->id);
-        // } catch (\Throwable $e) {
-        //     \Log::error('GAGAL PANGGIL NOTIF CUTI', [
-        //         'order_id' => $new_cuti->id,
-        //         'error' => $e->getMessage(),
-        //     ]);
-        // }
-        return redirect()->route('staff.cuti')->with('status', 'Permohonan Berhasil Diinput');
+    if ($peg->scuti < $jmlcuti) {
+        return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
     }
+
+    $saldoBaru = $peg->scuti - $jmlcuti;
+    \DB::table('pegawais')->where('id', $user_id)->update([
+        'scuti' => $saldoBaru
+    ]);
+    $jabatan = \App\Jabatan::where('id', $peg->jabatan)->first();
+    $jabatasan = $jabatan->atasan ?? null;
+    $jabket = \App\jabatan::where('id', $jabatasan)->first();
+    $jabketat = $jabket->atasan ?? null;
+
+    $new_cuti = new \App\ordercuti();
+    $new_cuti->user_id = \Auth::user()->id;
+    $new_cuti->cabang = \Auth::user()->cabang;
+    $new_cuti->pegawai_id = $user_id; 
+    $new_cuti->jmlcuti = $jmlcuti;
+    $new_cuti->tglawal = $awal;
+    $new_cuti->tglakhir = $akhir;
+    $new_cuti->jeniscuti = $jeniscuti;
+    $new_cuti->alasan = $request->get('alasan');
+
+    $new_cuti->otoatasan = $jabatasan;
+    $new_cuti->diketatasan = $jabketat;
+    $new_cuti->otosdm = 'ADMIN';
+
+    if ($jeniscuti == 'Cuti Wajib') {
+        $new_cuti->status = 'DISETUJUI';
+        $new_cuti->statasan = 'DISETUJUI';
+        $new_cuti->statdiket = 'DISETUJUI';
+        $new_cuti->statsdm = 'DISETUJUI';
+    } else {
+        $new_cuti->status = 'SUBMIT';
+        $new_cuti->statasan = 'SUBMIT';
+        $new_cuti->statdiket = 'SUBMIT';
+        $new_cuti->statsdm = 'SUBMIT';
+    }
+
+    $new_cuti->save();
+
+    // Notifikasi (Opsional, uncomment jika jalan)
+    /*
+    try {
+        app(OrderCutiNotificationController::class)->send($new_cuti->id);
+    } catch (\Throwable $e) {
+        \Log::error('Gagal Notif', ['error' => $e->getMessage()]);
+    }
+    */
+
+    return redirect()->route('staff.cuti')->with('status', 'Permohonan Berhasil Diinput. Sisa Cuti Anda: ' . $saldoBaru);
+}
 
     public function cutisetuju()
     {

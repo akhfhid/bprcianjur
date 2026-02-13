@@ -132,4 +132,59 @@ public function destroy(Request $request, $id)
     
     return redirect($url)->with('status', 'Permohonan cuti berhasil dibatalkan/dihapus.');
 }
+
+// Custom Update Sisa Cuti Controller Method
+public function updateSisaCuti(Request $request, $pegawaiId)
+{
+    $request->validate([
+        'scuti' => 'required|integer|min:0'
+    ]);
+
+    $pegawai = Pegawai::findOrFail($pegawaiId);
+
+    $pegawai->update([
+        'scuti' => $request->scuti
+    ]);
+
+    return back()->with('status', 'Sisa cuti berhasil diperbarui');
 }
+public function updateSisaCutiAjax(Request $request, $pegawaiId)
+{
+    $request->validate([
+        'scuti' => 'required|integer|min:0'
+    ]);
+
+    $pegawai = Pegawai::findOrFail($pegawaiId);
+
+    $old = $pegawai->scuti;
+    $pegawai->scuti = $request->scuti;
+    $pegawai->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => "Sisa cuti pegawai {$pegawai->name} berhasil diperbarui dari {$old} hari menjadi {$pegawai->scuti} hari.",
+        'new_value' => $pegawai->scuti
+    ]);
+}
+public function resetSisaCuti()
+{
+    $now = now();
+    $isDecember = $now->month === 12;
+
+    Pegawai::query()->update(['scuti' => 12]);
+
+    $message = $isDecember
+        ? "Reset akhir tahun berhasil. Semua sisa cuti disesuaikan menjadi 12 hari."
+        : "Reset sisa cuti berhasil. Seluruh pegawai kini memiliki 12 hari.";
+
+    return response()->json([
+        'success' => true,
+        'message' => $message
+    ]);
+}
+
+
+}
+
+
+
