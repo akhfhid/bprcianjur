@@ -22,14 +22,17 @@ route::match(['GET', 'POST'], '/register', function () {
 Route::get('/ordercuti/{id}/notif', [OrderCutiNotificationController::class, 'send']);
 Route::get('/test-gmail', function () {
     Mail::raw('Test Gmail SMTP', function ($message) {
-        $message->to('neoaffan2@gmail.com')
-                ->subject('Test Gmail Untuk Notifikasi Approval Cuti ');
+        $message->to('neoaffan2@gmail.com')->subject('Test Gmail Untuk Notifikasi Approval Cuti ');
     });
 
     return response()->json(['status' => 'ok']);
 });
+Route::post('/pegawai/{pegawai}/scuti', [CutiController::class, 'updateSisaCutiAjax'])->name('pegawai.scuti.ajax');
+Route::post('/pegawai/{pegawai}/sisacuti', [CutiController::class, 'updateSisaCuti'])->name('pegawai.sisacuti');
+Route::post('/pegawai/reset-scuti', [CutiController::class,'resetSisaCuti'])
+    ->name('pegawai.reset.scuti');
 
-
+    
 Route::middleware(['auth'])
     ->prefix('cuti')
     ->group(function () {
