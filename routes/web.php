@@ -27,12 +27,80 @@ Route::get('/test-gmail', function () {
 
     return response()->json(['status' => 'ok']);
 });
+Route::get('/lihat-cuti-wajib-lama', function() {
+    // Ambil data cuti wajib lama beserta data pegawainya (Eager Loading)
+    $cutiLama = \App\ordercuti::with('pegawai')
+        ->where('jeniscuti', 'Cuti Wajib')
+        ->where('status', 'DISETUJUI')
+        ->whereDate('created_at', '<', '2026-02-20')
+        ->whereDate('updated_at', \Carbon\Carbon::today())
+        ->get();
+
+    $html = "<h2 style='font-family: sans-serif; color: #2c3e50;'>Daftar 81 Data Cuti Wajib yang Berhasil Diproses</h2>";
+    $html .= "<table border='1' cellpadding='10' cellspacing='0' style='font-family: sans-serif; border-collapse: collapse; width: 100%;'>";
+    $html .= "<tr style='background-color: #34495e; color: white;'>
+                <th>ID Cuti</th>
+                <th>Nama Pegawai</th>
+                <th>Jenis Cuti</th>
+                <th>Tgl Awal</th>
+                <th>Tgl Akhir</th>
+                <th>Jml Hari</th>
+                <th style='background-color: #27ae60;'>Status</th>
+              </tr>";
+
+    foreach ($cutiLama as $cuti) {
+        // Ambil nama dari relasi pegawai, jika tidak ada tampilkan 'Tidak Ditemukan'
+        $namaPegawai = $cuti->pegawai ? $cuti->pegawai->name : "<span style='color:red;'>Pegawai Tidak Ditemukan</span>";
+
+        $html .= "<tr>";
+        $html .= "<td align='center'>{$cuti->id}</td>";
+        $html .= "<td><b>{$namaPegawai}</b></td>"; 
+        $html .= "<td align='center'>{$cuti->jeniscuti}</td>";
+        $html .= "<td align='center'>{$cuti->tglawal}</td>";
+        $html .= "<td align='center'>{$cuti->tglakhir}</td>";
+        $html .= "<td align='center'>{$cuti->jmlcuti} Hari</td>";
+        $html .= "<td align='center' style='color: #27ae60; font-weight: bold;'>{$cuti->status}</td>";
+        $html .= "</tr>";
+    }
+    
+    $html .= "</table>";
+    $html .= "<p style='font-family: sans-serif;'>Total Data: <b>" . $cutiLama->count() . "</b></p>";
+
+    return $html;
+});
+// Route::get('/auto-approve-cuti-lama', function() {
+//     $cutiLama = \App\ordercuti::where('jeniscuti', 'Cuti Wajib')
+//         ->where('status', 'SUBMIT') 
+//         ->whereDate('created_at', '<', '2026-02-20')
+//         ->get();
+
+//     $count = 0;
+
+//     foreach ($cutiLama as $cuti) {
+//         $pegawai = \App\Pegawai::find($cuti->pegawai_id);
+        
+//         if ($pegawai) {
+//             $pegawai->scuti -= $cuti->jmlcuti;
+//             $pegawai->save();
+//         }
+
+//         $cuti->status = 'DISETUJUI';
+//         $cuti->statsdm = 'DISETUJUI';
+//         $cuti->statasan = 'DISETUJUI';
+//         $cuti->statdiket = 'DISETUJUI';
+//         $cuti->save();
+
+//         $count++;
+//     }
+
+//     return "Selesai! Berhasil menyetujui dan memotong saldo untuk $count data Cuti Wajib lama.";
+// });
 Route::post('/pegawai/{pegawai}/scuti', [CutiController::class, 'updateSisaCutiAjax'])->name('pegawai.scuti.ajax');
 Route::post('/pegawai/{pegawai}/sisacuti', [CutiController::class, 'updateSisaCuti'])->name('pegawai.sisacuti');
 Route::post('/pegawai/reset-scuti', [CutiController::class,'resetSisaCuti'])
     ->name('pegawai.reset.scuti');
 
-    
+
 Route::middleware(['auth'])
     ->prefix('cuti')
     ->group(function () {
