@@ -17,7 +17,7 @@ header('Access-Control-Allow-Origin: localhost');
     <link rel="stylesheet" href="{{ asset('polished/iconic/css/open-iconic-bootstrap.min.css') }}">
     <!-- 	<link rel="stylesheet" href="{{ asset('summernote/summernote-bs4.css') }}">
  <link rel="stylesheet" href="{{ asset('summernote/summernote-bs4.js') }}"> -->
-
+<meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css"> -->
     <!--<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css"> -->
     <!-- General CSS Files -->

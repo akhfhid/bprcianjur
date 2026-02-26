@@ -1,9 +1,4 @@
-<hr class="my-3">
-<div class="row mb-3">
-	<div class="col-md-12 text-right">
-		<a href="{{route('kadiv.permohonandownload',$peraturan->id)}}" class="btn btn-primary">Print</a>
-	</div>
-</div>
+
 @extends('layouts.global')
 @section('title')Detail Peraturan @endsection
 @section('content')
@@ -18,7 +13,9 @@
 <hr class="my-3">
 <div class="row mb-3">
     <div class="col-md-12 text-right">
-        <a href="{{ route('staff.peraturan') }}" class="btn btn-primary btn-sm">Back</a>
+		<a href="{{route('kadiv.permohonandownload',$peraturan->id)}}" class="btn btn-primary">Print</a>
+        
+        <a href="{{ route('kadiv.peraturan') }}" class="btn btn-primary btn-sm">Back</a>
     </div>
 </div>
 

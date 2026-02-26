@@ -1009,69 +1009,116 @@ class KadivController extends Controller
 
         return view('kadiv.permohonandownload',['peraturan'=>$peraturan,'pegawai'=>$pegawai,'cabang'=>$cab]);
     }
-    public function mintadownload(Request $request){
-       $orderatur = new \App\orderatur;
+   public function mintadownload(Request $request)
+{
+    $idperaturan = $request->get('idperaturan');
 
-       $orderatur->peraturan_id = $request->get('idperaturan');
-       $orderatur->pegawai_id = $request->get('idpeg');
-       $orderatur->cabang_id  = $request->get('cabang');
-       $orderatur->ket = $request->get('ket');
-       $orderatur->user_id = \Auth::user()->id;
-       $orderatur->status = "SUBMIT";
+    $orderatur = new \App\orderatur;
+    $orderatur->peraturan_id = $idperaturan;
+    $orderatur->pegawai_id   = $request->get('idpeg');
+    $orderatur->cabang_id    = $request->get('cabang');
+    $orderatur->ket          = $request->get('ket');
+    $orderatur->user_id      = \Auth::user()->id;
+    $orderatur->status       = "SUBMIT";
+    $orderatur->print        = "f"; // penting!
+    $orderatur->save();
 
-       $orderatur->save();
-       return redirect()->route('kadiv.peraturan')->with('status','Permintaan akan diproses');
-   }
+    // LOG USER
+    $pegawai = \App\Pegawai::where('id',\Auth::user()->pegawai_id)->first();
+    $peraturan = \App\peraturan::find($idperaturan);
 
-    public function statusatur(){
-        $user = \Auth::user()->id;
-        $orderatur = \App\orderatur::where('user_id',$user)->get();
+    $log = new \App\loguser;
+    $log->nampeg = $pegawai->name;
+    $log->jenis = 'Permintaan Data';
+    $log->keterangan = $peraturan->name;
+    $log->save();
 
-        $data=[];
-        foreach ($orderatur as $order) {
-        $pegawai = \App\Pegawai::where('id',$order['pegawai_id'])->first();
-        $namapeg = $pegawai['name'];
-        $peraturan = \App\peraturan::where('id',$order['peraturan_id'])->first();
-        $namaper = $peraturan['name'];
-        $tglsk = $peraturan['tglsk'];
-        $nosk = $peraturan['nosk'];
+    return redirect()->route('kadiv.peraturan')
+        ->with('status','Permintaan akan diproses');
+}
 
-        $data[]=[
-          'idatur'=>$order['peraturan_id'],
-          'name' => $order['name'],
-          'nosk' => $nosk,
-          'tglsk'=> $tglsk,
-          'namepeg'=> $namapeg,
-          'namepr' => $namaper,
-          'ket' => $order['ket'],
-          'status'=>$order['status'],
-          'tglminta'=> $order['created_at']
+  public function statusatur()
+{
+    $userId = \Auth::user()->id;
+
+    $orders = \App\orderatur::with(['peraturan','pegawai'])
+                ->where('user_id',$userId)
+                ->orderBy('created_at','desc')
+                ->paginate(10);
+
+    $orders->getCollection()->transform(function ($order) {
+        return [
+            'idatur'   => $order->peraturan_id,
+            'nosk'     => optional($order->peraturan)->nosk,
+            'tglsk'    => optional($order->peraturan)->tglsk,
+            'namepeg'  => optional($order->pegawai)->name,
+            'namepr'   => optional($order->peraturan)->name,
+            'ket'      => $order->ket,
+            'status'   => $order->status,
+            'print'    => $order->print,
+            'tglminta' => $order->created_at
         ];
+    });
+
+    return view('kadiv.statusatur',['orderatur'=>$orders]);
+}
+ public function showatur($id)
+{
+    $peraturan = \App\peraturan::findOrFail($id);
+    $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y H:i:s');
+
+    $order = \App\orderatur::where('peraturan_id',$id)
+                ->where('user_id',\Auth::user()->id)
+                ->first();
+
+    $pegawai = \App\Pegawai::where('id',\Auth::user()->pegawai_id)->first();
+
+    $log = new \App\loguser;
+    $log->nampeg = $pegawai->name;
+    $log->jenis  = 'Lihat Dokumen';
+    $log->keterangan = $peraturan->name;
+    $log->save();
+
+    return view('kadiv.showatur',[
+        'peraturan'=>$peraturan,
+        'time'=>$time,
+        'order'=>$order
+    ]);
+}
+  public function show_pdf($id)
+{
+    $userId = \Auth::user()->id;
+    $order = \App\orderatur::where('peraturan_id', $id)
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+    if (!$order) {
+        return redirect()->route('kadiv.peraturan')
+            ->with('status', 'Anda belum meminta dokumen ini');
     }
-        return view ('kadiv.statusatur',['orderatur' => $data]);
 
-   }
-   public function showatur($id)
-    {
-        $peraturan = \App\peraturan::findorFail($id);
-        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
-        $new_loguser = new \App\loguser;
-        $user = \Auth::user()->pegawai_id;
-        $pegawai = \App\Pegawai::where('id',$user)->first();
-        $new_loguser->nampeg = $pegawai->name;
-        $new_loguser->keterangan = $peraturan->name;
-        $new_loguser->save();
-        return view('kadiv.showatur',['peraturan'=>$peraturan,'time'=>$time]);
+    $status = strtoupper(trim($order->status));
+
+    if (!in_array($status, ["SETUJU", "DISETUJUI", "APPROVE"])) {
+        return redirect()->back()
+            ->with('status', 'Dokumen belum disetujui');
     }
-    public function show_pdf($id)
-    {
-        $peraturan = \App\peraturan::findorFail($id);
-        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
 
-
-
-        return view('kadiv.show_pdf',['peraturan'=>$peraturan,'time'=>$time]);
+    if ($order->print == "t") {
+        return redirect()->back()
+            ->with('status', 'Dokumen sudah pernah di print. Silakan minta akses ulang.');
     }
+
+    $peraturan = \App\peraturan::findOrFail($id);
+    $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y H:i:s');
+
+    return view('kadiv.show_pdf', [
+        'peraturan' => $peraturan,
+        'time' => $time,
+        'order' => $order // Kirim ID order ke view agar mudah dipanggil AJAX
+    ]);
+}
    public function rotasipegawai(Request $request){
 
     $idcabang = \Auth::user()->cabang;
@@ -1282,4 +1329,25 @@ class KadivController extends Controller
 
         return view('kadiv.cutilainnya',['pegawai'=>$peg]);
     }
+    public function update_status_print(Request $request)
+{
+    $order = \App\orderatur::find($request->order_id);
+    if($order) {
+        $order->print = "t";
+        $order->save();
+
+        // Pindahkan pencatatan log (Loguser) ke sini
+        $peraturan = \App\peraturan::find($order->peraturan_id);
+        $pegawai = \App\Pegawai::where('id', \Auth::user()->pegawai_id)->first();
+        
+        $new_loguser = new \App\loguser;
+        $new_loguser->nampeg = $pegawai->name;
+        $new_loguser->jenis = 'Print';
+        $new_loguser->keterangan = $peraturan->name;
+        $new_loguser->save();
+
+        return response()->json(['success' => true]);
+    }
+    return response()->json(['success' => false], 404);
+}
 }

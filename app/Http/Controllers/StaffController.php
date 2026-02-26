@@ -270,7 +270,6 @@ class StaffController extends Controller
         $jdber = $jdberkala->addYears(2)->addmonths($tunda)->toDateString();
 
         return view('staff.profile', ['pegawai' => $pegawai, 'cabang' => $cabang, 'kelamin' => $kelamin, 'jabatan' => $jabatan, 'umur' => $umur, 'agama' => $agama, 'kawin' => $kawin, 'pendidikan' => $pendidikan, 'pangkat' => $pangkat, 'cabang' => $cabang, 'keluarga' => $datakel, 'masakerja' => $mkerja, 'riwayatpendi' => $datapend, 'riwayatkerja' => $datakerja, 'tunjanganistri' => $tunjanganistri, 'tunjangananak' => $tunjangananak, 'tuncabang' => $tuncabang, 'total' => $total, 'pelatihan' => $pelatihan, 'ppensiun' => $ppensiun, 'smkerja' => $smkerja, 'spegawai' => $spegawai, 'dataangkat' => $dataangkat, 'datasanksi' => $datasanksi, 'bpjstk' => $bpjstk, 'bpjsks' => $bpjsks, 'pensiun' => $pensiun, 'pph' => $pph, 'fungsi' => $fungsi, 'gapokpeg' => $gapokpeg, 'gapok' => $gapok, 'tglpangkat' => $tglpangkat, 'tglberkala' => $tglberkala, 'tunda' => $tunda, 'jdpang' => $jdpang, 'jdber' => $jdber, 'jumlahanak' => $jumlahanak, 'pangan' => $pangan, 'tunpen' => $tunpen, 'tunjab' => $tunjab]);
-
     }
 
     public function cuti()
@@ -318,60 +317,62 @@ class StaffController extends Controller
         return view('staff.permohonancuti', ['pega' => $pegawai]);
     }
 
- public function mintacuti(Request $request)
-{
-    $awal = $request->get('tglawal');
-    $akhir = $request->get('tglakhir');
-    $jeniscuti = $request->get('jeniscuti');
-    $awlc = \Carbon\Carbon::parse($awal);
-    $akhirc = \Carbon\Carbon::parse($akhir);
-    $jmlcuti = $awlc->diffInDays($akhirc) + 1;
-    $user_id = \Auth::user()->pegawai_id; 
-    $peg = \App\Pegawai::findOrFail($user_id);
+    public function mintacuti(Request $request)
+    {
+        $awal = $request->get('tglawal');
+        $akhir = $request->get('tglakhir');
+        $jeniscuti = $request->get('jeniscuti');
+        $awlc = \Carbon\Carbon::parse($awal);
+        $akhirc = \Carbon\Carbon::parse($akhir);
+        $jmlcuti = $awlc->diffInDays($akhirc) + 1;
+        $user_id = \Auth::user()->pegawai_id;
+        $peg = \App\Pegawai::findOrFail($user_id);
 
-    if ($peg->scuti < $jmlcuti) {
-        return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
-    }
+        if ($peg->scuti < $jmlcuti) {
+            return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
+        }
 
-    $saldoBaru = $peg->scuti - $jmlcuti;
-    \DB::table('pegawais')->where('id', $user_id)->update([
-        'scuti' => $saldoBaru
-    ]);
-    $jabatan = \App\Jabatan::where('id', $peg->jabatan)->first();
-    $jabatasan = $jabatan->atasan ?? null;
-    $jabket = \App\jabatan::where('id', $jabatasan)->first();
-    $jabketat = $jabket->atasan ?? null;
+        $saldoBaru = $peg->scuti - $jmlcuti;
+        \DB::table('pegawais')
+            ->where('id', $user_id)
+            ->update([
+                'scuti' => $saldoBaru,
+            ]);
+        $jabatan = \App\Jabatan::where('id', $peg->jabatan)->first();
+        $jabatasan = $jabatan->atasan ?? null;
+        $jabket = \App\jabatan::where('id', $jabatasan)->first();
+        $jabketat = $jabket->atasan ?? null;
 
-    $new_cuti = new \App\ordercuti();
-    $new_cuti->user_id = \Auth::user()->id;
-    $new_cuti->cabang = \Auth::user()->cabang;
-    $new_cuti->pegawai_id = $user_id; 
-    $new_cuti->jmlcuti = $jmlcuti;
-    $new_cuti->tglawal = $awal;
-    $new_cuti->tglakhir = $akhir;
-    $new_cuti->jeniscuti = $jeniscuti;
-    $new_cuti->alasan = $request->get('alasan');
+        $new_cuti = new \App\ordercuti();
+        $new_cuti->user_id = \Auth::user()->id;
+        $new_cuti->cabang = \Auth::user()->cabang;
+        $new_cuti->pegawai_id = $user_id;
+        $new_cuti->jmlcuti = $jmlcuti;
+        $new_cuti->tglawal = $awal;
+        $new_cuti->tglakhir = $akhir;
+        $new_cuti->jeniscuti = $jeniscuti;
+        $new_cuti->alasan = $request->get('alasan');
 
-    $new_cuti->otoatasan = $jabatasan;
-    $new_cuti->diketatasan = $jabketat;
-    $new_cuti->otosdm = 'ADMIN';
+        $new_cuti->otoatasan = $jabatasan;
+        $new_cuti->diketatasan = $jabketat;
+        $new_cuti->otosdm = 'ADMIN';
 
-    if ($jeniscuti == 'Cuti Wajib') {
-        $new_cuti->status = 'DISETUJUI';
-        $new_cuti->statasan = 'DISETUJUI';
-        $new_cuti->statdiket = 'DISETUJUI';
-        $new_cuti->statsdm = 'DISETUJUI';
-    } else {
-        $new_cuti->status = 'SUBMIT';
-        $new_cuti->statasan = 'SUBMIT';
-        $new_cuti->statdiket = 'SUBMIT';
-        $new_cuti->statsdm = 'SUBMIT';
-    }
+        if ($jeniscuti == 'Cuti Wajib') {
+            $new_cuti->status = 'DISETUJUI';
+            $new_cuti->statasan = 'DISETUJUI';
+            $new_cuti->statdiket = 'DISETUJUI';
+            $new_cuti->statsdm = 'DISETUJUI';
+        } else {
+            $new_cuti->status = 'SUBMIT';
+            $new_cuti->statasan = 'SUBMIT';
+            $new_cuti->statdiket = 'SUBMIT';
+            $new_cuti->statsdm = 'SUBMIT';
+        }
 
-    $new_cuti->save();
+        $new_cuti->save();
 
-    // Notifikasi (Opsional, uncomment jika jalan)
-    /*
+        // Notifikasi (Opsional, uncomment jika jalan)
+        /*
     try {
         app(OrderCutiNotificationController::class)->send($new_cuti->id);
     } catch (\Throwable $e) {
@@ -379,8 +380,10 @@ class StaffController extends Controller
     }
     */
 
-    return redirect()->route('staff.cuti')->with('status', 'Permohonan Berhasil Diinput. Sisa Cuti Anda: ' . $saldoBaru);
-}
+        return redirect()
+            ->route('staff.cuti')
+            ->with('status', 'Permohonan Berhasil Diinput. Sisa Cuti Anda: ' . $saldoBaru);
+    }
 
     public function cutisetuju()
     {
@@ -513,7 +516,7 @@ class StaffController extends Controller
     public function showatur($id)
     {
         $peraturan = \App\peraturan::findorFail($id);
-        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
+        $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y H:i:s');
         $new_loguser = new \App\loguser();
         $user = \Auth::user()->pegawai_id;
         $pegawai = \App\Pegawai::where('id', $user)->first();
@@ -531,7 +534,7 @@ class StaffController extends Controller
     public function show_pdf($id)
     {
         $peraturan = \App\peraturan::findorFail($id);
-        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
+        $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y H:i:s');
 
         //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
         //return $pdf->stream();

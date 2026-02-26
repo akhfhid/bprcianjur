@@ -1167,72 +1167,109 @@ class PincabController extends Controller
        return redirect()->route('pincab.peraturan')->with('status','Permintaan akan diproses');
    }
 
-    public function statusatur(){
-        $user = \Auth::user()->id;
-        $orderatur = \App\orderatur::where('user_id',$user)->get();
-
-        $data=[];
-        foreach ($orderatur as $order) {
-        $pegawai = \App\Pegawai::where('id',$order['pegawai_id'])->first();
-        $namapeg = $pegawai['name'];
-        $peraturan = \App\peraturan::where('id',$order['peraturan_id'])->first();
-        $namaper = $peraturan['name'];
-        $tglsk = $peraturan['tglsk'];
-        $nosk = $peraturan['nosk'];
-
-        $data[]=[
-          'idatur'=> $order['peraturan_id'],
-          'name' => $order['name'],
-          'nosk' => $nosk,
-          'tglsk'=> $tglsk,
-          'namepeg'=> $namapeg,
-          'namepr' => $namaper,
-          'ket' => $order['ket'],
-          'status'=>$order['status'],
-          'print'=>$order['print'],
-          'tglminta'=> $order['created_at']
-        ];
-    }
-        return view ('pincab.statusatur',['orderatur' => $data]);
-
-   }
-   public function showatur($id)
-    {
-        $peraturan = \App\peraturan::findorFail($id);
-        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
-        $new_loguser = new \App\loguser;
-        $user = \Auth::user()->pegawai_id;
-        $pegawai = \App\Pegawai::where('id',$user)->first();
-        $new_loguser->nampeg = $pegawai->name;
-        $new_loguser->jenis ='Print';
-        $new_loguser->keterangan = $peraturan->name;
-        // $new_loguser->waktu = $time;
-        $new_loguser->save();
-
-        //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
-        //return $pdf->stream();
-        //exit(0);
-
-        return view('pincab.showatur',['peraturan'=>$peraturan,'time'=>$time]);
-    }
-  public function print_pdf($id)
+public function statusatur()
 {
-  $peraturan = \App\peraturan::findorFail($id);
-        $time = \Carbon\Carbon::now()->translatedFormat('d/m-Y');
+    $userId = \Auth::user()->id;
+
+    $orders = \App\orderatur::with(['peraturan', 'pegawai'])
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+    $orders->getCollection()->transform(function ($order) {
+        return [
+            'idatur'   => $order->peraturan_id,
+            'nosk'     => optional($order->peraturan)->nosk,
+            'tglsk'    => optional($order->peraturan)->tglsk,
+            'namepeg'  => optional($order->pegawai)->name,
+            'namepr'   => optional($order->peraturan)->name,
+            'ket'      => $order->ket,
+            'status'   => $order->status,
+            'print'    => $order->print,  
+            'tglminta' => $order->created_at
+        ];
+    });
+
+    // 3. Kirim variabel $orders ke view
+    return view('pincab.statusatur', ['orderatur' => $orders]);
+}
+  public function showatur($id)
+{
+    $peraturan = \App\peraturan::findOrFail($id);
+    $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y H:i:s');
+
+    $order = \App\orderatur::where('peraturan_id',$id)
+                ->where('user_id',\Auth::user()->id)
+                ->first();
+
+    $new_loguser = new \App\loguser;
+    $pegawai = \App\Pegawai::where('id',\Auth::user()->pegawai_id)->first();
+    $new_loguser->nampeg = $pegawai->name;
+    $new_loguser->jenis ='Lihat Dokumen';
+    $new_loguser->keterangan = $peraturan->name;
+    $new_loguser->save();
+
+    return view('pincab.showatur',[
+        'peraturan'=>$peraturan,
+        'time'=>$time,
+        'order'=>$order 
+    ]);
+}
+public function print_pdf($id)
+{
+    $userId = \Auth::user()->id;
+    $order = \App\orderatur::where('peraturan_id', $id)
+                ->where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+    if (!$order) {
+        return redirect()->route('pincab.peraturan')
+            ->with('status', 'Anda belum meminta dokumen ini');
+    }
+
+    $status = strtoupper(trim($order->status));
+
+    if (!in_array($status, ["SETUJU", "DISETUJUI", "APPROVE"])) {
+        return redirect()->back()
+            ->with('status', 'Dokumen belum disetujui');
+    }
+
+    if ($order->print == "t") {
+        return redirect()->back()
+            ->with('status', 'Dokumen sudah pernah di print. Silakan minta akses ulang.');
+    }
+
+    $peraturan = \App\peraturan::findOrFail($id);
+    $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y H:i:s');
+
+    return view('pincab.show_pdf', [
+        'peraturan' => $peraturan,
+        'time' => $time,
+        'order' => $order // Kirim ID order ke view agar mudah dipanggil AJAX
+    ]);
+}
+
+public function update_status_print(Request $request)
+{
+    $order = \App\orderatur::find($request->order_id);
+    if($order) {
+        $order->print = "t";
+        $order->save();
+
+        // Pindahkan pencatatan log (Loguser) ke sini
+        $peraturan = \App\peraturan::find($order->peraturan_id);
+        $pegawai = \App\Pegawai::where('id', \Auth::user()->pegawai_id)->first();
+        
         $new_loguser = new \App\loguser;
-        $user = \Auth::user()->pegawai_id;
-        $pegawai = \App\Pegawai::where('id',$user)->first();
         $new_loguser->nampeg = $pegawai->name;
-        $new_loguser->jenis ='Print';
+        $new_loguser->jenis = 'Print';
         $new_loguser->keterangan = $peraturan->name;
-        // $new_loguser->waktu = $time;
         $new_loguser->save();
 
-        //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
-        //return $pdf->stream();
-        //exit(0);
-
-        return view('pincab.show_pdf',['peraturan'=>$peraturan,'time'=>$time]);
+        return response()->json(['success' => true]);
+    }
+    return response()->json(['success' => false], 404);
 }
     public function cutiwajib()
     {

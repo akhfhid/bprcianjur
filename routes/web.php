@@ -338,7 +338,10 @@ route::middleware(['auth'])->group(function () {
     route::get('Kadiv/Cuti/CutiWajib', 'KadivController@cutiwajib')->name('kadiv.cutiwajib');
     route::get('Kadiv/Cuti/CutiLainnya', 'KadivController@cutilainnya')->name('kadiv.cutilainnya');
     route::resource('Kadiv', 'KadivController');
+Route::post('/kadiv/peraturan/update-print', 'KadivController@update_status_print')->name('kadiv.update_print');
 
+// Sesuaikan nama controllernya dengan yang Anda pakai
+Route::post('/pincab/peraturan/update-print', 'PincabController@update_status_print')->name('pincab.update_print');
     route::get('Kepatuhan/IndexPegawai', 'KepatuhanController@indexpegawai')->name('kepatuhan.indexpegawai');
     route::Get('Kepatuhan/ProfilePegawai/{id}', 'KepatuhanController@detailpegawai')->name('kepatuhan.detailpegawai');
     route::get('Kepatuhan/Edit/{id}', 'KepatuhanController@editpegawai')->name('kepatuhan.editpegawai');

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="{{asset('polished/summernote/summernote-bs4.css')}}">
     <link rel="stylesheet" href="{{asset('polished/summernote/summernote-bs4.js')}}">
     <!-- General CSS Files -->
- 
+ <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- CSS Libraries -->
   <link rel="stylesheet" href="{{asset('node_modules/jqvmap/dist/jqvmap.min.css')}}">
