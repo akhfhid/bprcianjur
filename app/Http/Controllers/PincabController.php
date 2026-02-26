@@ -1257,7 +1257,6 @@ public function update_status_print(Request $request)
         $order->print = "t";
         $order->save();
 
-        // Pindahkan pencatatan log (Loguser) ke sini
         $peraturan = \App\peraturan::find($order->peraturan_id);
         $pegawai = \App\Pegawai::where('id', \Auth::user()->pegawai_id)->first();
         

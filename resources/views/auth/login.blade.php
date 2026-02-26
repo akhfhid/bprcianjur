@@ -6,7 +6,6 @@
             <div class="col-md-4"></div>
             <div class="col-md-4">
                 <div class="card bg-white border">
-                    {{-- <div class="card-header bg-transparent border-0">{{__('Login')}}</div> --}}
                     @if ($errors->any())
                         <div class="alert alert-danger">
                             <ul class="mb-0">

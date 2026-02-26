@@ -54,7 +54,6 @@ Status Permintaan Dokumen
                             @endphp
 
                             <tr style="border-bottom: 1px solid #f0f0f0;">
-                                {{-- 2. TAMPILKAN NOMOR OTOMATIS --}}
                                 <td class="text-center fw-medium text-dark">
                                     {{ $loop->iteration + ($orderatur->currentPage() - 1) * $orderatur->perPage() }}
                                 </td>
@@ -123,7 +122,6 @@ Status Permintaan Dokumen
                             </tr>
                         @empty
                             <tr>
-                                {{-- Sesuaikan colspan menjadi 7 karena ada 1 kolom baru --}}
                                 <td colspan="7" class="text-center py-5 bg-light">
                                     <div class="d-flex flex-column align-items-center">
                                         <i class="bi bi-inbox text-secondary" style="font-size: 3rem; opacity: 0.5;"></i>
