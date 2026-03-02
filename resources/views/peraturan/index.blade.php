@@ -33,7 +33,45 @@
         </div>
     </div>
 </div>
+<div class="row mb-4" id="statistikRow" style="display:none;">
 
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                <h6>Total Peraturan</h6>
+                <h3 id="statTotal">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow">
+            <div class="card-body">
+                <h6>Total SK</h6>
+                <h3 id="statSK">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <h6>Total SE</h6>
+                <h3 id="statSE">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-dark text-white shadow">
+            <div class="card-body">
+                <h6>Tahun {{date('Y')}}</h6>
+                <h3 id="statTahun">0</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
 <div id="tableWrapper" style="display:none;">
 
     <div class="card shadow-sm mb-3">
@@ -104,6 +142,15 @@
 <script src="{{asset('DataTables/DataTables-1.10.18/js/dataTables.bootstrap4.min.js')}}"></script>
 
 <script>
+	function loadStatistik(){
+    $.get('/peraturan/statistik', function(res){
+        $('#statistikRow').fadeIn();
+        $('#statTotal').text(res.total);
+        $('#statSK').text(res.sk);
+        $('#statSE').text(res.se);
+        $('#statTahun').text(res.tahun_ini);
+    });
+}
 let kategoriDipilih = null;
 let jenisDipilih = 'all';
 let table = null;
@@ -111,6 +158,7 @@ let table = null;
 $('.kategoriBtn').click(function(){
     kategoriDipilih = $(this).data('kategori');
     $('#tableWrapper').fadeIn();
+	loadStatistik();
     loadTable();
 });
 

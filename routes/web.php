@@ -27,8 +27,9 @@ Route::get('/test-gmail', function () {
 
     return response()->json(['status' => 'ok']);
 });
+Route::get('/peraturan/statistik', 'peraturanController@statistik');
+
 Route::get('/lihat-cuti-wajib-lama', function() {
-    // Ambil data cuti wajib lama beserta data pegawainya (Eager Loading)
     $cutiLama = \App\ordercuti::with('pegawai')
         ->where('jeniscuti', 'Cuti Wajib')
         ->where('status', 'DISETUJUI')

@@ -25,36 +25,45 @@ class peraturanController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-public function index(Request $request)
-{
-    if ($request->ajax()) {
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = peraturan::query();
 
-        $query = peraturan::query();
+            // 🔹 FILTER KATEGORI
+            if ($request->kategori) {
+                $query->where('kategori', $request->kategori);
+            }
 
-        // 🔹 FILTER KATEGORI
-        if ($request->kategori) {
-            $query->where('kategori', $request->kategori);
+            // 🔹 FILTER JENIS SURAT (SK / SE)
+            if ($request->jenis_surat && $request->jenis_surat != 'all') {
+                $query->where('jenis_surat', $request->jenis_surat);
+            }
+
+            $data = $query->latest()->get();
+
+            return DataTables::of($data)
+                ->addColumn('action', function ($data) {
+                    $button = '<a href="peraturan/' . $data->id . '/edit" class="btn btn-primary btn-sm">Edit</a> ';
+                    $button .= '<a href="peraturan/' . $data->id . '" class="btn btn-success btn-sm">Detail</a> ';
+                    $button .= '<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
+                    return $button;
+                })
+                ->make(true);
         }
 
-        // 🔹 FILTER JENIS SURAT (SK / SE)
-        if ($request->jenis_surat && $request->jenis_surat != 'all') {
-            $query->where('jenis_surat', $request->jenis_surat);
-        }
-
-        $data = $query->latest()->get();
-
-        return DataTables::of($data)
-            ->addColumn('action', function ($data) {
-                $button = '<a href="peraturan/'.$data->id.'/edit" class="btn btn-primary btn-sm">Edit</a> ';
-                $button .= '<a href="peraturan/'.$data->id.'" class="btn btn-success btn-sm">Detail</a> ';
-                $button .= '<button type="button" name="delete" id="'.$data->id.'" class="delete btn btn-danger btn-sm">Delete</button>';
-                return $button;
-            })
-            ->make(true);
+        return view('peraturan.index');
     }
 
-    return view('peraturan.index');
-}
+    public function statistik()
+    {
+        return response()->json([
+            'total' => \App\peraturan::count(),
+            'sk' => \App\peraturan::where('jenis_surat', 'SK')->count(),
+            'se' => \App\peraturan::where('jenis_surat', 'SE')->count(),
+            'tahun_ini' => \App\peraturan::whereYear('created_at', date('Y'))->count(),
+        ]);
+    }
     /**
      * Show the form for creating a new resource.
      *
