@@ -25,24 +25,36 @@ class peraturanController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-    public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = peraturan::latest()->get();
+public function index(Request $request)
+{
+    if ($request->ajax()) {
 
-            return DataTables::of($data)
-                ->addColumn('action', function ($data) {
-                    $button = '<a href="peraturan/' . $data->id . '/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>';
-                    $button .= '<a href="peraturan/' . $data->id . '"> <button class="btn btn-success btn-sm">Detail</button></a>';
-                    $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
-                    return $button;
-                })
-                ->editColumn('id', 'ID: {{ $id }}')
-                ->make(true);
-            //return datatables()->of($data)->toJson();
+        $query = peraturan::query();
+
+        // 🔹 FILTER KATEGORI
+        if ($request->kategori) {
+            $query->where('kategori', $request->kategori);
         }
-        return view('peraturan.index');
+
+        // 🔹 FILTER JENIS SURAT (SK / SE)
+        if ($request->jenis_surat && $request->jenis_surat != 'all') {
+            $query->where('jenis_surat', $request->jenis_surat);
+        }
+
+        $data = $query->latest()->get();
+
+        return DataTables::of($data)
+            ->addColumn('action', function ($data) {
+                $button = '<a href="peraturan/'.$data->id.'/edit" class="btn btn-primary btn-sm">Edit</a> ';
+                $button .= '<a href="peraturan/'.$data->id.'" class="btn btn-success btn-sm">Detail</a> ';
+                $button .= '<button type="button" name="delete" id="'.$data->id.'" class="delete btn btn-danger btn-sm">Delete</button>';
+                return $button;
+            })
+            ->make(true);
     }
+
+    return view('peraturan.index');
+}
     /**
      * Show the form for creating a new resource.
      *
@@ -94,11 +106,23 @@ class peraturanController extends Controller
         //     'pdf' => 'nullable|file|mimes:pdf|max:10240', // Hanya menerima file PDF jika ada
         // ]);
 
+        $request->validate([
+            'name' => 'required',
+            'kategori' => 'required|in:internal,external',
+            'jenis_surat' => 'required|in:SK,SE',
+            'nosk' => 'required',
+            'tglsk' => 'required|date',
+            'tgllaku' => 'required|date',
+            'uraian' => 'required',
+            'pdf' => 'nullable|file|mimes:pdf|max:10240',
+        ]);
+
         // Membuat instance baru untuk peraturan
         $new_peraturan = new \App\peraturan();
 
-        // Mengisi data dari request
         $new_peraturan->name = $request->get('name');
+        $new_peraturan->kategori = $request->get('kategori');
+        $new_peraturan->jenis_surat = $request->get('jenis_surat');
         $new_peraturan->nosk = $request->get('nosk');
         $new_peraturan->tglsk = $request->get('tglsk');
         $new_peraturan->tgllaku = $request->get('tgllaku');
@@ -166,6 +190,18 @@ class peraturanController extends Controller
      */
     public function simpanedit(Request $request, $id)
     {
+        $request->validate([
+            'name' => 'required',
+            'kategori' => 'required|in:internal,external',
+            'jenis_surat' => 'required|in:SK,SE',
+            'nosk' => 'required',
+            'tglsk' => 'required|date',
+            'tgllaku' => 'required|date',
+            'uraian' => 'required',
+            'pdf' => 'nullable|file|mimes:pdf|max:10240',
+        ]);
+
+        $edit_peraturan = \App\peraturan::findOrFail($id);
         $edit_peraturan = \App\peraturan::findorFail($id);
         $description = $request->get('description');
         $dom = new \DomDocument('1.0', 'UTF-8');
@@ -197,6 +233,8 @@ class peraturanController extends Controller
         $description_save = $dom->saveHTML();
 
         $edit_peraturan->name = $request->get('name');
+        $edit_peraturan->kategori = $request->get('kategori');
+        $edit_peraturan->jenis_surat = $request->get('jenis_surat');
         $edit_peraturan->nosk = $request->get('nosk');
         $edit_peraturan->tglsk = $request->get('tglsk');
         $edit_peraturan->tgllaku = $request->get('tgllaku');

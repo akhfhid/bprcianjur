@@ -64,8 +64,6 @@ Status Permintaan Dokumen
                                 <td class="text-center text-dark">{{ $atur['nosk'] }}</td>
                                 <td class="text-center text-dark">{{ $atur['tglminta'] }}</td>
                                 <td class="text-dark" style="max-width: 200px;">{{ Str::limit($atur['ket'], 30) }}</td>
-
-                                {{-- STATUS BADGE --}}
                                 <td class="text-center py-3">
                                     @if($status == "SUBMIT")
                                         <span class="badge rounded-pill px-3 py-2" 
