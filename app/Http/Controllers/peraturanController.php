@@ -25,35 +25,40 @@ class peraturanController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-    public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $query = peraturan::query();
+  public function index(Request $request)
+{
+    if ($request->ajax()) {
 
-            // 🔹 FILTER KATEGORI
-            if ($request->kategori) {
-                $query->where('kategori', $request->kategori);
-            }
+        $query = Peraturan::query()
 
-            // 🔹 FILTER JENIS SURAT (SK / SE)
-            if ($request->jenis_surat && $request->jenis_surat != 'all') {
-                $query->where('jenis_surat', $request->jenis_surat);
-            }
+        ->when($request->kategori, function ($q) use ($request) {
+            $q->where('kategori', $request->kategori);
+        })
 
-            $data = $query->latest()->get();
+        ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
+            $q->where('jenis_surat', $request->jenis_surat);
+        })
 
-            return DataTables::of($data)
-                ->addColumn('action', function ($data) {
-                    $button = '<a href="peraturan/' . $data->id . '/edit" class="btn btn-primary btn-sm">Edit</a> ';
-                    $button .= '<a href="peraturan/' . $data->id . '" class="btn btn-success btn-sm">Detail</a> ';
-                    $button .= '<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
-                    return $button;
-                })
-                ->make(true);
-        }
+        ->latest();
 
-        return view('peraturan.index');
+        return DataTables::of($query)
+
+        ->addColumn('action', function ($data) {
+
+            $button  = '<a href="peraturan/'.$data->id.'/edit" class="btn btn-primary btn-sm">Edit</a> ';
+            $button .= '<a href="peraturan/'.$data->id.'" class="btn btn-success btn-sm">Detail</a> ';
+            $button .= '<button type="button" id="'.$data->id.'" class="delete btn btn-danger btn-sm">Delete</button>';
+
+            return $button;
+
+        })
+
+        ->rawColumns(['action'])
+        ->make(true);
     }
+
+    return view('peraturan.index');
+}
 
     public function statistik()
     {
@@ -118,11 +123,10 @@ class peraturanController extends Controller
         $request->validate([
             'name' => 'required',
             'kategori' => 'required|in:internal,external',
-            'jenis_surat' => 'required|in:SK,SE',
+            'jenis_surat' => 'required',
             'nosk' => 'required',
             'tglsk' => 'required|date',
             'tgllaku' => 'required|date',
-            'uraian' => 'required',
             'pdf' => 'nullable|file|mimes:pdf|max:10240',
         ]);
 
@@ -202,11 +206,10 @@ class peraturanController extends Controller
         $request->validate([
             'name' => 'required',
             'kategori' => 'required|in:internal,external',
-            'jenis_surat' => 'required|in:SK,SE',
+            'jenis_surat' => 'required',
             'nosk' => 'required',
             'tglsk' => 'required|date',
             'tgllaku' => 'required|date',
-            'uraian' => 'required',
             'pdf' => 'nullable|file|mimes:pdf|max:10240',
         ]);
 

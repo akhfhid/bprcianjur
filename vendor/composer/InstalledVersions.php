@@ -24,12 +24,12 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => '1.0.0+no-version-set',
-    'version' => '1.0.0.0',
+    'pretty_version' => 'dev-master',
+    'version' => 'dev-master',
     'aliases' => 
     array (
     ),
-    'reference' => NULL,
+    'reference' => 'b67a1cde0c9093e1c2eec718f6e5c4bcfea44294',
     'name' => 'laravel/laravel',
   ),
   'versions' => 
@@ -83,6 +83,42 @@ private static $installed = array (
       array (
       ),
       'reference' => '8f8a6e48c5ecb0f991c2fdcf5f154a47d85f9ffd',
+    ),
+    'doctrine/cache' => 
+    array (
+      'pretty_version' => '2.2.0',
+      'version' => '2.2.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '1ca8f21980e770095a31456042471a57bc4c68fb',
+    ),
+    'doctrine/dbal' => 
+    array (
+      'pretty_version' => '2.13.9',
+      'version' => '2.13.9.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'c480849ca3ad6706a39c970cdfe6888fa8a058b8',
+    ),
+    'doctrine/deprecations' => 
+    array (
+      'pretty_version' => '1.1.6',
+      'version' => '1.1.6.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'd4fe3e6fd9bb9e72557a19674f44d8ac7db4c6ca',
+    ),
+    'doctrine/event-manager' => 
+    array (
+      'pretty_version' => '1.2.0',
+      'version' => '1.2.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '95aa4cb529f1e96576f3fda9f5705ada4056a520',
     ),
     'doctrine/inflector' => 
     array (
@@ -467,12 +503,12 @@ private static $installed = array (
     ),
     'laravel/laravel' => 
     array (
-      'pretty_version' => '1.0.0+no-version-set',
-      'version' => '1.0.0.0',
+      'pretty_version' => 'dev-master',
+      'version' => 'dev-master',
       'aliases' => 
       array (
       ),
-      'reference' => NULL,
+      'reference' => 'b67a1cde0c9093e1c2eec718f6e5c4bcfea44294',
     ),
     'laravel/tinker' => 
     array (
@@ -782,8 +818,8 @@ private static $installed = array (
     array (
       'provided' => 
       array (
-        0 => '1.0',
-        1 => '1.0.0',
+        0 => '1.0.0',
+        1 => '1.0',
       ),
     ),
     'psr/simple-cache' => 
