@@ -273,11 +273,14 @@ class peraturanController extends Controller
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
     }
 
-    public function trash()
-    {
-        $deletedperaturan = \App\peraturan::onlyTrashed()->paginate(10);
-        return view('peraturan.trash', ['peraturan' => $deletedperaturan]);
-    }
+ public function trash()
+{
+    $deletedperaturan = \App\peraturan::onlyTrashed()
+        ->latest('deleted_at')
+        ->paginate(10);
+
+    return view('peraturan.trash', ['peraturan' => $deletedperaturan]);
+}
     public function restore($id)
     {
         $peraturan = \App\peraturan::withTrashed()->findOrFail($id);

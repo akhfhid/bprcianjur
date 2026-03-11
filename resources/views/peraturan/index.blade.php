@@ -49,7 +49,7 @@
         }
 
         .kategori-group .btn.active {
-            background-color: #212529 !important;
+            background-color: #064b91 !important;
             color: #fff !important;
             border-color: #212529 !important;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -77,7 +77,6 @@
     <div class="container-fluid py-4">
 
         @if(session('status'))
-
             <div class="alert alert-success">
                 <i class="fas fa-check-circle mr-2"></i> {{ session('status') }}
             </div>
@@ -88,9 +87,15 @@
                 <h1 class="page-title mb-0">Manajemen Peraturan</h1>
                 <p class="page-subtitle mb-0 d-none d-sm-block">Ringkasan data dan dokumen peraturan instansi.</p>
             </div>
-            <a href="{{route('peraturan.create')}}" class="btn btn-primary btn-sm shadow-sm">
-                <i class="fas fa-plus fa-sm mr-2"></i> Tambah Baru
-            </a>
+
+            <div>
+                <a href="{{ route('peraturan.trash') }}" class="btn btn-outline-danger btn-sm shadow-sm mr-2">
+                    <i class="fas fa-trash fa-sm mr-1"></i> Trash
+                </a>
+                <a href="{{ route('peraturan.create') }}" class="btn btn-primary btn-sm shadow-sm">
+                    <i class="fas fa-plus fa-sm mr-1"></i> Tambah Baru
+                </a>
+            </div>
         </div>
 
         <div class="card shadow-sm mb-4">
@@ -215,6 +220,7 @@
             }
 
         });
+
         $('#filterJenis').change(function () {
             jenisDipilih = $(this).val();
             if (table) table.ajax.reload();
