@@ -217,7 +217,6 @@
             }
 
         });
-
         $('#filterJenis').change(function () {
             jenisDipilih = $(this).val();
             if (table) table.ajax.reload();
