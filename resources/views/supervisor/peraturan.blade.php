@@ -268,7 +268,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
                 <h1 class="page-title mb-1">Manajemen Peraturan</h1>
-                <p class="page-subtitle mb-0">Daftar Peraturan Supervisor</p>
+                <p class="page-subtitle mb-0">Daftar Peraturan </p>
             </div>
         </div>
 
@@ -322,7 +322,7 @@
                             <th class="text-center">Nama Peraturan</th>
                             <th class="text-center">Nomor Peraturan</th>
                             <th class="text-center">Tanggal Peraturan</th>
-                            <th class="text-center">Tanggal Masa Berlaku</th> <!-- Kolom baru untuk Supervisor -->
+                            <th class="text-center">Tanggal Masa Berlaku</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
