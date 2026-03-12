@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Pegawai;
+use DataTables;
 class SupervisorController extends Controller
 {
     /**
@@ -1196,16 +1197,56 @@ class SupervisorController extends Controller
          * @return \Illuminate\Http\Response
          */
     }
-    public function peraturan(Request $request)
+  public function peraturan(Request $request)
     {
-        $peraturan = \App\peraturan::paginate(10);
-        $filterkeyword = $request->get('name');
+        // Cek jika request AJAX (dari DataTables)
+        if ($request->ajax()) {
+            $query = \App\peraturan::query();
 
-        if ($filterkeyword) {
-            $peraturan = \App\peraturan::where('name', 'LIKE', "%$filterkeyword%")->paginate(10);
+            // 1. Logika Filter Kategori (Internal / External)
+            $kategori = $request->get('kategori');
+            
+            if ($kategori == 'internal') {
+                $query->whereIn('jenis_surat', ['SK', 'SE']);
+            } elseif ($kategori == 'external') {
+                $query->whereIn('jenis_surat', ['OJK', 'LPS']);
+            }
+
+            // 2. Logika Filter Jenis Surat Spesifik
+            $jenis_surat = $request->get('jenis_surat');
+            if ($jenis_surat && $jenis_surat != 'all') {
+                $query->where('jenis_surat', $jenis_surat);
+            }
+
+            // 3. Logika Filter Sub Jenis (OJK)
+            $sub_jenis = $request->get('sub_jenis');
+            if ($sub_jenis && $sub_jenis != 'all') {
+                $query->where('sub_jenis', $sub_jenis); 
+            }
+
+            // Kembalikan data menggunakan DataTables
+            return DataTables::of($query)
+                ->addColumn('action', function ($data) {
+                    // Menggunakan styling tombol modern
+                    $btn = '<div class="action-col">';
+                    $btn .= '<a href="' . route('supervisor.showatur', $data->id) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->editColumn('tglsk', function ($data) {
+                    // Format Tanggal SK
+                    return $data->tglsk ? \Carbon\Carbon::parse($data->tglsk)->format('d/m/Y') : '-';
+                })
+                ->editColumn('tgllaku', function ($data) {
+                    // Format Tanggal Masa Berlaku
+                    return $data->tgllaku ? \Carbon\Carbon::parse($data->tgllaku)->format('d/m/Y') : '-';
+                })
+                ->rawColumns(['action']) // Agar HTML di action bisa render
+                ->make(true);
         }
 
-        return view('supervisor.peraturan', ['peraturan' => $peraturan]);
+        // Jika request biasa (load halaman)
+        return view('supervisor.peraturan');
     }
     public function permohonandownload($id)
     {

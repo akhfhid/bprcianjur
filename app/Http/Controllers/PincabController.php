@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Pegawai;
+use DataTables; // PENTING: Tambahkan ini
+
 class PincabController extends Controller
 {
     /**
@@ -540,8 +542,6 @@ class PincabController extends Controller
 
         $jdpang = $jdpangkat->addYears(4)->addmonths($tunda)->toDateString();
         $jdber = $jdberkala->addYears(2)->addmonths($tunda)->toDateString();
-
-
 
 
         return view("pincab.detailpegawai",["pegawai"=>$pegawai,"cabang"=>$cabang,"kelamin"=>$kelamin,
@@ -1122,18 +1122,36 @@ class PincabController extends Controller
         }
         return view ('pincab.rotasitolak',['mutasi'=>$data]);
     }
-     public function peraturan(Request $request){
-        $peraturan = \App\peraturan::paginate(10);
-        $filterkeyword = $request->get('name');
+    
+    public function peraturan(Request $request){
+        if ($request->ajax()) {
+            $query = \App\peraturan::query()
+                ->when($request->kategori, function ($q) use ($request) {
+                    $q->where('kategori', $request->kategori);
+                })
+                ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
+                    $q->where('jenis_surat', $request->jenis_surat);
+                })
+                ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
+                    $q->where('jenis_ojk', $request->sub_jenis);
+                })
+                ->latest();
 
-
-        if($filterkeyword){
-            $peraturan = \App\peraturan::where("name", "LIKE", "%$filterkeyword%")->paginate(10);
+            return DataTables::of($query)
+                ->addColumn('action', function ($data) {
+                    $btn = '<a href="' . route('pincab.showatur', [$data->id]) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a>';
+                    return $btn;
+                })
+                ->addColumn('jenis_ojk', function ($data) {
+                    return $data->jenis_ojk ?? '-';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
-
-        return view('pincab.peraturan',['peraturan'=>$peraturan]);
+        return view('pincab.peraturan');
     }
+
     public function permohonandownload($id){
         $peraturan = \App\peraturan::findorfail($id);
         $idpeg=\Auth::user()->pegawai_id;

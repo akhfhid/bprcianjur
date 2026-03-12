@@ -25,43 +25,46 @@ class peraturanController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-    public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $query = Peraturan::query()
+public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $query = Peraturan::query()
+            ->when($request->kategori, function ($q) use ($request) {
+                $q->where('kategori', $request->kategori);
+            })
+            ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
+                $q->where('jenis_surat', $request->jenis_surat);
+            })
+            ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
+                $q->where('jenis_ojk', $request->sub_jenis);
+            })
+            ->latest();
 
-                ->when($request->kategori, function ($q) use ($request) {
-                    $q->where('kategori', $request->kategori);
-                })
+        return DataTables::of($query)
+            ->addColumn('action', function ($data) {
+                // Menggunakan data-id dan class modern sesuai style UI
+                $btn = '';
+                
+                // Tombol View
+                $btn .= '<a href="' . url("peraturan/" . $data->id) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a> ';
+                
+                // Tombol Edit
+                $btn .= '<a href="' . url("peraturan/" . $data->id . "/edit") . '" class="action-btn edit" title="Edit"><i class="fas fa-edit"></i></a> ';
+                
+                // Tombol Delete
+                $btn .= '<button type="button" data-id="' . $data->id . '" class="action-btn delete delete-btn" title="Hapus"><i class="fas fa-trash"></i></button>';
 
-                ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
-                    $q->where('jenis_surat', $request->jenis_surat);
-                })
-
-                ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
-                    $q->where('jenis_ojk', $request->sub_jenis);
-                })
-
-                ->latest();
-            return DataTables::of($query)
-
-                ->addColumn('action', function ($data) {
-                    $button = '<a href="peraturan/' . $data->id . '/edit" class="btn btn-primary btn-sm">Edit</a> ';
-                    $button .= '<a href="peraturan/' . $data->id . '" class="btn btn-success btn-sm">Detail</a> ';
-                    $button .= '<button type="button" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
-
-                    return $button;
-                })
-                ->addColumn('jenis_ojk', function ($data) {
-                    return $data->jenis_ojk ?? '-';
-                })
-
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        return view('peraturan.index');
+                return $btn;
+            })
+            ->addColumn('jenis_ojk', function ($data) {
+                return $data->jenis_ojk ?? '-';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
+
+    return view('peraturan.index');
+}
 
     public function statistik()
     {
@@ -238,13 +241,21 @@ class peraturanController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
-        $peraturan = \App\peraturan::findOrFail($id);
-        $peraturan->delete();
+  public function destroy($id)
+{
+    $peraturan = \App\peraturan::findOrFail($id);
+    $peraturan->delete();
 
-        return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
+    // Jika request via AJAX (dari DataTables)
+    if (request()->ajax()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Peraturan berhasil dipindahkan ke Trash.'
+        ]);
     }
+
+    return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
+}
 
     public function trash()
     {

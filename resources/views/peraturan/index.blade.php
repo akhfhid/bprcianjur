@@ -176,11 +176,10 @@
             background-color: #f9fafb;
         }
 
-        /* Action Column - NO WRAP FIX */
+        /* Action Column - MODERN UI STYLE */
         .action-col {
             white-space: nowrap;
             width: 130px;
-            /* Fixed width */
         }
 
         .action-btn {
@@ -195,6 +194,8 @@
             transition: all 0.15s;
             border: 1px solid transparent;
             margin: 0 2px;
+            text-decoration: none;
+            /* Untuk link */
         }
 
         .action-btn:hover {
@@ -345,7 +346,6 @@
             </div>
         </div>
 
-        <!-- Table Card -->
         <div class="modern-card">
             <div class="card-header bg-white border-0 py-3 px-4 border-bottom">
                 <h6 class="font-weight-bold m-0 text-gray-700">Daftar Dokumen</h6>
@@ -382,7 +382,7 @@
 
         function setFilterJenis() {
             let filter = $('#filterJenis');
-            filter.empty(); 
+            filter.empty();
             filter.append('<option value="all">Semua Jenis</option>');
 
             if (kategoriDipilih === "internal") {
@@ -394,9 +394,8 @@
             }
         }
 
-        // 2. Fungsi Untuk mengatur Visibilitas Sub Jenis & Kolom Tabel
+        // Fungsi Untuk mengatur Visibilitas Sub Jenis & Kolom Tabel
         function updateLayout() {
-            // Logika: Sub Jenis hanya muncul jika External + OJK
             let showSubJenis = (kategoriDipilih === "external" && jenisDipilih === "OJK");
 
             if (showSubJenis) {
@@ -423,44 +422,36 @@
             $(this).addClass('active');
 
             kategoriDipilih = $(this).data('kategori');
-
             jenisDipilih = "all";
             subJenisDipilih = "all";
 
-            // Populate ulang dropdown jenis
             setFilterJenis();
-
-            // Reset nilai dropdown UI
             $('#filterJenis').val('all');
             $('#filterSubJenis').val('all');
 
             if (table) {
-                updateLayout(); // Update visibilitas & columns
+                updateLayout();
                 table.ajax.reload();
             }
         });
 
-        // 4. Event Filter Jenis Change
         $('#filterJenis').change(function () {
             jenisDipilih = $(this).val();
-
-            // Reset sub jenis jika ganti jenis utama
             subJenisDipilih = "all";
             $('#filterSubJenis').val('all');
 
             if (table) {
-                updateLayout(); // Cek apakah perlu munculin sub jenis
+                updateLayout();
                 table.ajax.reload();
             }
         });
 
-        // 5. Event Filter Sub Jenis Change
         $('#filterSubJenis').change(function () {
             subJenisDipilih = $(this).val();
             if (table) table.ajax.reload();
         });
 
-        // 6. Inisialisasi DataTable
+        // Inisialisasi DataTable
         function loadTable() {
             table = $('#atur').DataTable({
                 processing: true,
@@ -470,14 +461,14 @@
                     data: function (d) {
                         d.kategori = kategoriDipilih;
                         d.jenis_surat = jenisDipilih;
-                        d.sub_jenis = subJenisDipilih; // Kirim ke backend
+                        d.sub_jenis = subJenisDipilih;
                     }
                 },
                 columns: [
                     { data: "name", className: "nama-peraturan" },
                     { data: "nosk", className: "text-center" },
                     { data: "tglsk", className: "text-center" },
-                    { data: "jenis_ojk", className: "text-center", visible: false }, 
+                    { data: "jenis_ojk", className: "text-center", visible: false },
                     { data: "action", orderable: false, searchable: false, className: "text-center action-col" }
                 ],
                 order: [[2, 'desc']],
@@ -491,6 +482,36 @@
             });
         }
         loadTable();
+
+        // =====================================================
+        // SCRIPT TAMBAHAN: HANDLE DELETE BUTTON CLICK
+        // =====================================================
+        $(document).on('click', '.delete-btn', function () {
+            let id = $(this).data('id');
+
+            if (confirm('Apakah Anda yakin ingin menghapus data ini? Data akan dipindahkan ke Trash.')) {
+
+                $.ajax({
+                    url: "/peraturan/" + id,
+                    type: "POST",
+                    data: {
+                        '_method': 'DELETE',
+                        '_token': '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            table.ajax.reload();
+                            // Bisa tambahkan toast/notif sukses jika ada librarynya, 
+                            // atau alert biasa:
+                            alert(response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        alert('Terjadi kesalahan saat menghapus data.');
+                    }
+                });
+            }
+        });
 
     </script>
 @endsection

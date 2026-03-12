@@ -5,14 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\OrderCutiNotificationController;
+use Illuminate\Support\Facades\DB; 
+use DataTables;
 
 class StaffController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
@@ -22,54 +19,27 @@ class StaffController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
+
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+        //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         //
@@ -84,10 +54,14 @@ class StaffController extends Controller
     {
         //
     }
+
     public function profile()
     {
         $iduser = \Auth::user()->pegawai_id;
         $pegawai = \App\Pegawai::where('id', $iduser)->first();
+        
+        if (!$pegawai) return redirect()->back()->with('error', 'Data pegawai tidak ditemukan');
+
         $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
         $kelamin = \App\Jenkel::where('id', $pegawai['kelamin'])->first();
         $jabatan = \App\Jabatan::where('id', $pegawai['jabatan'])->first();
@@ -95,7 +69,6 @@ class StaffController extends Controller
         $kawin = \App\Kawin::where('id', $pegawai['status'])->first();
         $pendidikan = \App\Pendidikan::where('id', $pegawai['pendidikan'])->first();
         $pangkat = \App\Pangkat::where('id', $pegawai['pangkat'])->first();
-        $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
         $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
         $spegawai = \App\statuspeg::where('id', $pegawai['spegawai'])->first();
         $statuspegawai = \App\statuspeg::pluck('name', 'id');
@@ -120,7 +93,7 @@ class StaffController extends Controller
         $hpensiun = \Carbon\carbon::parse($ppensiun);
 
         $smkerja = $hpensiun->diff($now)->format('%y Tahun %m Bulan');
-        //$smkeria=$pensiun-$mkerja;
+        
         foreach ($keluarga as $k) {
             $bday_kel = \Carbon\Carbon::parse($k['tgllahir']);
             $umurkel = $bday_kel->diffinYears($now);
@@ -147,7 +120,6 @@ class StaffController extends Controller
                 'gelar' => $pend['gelar'],
                 'thnlulus' => $pend['thnlulus'],
             ];
-            //# code...
         }
         $riwayatkerja = \App\riwayatkerja::where('pegawai_id', $pegawai['id'])->get();
         $datakerja = [];
@@ -168,9 +140,10 @@ class StaffController extends Controller
         $mkpangpeg = $pegawai['mkpang'];
         $gapok = \App\berkala::where([['idpang', 'LIKE', $pangkatpeg], ['gol', 'LIKE', $mkpangpeg]])->first();
 
-        $tunpang = $jabatan['tunpang'];
+        $tunpang = $jabatan['tunpang'] ?? 0;
         $jmlkeluarga = $jumlahnikah + $jumlahanak;
-        $tunis = $jabatan['tunis'];
+        $tunis = $jabatan['tunis'] ?? 0;
+        
         if ($statpegawai == 1) {
             $pangan = 0;
         } else {
@@ -181,25 +154,27 @@ class StaffController extends Controller
             }
         }
 
-        $tunak = $jabatan['tunak'];
-        $tunjab = $gaji['jabatan'];
+        $tunak = $jabatan['tunak'] ?? 0;
+        $tunjab = $gaji['jabatan'] ?? 0;
         if ($statpegawai == 3) {
-            $tuncab = $tunkin['tunjangan'];
+            $tuncab = $tunkin['tunjangan'] ?? 0;
         } else {
             $tuncab = 0;
         }
 
-        $fungsi = $gaji['fungsi'];
-        $gapokpeg = $gapok['gapok'];
-        $bpjsks = $gaji['bpjsks'];
-        $bpjstk = $gaji['bpjstk'];
-        $pensiun = $jabatan['pensiun'];
+        $fungsi = $gaji['fungsi'] ?? 0;
+        $gapokpeg = $gapok['gapok'] ?? 0;
+        $bpjsks = $gaji['bpjsks'] ?? 0;
+        $bpjstk = $gaji['bpjstk'] ?? 0;
+        $pensiun = $jabatan['pensiun'] ?? 0;
+        
         if ($statpegawai == 3) {
             $tunpen = $pensiun * $gapokpeg;
         } else {
             $tunpen = 0;
         }
-        $pph = $gaji['pph'];
+        $pph = $gaji['pph'] ?? 0;
+        
         if ($statpegawai == 1) {
             $tunjanganistri = 0;
         } else {
@@ -210,7 +185,11 @@ class StaffController extends Controller
             $tunjangananak = $tunak * $gapokpeg * $jumlahanak;
         } elseif ($jumlahanak > 2) {
             $tunjangananak = $tunak * $gapokpeg * 2;
-        } elseif ($statpegawai != 3) {
+        } else {
+             $tunjangananak = 0;
+        }
+        
+        if ($statpegawai != 3) {
             $tunjangananak = 0;
         }
 
@@ -234,7 +213,7 @@ class StaffController extends Controller
 
         foreach ($riwayatangkat as $angkat) {
             $statuspeg = \App\statuspeg::where('id', [$angkat['status']])->first();
-            $statpeg = $statuspeg['name'];
+            $statpeg = $statuspeg['name'] ?? '-';
 
             $dataangkat[] = [
                 'id' => $angkat['id'],
@@ -243,13 +222,13 @@ class StaffController extends Controller
                 'nosk' => $angkat['nosk'],
             ];
         }
-        $sanksi = \App\sanksi::pluck('name', 'id');
+        
         $riwayatsanksi = \App\riwayatsanksi::where('id_peg', [$pegawai['id']])->paginate(10);
         $datasanksi = [];
 
         foreach ($riwayatsanksi as $rsanksi) {
             $sanksipegawai = \App\sanksi::where('id', [$rsanksi['sanksi']])->first();
-            $sankpeg = $sanksipegawai['name'];
+            $sankpeg = $sanksipegawai['name'] ?? '-';
 
             $datasanksi[] = [
                 'id' => $rsanksi['id'],
@@ -269,7 +248,21 @@ class StaffController extends Controller
         $jdpang = $jdpangkat->addYears(4)->addmonths($tunda)->toDateString();
         $jdber = $jdberkala->addYears(2)->addmonths($tunda)->toDateString();
 
-        return view('staff.profile', ['pegawai' => $pegawai, 'cabang' => $cabang, 'kelamin' => $kelamin, 'jabatan' => $jabatan, 'umur' => $umur, 'agama' => $agama, 'kawin' => $kawin, 'pendidikan' => $pendidikan, 'pangkat' => $pangkat, 'cabang' => $cabang, 'keluarga' => $datakel, 'masakerja' => $mkerja, 'riwayatpendi' => $datapend, 'riwayatkerja' => $datakerja, 'tunjanganistri' => $tunjanganistri, 'tunjangananak' => $tunjangananak, 'tuncabang' => $tuncabang, 'total' => $total, 'pelatihan' => $pelatihan, 'ppensiun' => $ppensiun, 'smkerja' => $smkerja, 'spegawai' => $spegawai, 'dataangkat' => $dataangkat, 'datasanksi' => $datasanksi, 'bpjstk' => $bpjstk, 'bpjsks' => $bpjsks, 'pensiun' => $pensiun, 'pph' => $pph, 'fungsi' => $fungsi, 'gapokpeg' => $gapokpeg, 'gapok' => $gapok, 'tglpangkat' => $tglpangkat, 'tglberkala' => $tglberkala, 'tunda' => $tunda, 'jdpang' => $jdpang, 'jdber' => $jdber, 'jumlahanak' => $jumlahanak, 'pangan' => $pangan, 'tunpen' => $tunpen, 'tunjab' => $tunjab]);
+        return view('staff.profile', [
+            'pegawai' => $pegawai, 'cabang' => $cabang, 'kelamin' => $kelamin, 
+            'jabatan' => $jabatan, 'umur' => $umur, 'agama' => $agama, 
+            'kawin' => $kawin, 'pendidikan' => $pendidikan, 'pangkat' => $pangkat, 
+            'keluarga' => $datakel, 'masakerja' => $mkerja, 'riwayatpendi' => $datapend, 
+            'riwayatkerja' => $datakerja, 'tunjanganistri' => $tunjanganistri, 
+            'tunjangananak' => $tunjangananak, 'tuncabang' => $tuncabang, 'total' => $total, 
+            'pelatihan' => $pelatihan, 'ppensiun' => $ppensiun, 'smkerja' => $smkerja, 
+            'spegawai' => $spegawai, 'dataangkat' => $dataangkat, 'datasanksi' => $datasanksi, 
+            'bpjstk' => $bpjstk, 'bpjsks' => $bpjsks, 'pensiun' => $pensiun, 'pph' => $pph, 
+            'fungsi' => $fungsi, 'gapokpeg' => $gapokpeg, 'gapok' => $gapok, 
+            'tglpangkat' => $tglpangkat, 'tglberkala' => $tglberkala, 'tunda' => $tunda, 
+            'jdpang' => $jdpang, 'jdber' => $jdber, 'jumlahanak' => $jumlahanak, 
+            'pangan' => $pangan, 'tunpen' => $tunpen, 'tunjab' => $tunjab
+        ]);
     }
 
     public function cuti()
@@ -282,16 +275,11 @@ class StaffController extends Controller
             ->get();
         $data = [];
         foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
             $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
+            $namapeg = $pegawai['name'] ?? '-';
 
             $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
+            $namacab = $cabang['name'] ?? '-';
 
             $data[] = [
                 'id' => $cuti['id'],
@@ -328,16 +316,18 @@ class StaffController extends Controller
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::findOrFail($user_id);
 
-        if ($peg->scuti < $jmlcuti) {
-            return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
+        $saldoBaru = $peg->scuti; 
+
+        if ($jeniscuti != 'Cuti Wajib') {
+            if ($peg->scuti < $jmlcuti) {
+                return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
+            }
+            $saldoBaru = $peg->scuti - $jmlcuti;
+            
+            $peg->scuti = $saldoBaru;
+            $peg->save();
         }
 
-        $saldoBaru = $peg->scuti - $jmlcuti;
-        \DB::table('pegawais')
-            ->where('id', $user_id)
-            ->update([
-                'scuti' => $saldoBaru,
-            ]);
         $jabatan = \App\Jabatan::where('id', $peg->jabatan)->first();
         $jabatasan = $jabatan->atasan ?? null;
         $jabket = \App\jabatan::where('id', $jabatasan)->first();
@@ -371,19 +361,35 @@ class StaffController extends Controller
 
         $new_cuti->save();
 
-        // Notifikasi (Opsional, uncomment jika jalan)
-        /*
-    try {
-        app(OrderCutiNotificationController::class)->send($new_cuti->id);
-    } catch (\Throwable $e) {
-        \Log::error('Gagal Notif', ['error' => $e->getMessage()]);
-    }
-    */
-
         return redirect()
             ->route('staff.cuti')
             ->with('status', 'Permohonan Berhasil Diinput. Sisa Cuti Anda: ' . $saldoBaru);
     }
+
+    // public function rejectCuti($id)
+    // {
+    //     $cuti = \App\ordercuti::findOrFail($id);
+
+    //     if ($cuti->status == 'DITOLAK') {
+    //         return back()->with('error', 'Cuti sudah ditolak sebelumnya.');
+    //     }
+
+    //     DB::transaction(function () use ($cuti) {
+    //         $cuti->status = 'DITOLAK';
+    //         $cuti->save();
+
+    //         // Kembalikan saldo jika bukan cuti wajib
+    //         if ($cuti->jeniscuti != 'Cuti Wajib') {
+    //             $pegawai = \App\Pegawai::find($cuti->pegawai_id);
+    //             if ($pegawai) {
+    //                 $pegawai->scuti = $pegawai->scuti + $cuti->jmlcuti;
+    //                 $pegawai->save();
+    //             }
+    //         }
+    //     });
+
+    //     return back()->with('status', 'Cuti telah ditolak dan saldo dikembalikan ke pegawai.');
+    // }
 
     public function cutisetuju()
     {
@@ -391,16 +397,11 @@ class StaffController extends Controller
         $ordercuti = \App\ordercuti::where([['pegawai_id', $user], ['status', 'like', 'DISETUJUI']])->get();
         $data = [];
         foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
             $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
+            $namapeg = $pegawai['name'] ?? '-';
 
             $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
+            $namacab = $cabang['name'] ?? '-';
 
             $data[] = [
                 'id' => $cuti['id'],
@@ -424,16 +425,11 @@ class StaffController extends Controller
         $ordercuti = \App\ordercuti::where([['pegawai_id', $user], ['status', 'like', 'DITOLAK']])->get();
         $data = [];
         foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
             $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
+            $namapeg = $pegawai['name'] ?? '-';
 
             $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
+            $namacab = $cabang['name'] ?? '-';
 
             $data[] = [
                 'id' => $cuti['id'],
@@ -450,17 +446,50 @@ class StaffController extends Controller
 
         return view('staff.cutitolak', ['orderc' => $data]);
     }
+
+
     public function peraturan(Request $request)
     {
-        $peraturan = \App\peraturan::paginate(10);
-        $filterkeyword = $request->get('name');
+        if ($request->ajax()) {
+            $query = \App\peraturan::query();
+            $kategori = $request->get('kategori');
+            
+            if ($kategori == 'internal') {
+                $query->whereIn('jenis_surat', ['SK', 'SE']);
+            } elseif ($kategori == 'external') {
+                $query->whereIn('jenis_surat', ['OJK', 'LPS']);
+            }
 
-        if ($filterkeyword) {
-            $peraturan = \App\peraturan::where('name', 'LIKE', "%$filterkeyword%")->paginate(10);
+            $jenis_surat = $request->get('jenis_surat');
+            if ($jenis_surat && $jenis_surat != 'all') {
+                $query->where('jenis_surat', $jenis_surat);
+            }
+
+            $sub_jenis = $request->get('jenis_ojk');
+            if ($sub_jenis && $sub_jenis != 'all') {
+                $query->where('jenis_ojk', $sub_jenis); 
+            }
+
+            return DataTables::of($query)
+                ->addColumn('action', function ($data) {
+                    $btn = '<div class="action-col">';
+                    $btn .= '<a href="' . route('staff.showatur', $data->id) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->addColumn('jenis_ojk', function ($data) {
+                    return $data->sub_jenis ?? '-';
+                })
+                ->editColumn('tglsk', function ($data) {
+                    return $data->tglsk ? \Carbon\Carbon::parse($data->tglsk)->format('d/m/Y') : '-';
+                })
+                ->rawColumns(['action']) 
+                ->make(true);
         }
 
-        return view('staff.peraturan', ['peraturan' => $peraturan]);
+        return view('staff.peraturan');
     }
+
     public function permohonandownload($id)
     {
         $peraturan = \App\peraturan::findorfail($id);
@@ -471,6 +500,7 @@ class StaffController extends Controller
 
         return view('staff.permohonandownload', ['peraturan' => $peraturan, 'pegawai' => $pegawai, 'cabang' => $cab]);
     }
+
     public function mintadownload(Request $request)
     {
         $orderatur = new \App\orderatur();
@@ -485,6 +515,7 @@ class StaffController extends Controller
         $orderatur->save();
         return redirect()->route('staff.peraturan')->with('status', 'Permintaan akan diproses');
     }
+
     public function statusatur()
     {
         $user = \Auth::user()->id;
@@ -493,11 +524,20 @@ class StaffController extends Controller
         $data = [];
         foreach ($orderatur as $order) {
             $pegawai = \App\Pegawai::where('id', $order['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
+            $namapeg = $pegawai['name'] ?? '-'; // Handle null
+
             $peraturan = \App\peraturan::where('id', $order['peraturan_id'])->first();
-            $namaper = $peraturan['name'];
-            $tglsk = $peraturan['tglsk'];
-            $nosk = $peraturan['nosk'];
+            
+            // Handle jika peraturan sudah dihapus
+            if ($peraturan) {
+                $namaper = $peraturan['name'];
+                $tglsk = $peraturan['tglsk'];
+                $nosk = $peraturan['nosk'];
+            } else {
+                $namaper = 'Dihapus';
+                $tglsk = '-';
+                $nosk = '-';
+            }
 
             $data[] = [
                 'idatur' => $order['peraturan_id'],
@@ -513,6 +553,7 @@ class StaffController extends Controller
         }
         return view('staff.statusatur', ['orderatur' => $data]);
     }
+
     public function showatur($id)
     {
         $peraturan = \App\peraturan::findorFail($id);
@@ -520,28 +561,24 @@ class StaffController extends Controller
         $new_loguser = new \App\loguser();
         $user = \Auth::user()->pegawai_id;
         $pegawai = \App\Pegawai::where('id', $user)->first();
-        $new_loguser->nampeg = $pegawai->name;
-        $new_loguser->keterangan = $peraturan->name;
-        //$new_loguser->waktu = $time;
-        $new_loguser->save();
-
-        //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
-        //return $pdf->stream();
-        //exit(0);
+        
+        if($pegawai) {
+            $new_loguser->nampeg = $pegawai->name;
+            $new_loguser->keterangan = $peraturan->name;
+            $new_loguser->save();
+        }
 
         return view('staff.showatur', ['peraturan' => $peraturan, 'time' => $time]);
     }
+
     public function show_pdf($id)
     {
         $peraturan = \App\peraturan::findorFail($id);
         $time = \Carbon\Carbon::now()->translatedFormat('d/m/Y H:i:s');
 
-        //$pdf = PDF::loadview('peraturan.show',['peraturan'=>$peraturan]);
-        //return $pdf->stream();
-        //exit(0);
-
         return view('staff.show_pdf', ['peraturan' => $peraturan, 'time' => $time]);
     }
+
     public function cutiwajib()
     {
         $user = \Auth::user()->pegawai_id;
@@ -549,6 +586,7 @@ class StaffController extends Controller
 
         return view('staff.cutiwajib', ['pegawai' => $peg]);
     }
+
     public function cutilainnya()
     {
         $user = \Auth::user()->pegawai_id;
