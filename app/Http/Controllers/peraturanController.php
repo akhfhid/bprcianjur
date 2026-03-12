@@ -25,40 +25,43 @@ class peraturanController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-  public function index(Request $request)
-{
-    if ($request->ajax()) {
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = Peraturan::query()
 
-        $query = Peraturan::query()
+                ->when($request->kategori, function ($q) use ($request) {
+                    $q->where('kategori', $request->kategori);
+                })
 
-        ->when($request->kategori, function ($q) use ($request) {
-            $q->where('kategori', $request->kategori);
-        })
+                ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
+                    $q->where('jenis_surat', $request->jenis_surat);
+                })
 
-        ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
-            $q->where('jenis_surat', $request->jenis_surat);
-        })
+                ->when($request->jenis_ojk && $request->jenis_ojk != 'all', function ($q) use ($request) {
+                    $q->where('jenis_ojk', $request->jenis_ojk);
+                })
 
-        ->latest();
+                ->latest();
+            return DataTables::of($query)
 
-        return DataTables::of($query)
+                ->addColumn('action', function ($data) {
+                    $button = '<a href="peraturan/' . $data->id . '/edit" class="btn btn-primary btn-sm">Edit</a> ';
+                    $button .= '<a href="peraturan/' . $data->id . '" class="btn btn-success btn-sm">Detail</a> ';
+                    $button .= '<button type="button" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
 
-        ->addColumn('action', function ($data) {
+                    return $button;
+                })
+                ->addColumn('jenis_ojk', function ($data) {
+                    return $data->jenis_ojk ?? '-';
+                })
 
-            $button  = '<a href="peraturan/'.$data->id.'/edit" class="btn btn-primary btn-sm">Edit</a> ';
-            $button .= '<a href="peraturan/'.$data->id.'" class="btn btn-success btn-sm">Detail</a> ';
-            $button .= '<button type="button" id="'.$data->id.'" class="delete btn btn-danger btn-sm">Delete</button>';
+                ->rawColumns(['action'])
+                ->make(true);
+        }
 
-            return $button;
-
-        })
-
-        ->rawColumns(['action'])
-        ->make(true);
+        return view('peraturan.index');
     }
-
-    return view('peraturan.index');
-}
 
     public function statistik()
     {
@@ -69,11 +72,6 @@ class peraturanController extends Controller
             'tahun_ini' => \App\peraturan::whereYear('created_at', date('Y'))->count(),
         ]);
     }
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         return view('peraturan.create');
@@ -130,39 +128,28 @@ class peraturanController extends Controller
             'pdf' => 'nullable|file|mimes:pdf|max:10240',
         ]);
 
-        // Membuat instance baru untuk peraturan
         $new_peraturan = new \App\peraturan();
 
         $new_peraturan->name = $request->get('name');
         $new_peraturan->kategori = $request->get('kategori');
         $new_peraturan->jenis_surat = $request->get('jenis_surat');
+        $new_peraturan->jenis_ojk = $request->get('sub_jenis'); // tambahan baru
         $new_peraturan->nosk = $request->get('nosk');
         $new_peraturan->tglsk = $request->get('tglsk');
         $new_peraturan->tgllaku = $request->get('tgllaku');
         $new_peraturan->uraian = $request->get('uraian');
 
-        // Menangani file PDF jika ada
         if ($request->hasFile('pdf')) {
             $file = $request->file('pdf');
-            $filename = time() . '.' . $file->getClientOriginalExtension(); // Menentukan nama file
-            $file->storeAs('pdfs', $filename, 'public'); // Menyimpan file ke folder pdfs dalam public storage
-            $new_peraturan->pdf = $filename; // Menyimpan nama file PDF ke kolom 'pdf'
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('pdfs', $filename, 'public');
+            $new_peraturan->pdf = $filename;
         }
+        $new_peraturan->created_by = \Auth::user()->id;
+        $new_peraturan->save();
 
-        // Menyimpan peraturan yang baru
-        $new_peraturan->created_by = \Auth::user()->id; // Menyimpan ID user yang membuat
-        $new_peraturan->save(); // Menyimpan ke database
-
-        // Mengarahkan kembali ke halaman index dengan pesan sukses
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Ditambahkan');
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         $peraturan = \App\peraturan::findorFail($id);
@@ -181,26 +168,12 @@ class peraturanController extends Controller
 
         return view('peraturan.show', ['peraturan' => $peraturan, 'time' => $time]);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         $edit_peraturan = \App\peraturan::findorFail($id);
         return view('peraturan.edit', ['peraturan' => $edit_peraturan]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function simpanedit(Request $request, $id)
     {
         $request->validate([
@@ -273,14 +246,12 @@ class peraturanController extends Controller
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
     }
 
- public function trash()
-{
-    $deletedperaturan = \App\peraturan::onlyTrashed()
-        ->latest('deleted_at')
-        ->paginate(10);
+    public function trash()
+    {
+        $deletedperaturan = \App\peraturan::onlyTrashed()->latest('deleted_at')->paginate(10);
 
-    return view('peraturan.trash', ['peraturan' => $deletedperaturan]);
-}
+        return view('peraturan.trash', ['peraturan' => $deletedperaturan]);
+    }
     public function restore($id)
     {
         $peraturan = \App\peraturan::withTrashed()->findOrFail($id);

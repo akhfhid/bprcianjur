@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AddJenisOjkToPeraturansTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('peraturans', function (Blueprint $table) {
+            $table->string('jenis_ojk')->nullable()->after('jenis_surat');
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('peraturans', function (Blueprint $table) {
+            $table->dropColumn('jenis_ojk');
+        });
+    }
+}
