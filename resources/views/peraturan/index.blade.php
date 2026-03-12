@@ -1,9 +1,10 @@
 @extends('layouts.global')
 
-@section('title') Data Peraturan @endsection
+@section('title')
+    Data Peraturan
+@endsection
 
 @section('content')
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -88,9 +89,11 @@
             color: #2563eb;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
         }
+
+        /* Select Wrapper */
         .select-wrapper {
             position: relative;
-            width: 200px;
+            width: 180px;
         }
 
         .select-wrapper select {
@@ -102,7 +105,6 @@
             border: 1px solid #d1d5db;
             border-radius: 8px;
             padding: 10px 40px 10px 16px;
-            /* Space for arrow */
             font-size: 0.875rem;
             font-weight: 500;
             color: #374151;
@@ -122,7 +124,6 @@
 
         .select-wrapper::after {
             content: '\f078';
-            /* FontAwesome Chevron Down */
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
             position: absolute;
@@ -134,12 +135,9 @@
             font-size: 12px;
         }
 
-        /* ========================= */
-        /* REDESIGNED TABLE UI       */
-        /* ========================= */
+        /* Table UI */
         .table-wrapper {
             overflow-x: auto;
-            /* text-align: wr */
         }
 
         #atur {
@@ -178,14 +176,11 @@
             background-color: #f9fafb;
         }
 
-        .doc-title {
-            font-weight: 500;
-            color: #111827;
-        }
-
-        .doc-meta {
-            color: #6b7280;
-            font-size: 0.8rem;
+        /* Action Column - NO WRAP FIX */
+        .action-col {
+            white-space: nowrap;
+            width: 130px;
+            /* Fixed width */
         }
 
         .action-btn {
@@ -199,6 +194,7 @@
             color: #6b7280;
             transition: all 0.15s;
             border: 1px solid transparent;
+            margin: 0 2px;
         }
 
         .action-btn:hover {
@@ -221,6 +217,7 @@
             border-color: #fee2e2;
         }
 
+        /* DataTables Pagination */
         .dataTables_wrapper .dataTables_paginate {
             padding: 20px;
         }
@@ -235,6 +232,12 @@
             font-weight: 500;
             font-size: 0.875rem;
             cursor: pointer;
+        }
+
+        .nama-peraturan {
+            max-width: 300px;
+            white-space: normal;
+            overflow: hidden;
         }
 
         .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
@@ -274,11 +277,17 @@
             padding: 16px 20px;
             font-size: 0.9rem;
         }
+
+        .filter-flex {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
     </style>
 
     <div class="container-fluid py-4">
-
-        @if(session('status'))
+        @if (session('status'))
             <div class="alert alert-modern mb-4 d-flex align-items-center shadow-sm">
                 <i class="fas fa-check-circle mr-3"></i> {{ session('status') }}
             </div>
@@ -300,7 +309,6 @@
             </div>
         </div>
 
-        <!-- Filters Card -->
         <div class="modern-card mb-4">
             <div class="card-body py-3 px-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -314,12 +322,23 @@
                         </button>
                     </div>
 
-                    <div class="select-wrapper">
-                        <select id="filterJenis">
-                            <option value="all">Semua Jenis</option>
-                            <option value="SK">SK</option>
-                            <option value="SE">SE</option>
-                        </select>
+                    <div class="filter-flex">
+                        <div class="select-wrapper">
+                            <select id="filterJenis">
+                                <option value="all">Semua Jenis</option>
+                                <option value="SK">SK</option>
+                                <option value="SE">SE</option>
+                            </select>
+                        </div>
+
+                        <div class="select-wrapper" id="wrapperSubJenis" style="display: none;">
+                            <select id="filterSubJenis">
+                                <option value="all">Semua Sub Jenis</option>
+                                <option value="POJK">POJK</option>
+                                <option value="SEOJK">SEOJK</option>
+                                <option value="PADK">PADK</option>
+                            </select>
+                        </div>
                     </div>
 
                 </div>
@@ -328,7 +347,6 @@
 
         <!-- Table Card -->
         <div class="modern-card">
-
             <div class="card-header bg-white border-0 py-3 px-4 border-bottom">
                 <h6 class="font-weight-bold m-0 text-gray-700">Daftar Dokumen</h6>
             </div>
@@ -337,19 +355,17 @@
                 <table class="table mb-0" id="atur">
                     <thead>
                         <tr>
-                            <th>Nama Peraturan</th>
-                            <th class="text-center " style="font-weight: bold">Nomor Peraturan</th>
-                            <th class="text-center" style="font-weight: bold">Tanggal Peraturan</th>
-                            <th id="colSubJenis" class="text-center"  style="display:none;font-weight:bold;">Sub Jenis</th>
-                            <th class="text-center" style="font-weight: bold">Aksi</th>
+                            <th class="text-center">Nama Peraturan</th>
+                            <th class="text-center">Nomor Peraturan</th>
+                            <th class="text-center">Tanggal Peraturan</th>
+                            <th id="colSubJenis" class="text-center" style="display:none;font-weight:bold;">Sub Jenis</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
             </div>
-
         </div>
-
     </div>
 
     <!-- Scripts -->
@@ -361,41 +377,37 @@
     <script>
         let kategoriDipilih = "internal";
         let jenisDipilih = "all";
+        let subJenisDipilih = "all";
         let table = null;
 
         function setFilterJenis() {
             let filter = $('#filterJenis');
-            filter.empty();
+            filter.empty(); 
             filter.append('<option value="all">Semua Jenis</option>');
 
             if (kategoriDipilih === "internal") {
                 filter.append('<option value="SK">SK</option>');
                 filter.append('<option value="SE">SE</option>');
-            }
-
-            if (kategoriDipilih === "external") {
+            } else if (kategoriDipilih === "external") {
                 filter.append('<option value="OJK">OJK</option>');
                 filter.append('<option value="LPS">LPS</option>');
             }
         }
 
-        $('.toggle-btn').click(function () {
-            $('.toggle-btn').removeClass('active');
-            $(this).addClass('active');
+        // 2. Fungsi Untuk mengatur Visibilitas Sub Jenis & Kolom Tabel
+        function updateLayout() {
+            // Logika: Sub Jenis hanya muncul jika External + OJK
+            let showSubJenis = (kategoriDipilih === "external" && jenisDipilih === "OJK");
 
-            kategoriDipilih = $(this).data('kategori');
-            jenisDipilih = "all";
+            if (showSubJenis) {
+                $('#wrapperSubJenis').slideDown();
+            } else {
+                $('#wrapperSubJenis').slideUp();
+                subJenisDipilih = "all";
+                $('#filterSubJenis').val('all');
+            }
 
-            setFilterJenis();
-            $('#filterJenis').val('all');
-
-            if (table) table.ajax.reload();
-        });
-
-        $('#filterJenis').change(function () {
-            jenisDipilih = $(this).val();
-
-            if (jenisDipilih === "OJK") {
+            if (showSubJenis) {
                 table.column(3).visible(true);
                 $('#colSubJenis').show();
             } else {
@@ -403,9 +415,52 @@
                 $('#colSubJenis').hide();
             }
 
-            table.ajax.reload();
+            table.columns.adjust().draw();
+        }
+
+        $('.toggle-btn').click(function () {
+            $('.toggle-btn').removeClass('active');
+            $(this).addClass('active');
+
+            kategoriDipilih = $(this).data('kategori');
+
+            jenisDipilih = "all";
+            subJenisDipilih = "all";
+
+            // Populate ulang dropdown jenis
+            setFilterJenis();
+
+            // Reset nilai dropdown UI
+            $('#filterJenis').val('all');
+            $('#filterSubJenis').val('all');
+
+            if (table) {
+                updateLayout(); // Update visibilitas & columns
+                table.ajax.reload();
+            }
         });
 
+        // 4. Event Filter Jenis Change
+        $('#filterJenis').change(function () {
+            jenisDipilih = $(this).val();
+
+            // Reset sub jenis jika ganti jenis utama
+            subJenisDipilih = "all";
+            $('#filterSubJenis').val('all');
+
+            if (table) {
+                updateLayout(); // Cek apakah perlu munculin sub jenis
+                table.ajax.reload();
+            }
+        });
+
+        // 5. Event Filter Sub Jenis Change
+        $('#filterSubJenis').change(function () {
+            subJenisDipilih = $(this).val();
+            if (table) table.ajax.reload();
+        });
+
+        // 6. Inisialisasi DataTable
         function loadTable() {
             table = $('#atur').DataTable({
                 processing: true,
@@ -415,37 +470,27 @@
                     data: function (d) {
                         d.kategori = kategoriDipilih;
                         d.jenis_surat = jenisDipilih;
+                        d.sub_jenis = subJenisDipilih; // Kirim ke backend
                     }
                 },
                 columns: [
-
-                    { data: "name", className: "text-wrap" },
+                    { data: "name", className: "nama-peraturan" },
                     { data: "nosk", className: "text-center" },
                     { data: "tglsk", className: "text-center" },
-                    {
-                        data: "jenis_ojk",
-                        className: "text-center",
-                        visible: false
-                    },
-                    {
-                        data: "action",
-                        orderable: false,
-                        searchable: false,
-                        className: "text-center"
-                    }
+                    { data: "jenis_ojk", className: "text-center", visible: false }, 
+                    { data: "action", orderable: false, searchable: false, className: "text-center action-col" }
                 ],
-                order: [
-                    [2, 'desc']
-                ],
+                order: [[2, 'desc']],
                 language: {
                     emptyTable: "Tidak ada data peraturan",
                     processing: "<div class='py-5'><i class='fas fa-spinner fa-spin fa-2x text-primary'></i></div>"
+                },
+                initComplete: function () {
+                    updateLayout();
                 }
             });
         }
-
         loadTable();
 
     </script>
-
 @endsection

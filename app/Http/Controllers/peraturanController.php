@@ -38,8 +38,8 @@ class peraturanController extends Controller
                     $q->where('jenis_surat', $request->jenis_surat);
                 })
 
-                ->when($request->jenis_ojk && $request->jenis_ojk != 'all', function ($q) use ($request) {
-                    $q->where('jenis_ojk', $request->jenis_ojk);
+                ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
+                    $q->where('jenis_ojk', $request->sub_jenis);
                 })
 
                 ->latest();
