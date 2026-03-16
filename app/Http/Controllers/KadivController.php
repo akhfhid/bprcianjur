@@ -404,7 +404,7 @@ class KadivController extends Controller
         $hpensiun = \Carbon\carbon::parse($ppensiun);
 
         $smkerja = $hpensiun->diff($now)->format('%y Tahun %m Bulan');
-        //$smkeria=$pensiun-$mkerja;
+        //$smkeria=$pensiun-$mkerja;;
         foreach ($keluarga as $k) {
             $bday_kel = \Carbon\Carbon::parse($k["tgllahir"]);
             $umurkel = $bday_kel->diffinYears($now);

@@ -54,4 +54,41 @@ class WhatsAppHelper
         $message .= 'Disetujui oleh: ' . $approver->name;
         return self::sendMessage($pegawai->nohp, $message);
     }
+    public static function sendCutiRejectedNotification($pegawai, $order, $rejectedByName)
+{
+    if (!$pegawai || empty($pegawai->nohp)) {
+        return array(
+            'success' => false,
+            'message' => 'Pemohon tidak ditemukan atau nomor HP kosong'
+        );
+    }
+
+    $tanggalAwal = date('d-m-Y', strtotime($order->tglawal));
+    $tanggalAkhir = date('d-m-Y', strtotime($order->tglakhir));
+    $alasan = trim($order->alasan) !== '' ? $order->alasan : '-';
+    $sisaCuti = !is_null($pegawai->scuti) ? $pegawai->scuti . ' hari' : '-';
+    $atasanPenolak = trim($rejectedByName) !== '' ? $rejectedByName : 'Atasan';
+
+    $jam = (int) date('H');
+    if ($jam >= 6 && $jam < 11) {
+        $greeting = 'Selamat Pagi';
+    } elseif ($jam >= 11 && $jam < 15) {
+        $greeting = 'Selamat Siang';
+    } elseif ($jam >= 15 && $jam < 18) {
+        $greeting = 'Selamat Sore';
+    } else {
+        $greeting = 'Assalamu\'alaikum';
+    }
+
+    $message = $greeting . ', ' . $pegawai->name . "\n";
+    $message .= "Permohonan Cuti Anda\n";
+    $message .= "Jenis Cuti: " . $order->jeniscuti . "\n";
+    $message .= "Tanggal Cuti: " . $tanggalAwal . " s.d. " . $tanggalAkhir . "\n";
+    $message .= "Jumlah Hari: " . $order->jmlcuti . " hari\n";
+    $message .= "Alasan: " . $alasan . "\n";
+    $message .= "Sisa Cuti: " . $sisaCuti . "\n\n";
+    $message .= "Mohon Maaf tidak disetujui oleh " . $atasanPenolak;
+
+    return self::sendMessage($pegawai->nohp, $message);
+}
 }
