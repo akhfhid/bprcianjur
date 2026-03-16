@@ -272,7 +272,6 @@
             </div>
         </div>
 
-        <!-- Filters Card -->
         <div class="modern-card mb-4">
             <div class="card-body py-3 px-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -309,7 +308,6 @@
             </div>
         </div>
 
-        <!-- Table Card -->
         <div class="modern-card">
             <div class="card-header bg-white border-0 py-3 px-4 border-bottom">
                 <h6 class="font-weight-bold m-0 text-gray-700">Daftar Dokumen</h6>
@@ -331,8 +329,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Scripts -->
     <script src="{{ asset('js/jquery-3.5.1.js') }}"></script>
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('DataTables/DataTables-1.10.18/js/jquery.dataTables.min.js') }}"></script>
@@ -407,7 +403,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('supervisor.peraturan') }}", // Pastikan route ini benar
+                    url: "{{ route('supervisor.peraturan') }}", 
                     data: function (d) {
                         d.kategori = kategoriDipilih;
                         d.jenis_surat = jenisDipilih;
@@ -418,7 +414,7 @@
                     { data: "name", className: "nama-peraturan" },
                     { data: "nosk", className: "text-center" },
                     { data: "tglsk", className: "text-center" },
-                    { data: "tgllaku", className: "text-center" }, // Menampilkan kolom masa berlaku
+                    { data: "tgllaku", className: "text-center" }, 
                     { data: "action", orderable: false, searchable: false, className: "text-center action-col" }
                 ],
                 order: [[2, 'desc']],
