@@ -367,13 +367,6 @@ class KadivController extends Controller
             'bpjsks'=>$bpjsks,'pensiun'=>$pensiun,'pph'=>$pph,'fungsi'=>$fungsi,'gapokpeg'=>$gapokpeg,'gapok'=>$gapok,'tglpangkat'=>$tglpangkat,'tglberkala'=>$tglberkala,'tunda'=>$tunda,'jdpang'=>$jdpang,'jdber'=>$jdber,'jumlahanak'=>$jumlahanak,'pangan'=>$pangan,'tunpen'=>$tunpen,'tunjab'=>$tunjab]);
 
 
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     }
     public function detailpegawai($id){
         $pegawai = \App\Pegawai::findorfail($id);
@@ -427,7 +420,6 @@ class KadivController extends Controller
             ];
 
         }
-
         $riwayatpendi = \App\riwayatpendi::where("pegawai_id",$pegawai["id"])->get();
         $datapend=[];
         foreach ($riwayatpendi as $pend) {
@@ -439,7 +431,6 @@ class KadivController extends Controller
                 "gelar"=>$pend["gelar"],
                 "thnlulus"=>$pend["thnlulus"]
             ];
-            //# code...
         }
         $riwayatkerja = \App\riwayatkerja::where("pegawai_id",$pegawai["id"])->get();
         $datakerja=[];

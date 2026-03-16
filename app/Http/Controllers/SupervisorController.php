@@ -766,40 +766,96 @@ class SupervisorController extends Controller
 
         return view('supervisor.setujucuti', ['orderc' => $data]);
     }
-    //---sampai sini
+public function tolak($id)
+{
+    $ordercuti = \App\ordercuti::findorFail($id);
+    $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
 
-    //Persetujuan Cuti
-    public function setuju($id)
-    {
-        $ordercuti = \App\ordercuti::findorFail($id);
-        $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
+    $ordercuti->status = 'DITOLAK';
+    $ordercuti->statasan = 'DITOLAK';
+    $ordercuti->save();
 
-        //$ambilcuti = $ordercuti->jmlcuti;
-        //$scuti = $pegawai->scuti;
-        //$sisacuti = $scuti-$ambilcuti;
-        $ordercuti->statasan = 'DISETUJUI';
-        //$pegawai->scuti = $sisacuti;
+    try {
+        $rejectedBy = \App\Pegawai::find(\Auth::user()->pegawai_id);
 
-        $ordercuti->save();
-        //$pegawai->save();
-        return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+        if ($pegawai && $rejectedBy) {
+            \App\Helpers\WhatsAppHelper::sendCutiRejectedNotification(
+                $pegawai,
+                $ordercuti,
+                $rejectedBy->name
+            );
+        }
+    } catch (\Exception $e) {
+        \Log::error('Gagal Notif Reject Cuti', array(
+            'order_id' => $ordercuti->id,
+            'error' => $e->getMessage(),
+        ));
     }
-    public function tolak($id)
-    {
-        $ordercuti = \App\ordercuti::findorFail($id);
-        $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
 
-        //$ambilcuti = $ordercuti->jmlcuti;
-        // $scuti = $pegawai->scuti;
-        //$sisacuti = $scuti-$ambilcuti;
-        $ordercuti->status = 'DITOLAK';
-        $ordercuti->statasan = 'DITOLAK';
-        //$pegawai->scuti = $sisacuti;
+    return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+}
 
-        $ordercuti->save();
-        //$pegawai->save();
-        return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+
+
+public function setuju($id)
+{
+    $ordercuti = \App\ordercuti::findorFail($id);
+    $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
+
+    $ordercuti->statasan = 'DISETUJUI';
+    $ordercuti->save();
+
+    try {
+        $approver = \App\Pegawai::find(\Auth::user()->pegawai_id);
+
+        if ($pegawai && $approver) {
+            \App\Helpers\WhatsAppHelper::sendCutiApprovalNotification(
+                $pegawai,
+                $ordercuti,
+                $approver
+            );
+        }
+    } catch (\Exception $e) {
+        \Log::error('Gagal Notif Approval Cuti', array(
+            'order_id' => $ordercuti->id,
+            'error' => $e->getMessage(),
+        ));
     }
+
+    return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+}
+
+    // public function setuju($id)
+    // {
+    //     $ordercuti = \App\ordercuti::findorFail($id);
+    //     $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
+
+    //     //$ambilcuti = $ordercuti->jmlcuti;
+    //     //$scuti = $pegawai->scuti;
+    //     //$sisacuti = $scuti-$ambilcuti;
+    //     $ordercuti->statasan = 'DISETUJUI';
+    //     //$pegawai->scuti = $sisacuti;
+
+    //     $ordercuti->save();
+    //     //$pegawai->save();
+    //     return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+    // }
+    // public function tolak($id)
+    // {
+    //     $ordercuti = \App\ordercuti::findorFail($id);
+    //     $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
+
+    //     //$ambilcuti = $ordercuti->jmlcuti;
+    //     // $scuti = $pegawai->scuti;
+    //     //$sisacuti = $scuti-$ambilcuti;
+    //     $ordercuti->status = 'DITOLAK';
+    //     $ordercuti->statasan = 'DITOLAK';
+    //     //$pegawai->scuti = $sisacuti;
+
+    //     $ordercuti->save();
+    //     //$pegawai->save();
+    //     return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+    // }
 
     public function rotasipegawai(Request $request)
     {
