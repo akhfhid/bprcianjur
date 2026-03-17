@@ -666,10 +666,34 @@ class SupervisorController extends Controller
         }
 
         $new_cuti->save();
+try {
+    $pegawai = \App\Pegawai::find($new_cuti->pegawai_id);
 
+    if ($pegawai) {
+        $jabatanPemohon = \App\Jabatan::find($pegawai->jabatan);
+
+        if ($jabatanPemohon && $jabatanPemohon->atasan) {
+            $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
+                ->where('status_active', 1)
+                ->first();
+
+            if ($atasan1) {
+                \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan1(
+                    $pegawai,
+                    $new_cuti,
+                    $atasan1
+                );
+            }
+        }
+    }
+} catch (\Exception $e) {
+    \Log::error('Gagal Notif Submit Cuti', array(
+        'order_id' => $new_cuti->id,
+        'error' => $e->getMessage(),
+    ));
+}
         return redirect()->route('supervisor.cutisupervisor')->with('status', 'Permohonan Berhasil Diinput');
     }
-    //Data Cuti Supervisor
     public function cutisupervisor()
     {
         $id_user = \Auth::user()->pegawai_id;
@@ -805,22 +829,33 @@ public function setuju($id)
     $ordercuti->statasan = 'DISETUJUI';
     $ordercuti->save();
 
-    try {
-        $approver = \App\Pegawai::find(\Auth::user()->pegawai_id);
+try {
+    $approver = \App\Pegawai::find(\Auth::user()->pegawai_id);
 
-        if ($pegawai && $approver) {
-            \App\Helpers\WhatsAppHelper::sendCutiApprovalNotification(
-                $pegawai,
-                $ordercuti,
-                $approver
-            );
+    if ($pegawai && $approver) {
+        $jabatanAtasan1 = \App\Jabatan::find($approver->jabatan);
+
+        if ($jabatanAtasan1 && $jabatanAtasan1->atasan) {
+            $atasan2 = \App\Pegawai::where('jabatan', $jabatanAtasan1->atasan)
+                ->where('status_active', 1)
+                ->first();
+
+            if ($atasan2) {
+                \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan2(
+                    $pegawai,
+                    $approver,
+                    $atasan2,
+                    $ordercuti
+                );
+            }
         }
-    } catch (\Exception $e) {
-        \Log::error('Gagal Notif Approval Cuti', array(
-            'order_id' => $ordercuti->id,
-            'error' => $e->getMessage(),
-        ));
     }
+} catch (\Exception $e) {
+    \Log::error('Gagal Notif Approval ke Atasan 2', array(
+        'order_id' => $ordercuti->id,
+        'error' => $e->getMessage(),
+    ));
+}
 
     return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
 }

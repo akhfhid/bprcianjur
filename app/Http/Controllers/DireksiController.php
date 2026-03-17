@@ -507,7 +507,32 @@ class DireksiController extends Controller
         $new_cuti->diketatasan = $jabatasan;
         $new_cuti->statdiket = 'SUBMIT';
         $new_cuti->save();
+        try {
+    $pegawai = \App\Pegawai::find($new_cuti->pegawai_id);
 
+    if ($pegawai) {
+        $jabatanPemohon = \App\Jabatan::find($pegawai->jabatan);
+
+        if ($jabatanPemohon && $jabatanPemohon->atasan) {
+            $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
+                ->where('status_active', 1)
+                ->first();
+
+            if ($atasan1) {
+                \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan1(
+                    $pegawai,
+                    $new_cuti,
+                    $atasan1
+                );
+            }
+        }
+    }
+} catch (\Exception $e) {
+    \Log::error('Gagal Notif Submit Cuti', array(
+        'order_id' => $new_cuti->id,
+        'error' => $e->getMessage(),
+    ));
+}
         return redirect()->route('direksi.permohonancuti')->with('status','Permohonan Berhasil Diinput');
     }
     public function tolakcuti(){
@@ -688,6 +713,22 @@ class DireksiController extends Controller
 
         $ordercuti->save();
         $pegawai->save();
+        try {
+    $approver = \App\Pegawai::find(\Auth::user()->pegawai_id);
+
+    if ($pegawai && $approver && $ordercuti->status === 'DISETUJUI') {
+        \App\Helpers\WhatsAppHelper::sendCutiApprovalFinalNotification(
+            $pegawai,
+            $ordercuti,
+            $approver
+        );
+    }
+} catch (\Exception $e) {
+    \Log::error('Gagal Notif Approval Final Cuti', array(
+        'order_id' => $ordercuti->id,
+        'error' => $e->getMessage(),
+    ));
+}
         return redirect()->route('direksi.cutiindex')->with('status','Data Cuti Successfully Updated');
 
     }

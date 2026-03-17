@@ -28,7 +28,9 @@ Route::get('/test-gmail', function () {
     return response()->json(['status' => 'ok']);
 });
 Route::get('/peraturan/statistik', 'peraturanController@statistik');
-
+Route::get('/cekcurl', function () {
+    return function_exists('curl_init');
+});
 Route::get('/lihat-cuti-wajib-lama', function() {
     $cutiLama = \App\ordercuti::with('pegawai')
         ->where('jeniscuti', 'Cuti Wajib')

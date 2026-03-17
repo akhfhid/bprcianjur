@@ -144,13 +144,13 @@ class WhatsAppHelper
         }
 
         $message = self::getTimeGreeting() . ', ' . $atasan2->name . "\n\n";
-        $message .= 'Terdapat permohonan cuti dari: ' . $pegawai->name . "\n";
+        $message .= 'Terdapat permohonan puzti dari: ' . $pegawai->name . "\n";
         $message .= 'Jenis Cuti: ' . $order->jeniscuti . "\n";
         $message .= 'Tanggal Cuti: ' . date('d-m-Y', strtotime($order->tglawal)) . ' s.d. ' . date('d-m-Y', strtotime($order->tglakhir)) . "\n";
         $message .= 'Jumlah Hari: ' . $order->jmlcuti . " hari\n";
         $message .= 'Alasan: ' . $order->alasan . "\n";
         $message .= 'Sisa Cuti: ' . $pegawai->scuti . " hari\n";
-        $message .= 'Cuti telah disetujui oleh: ' . $atasan1->name . "\n\n";
+        $message .= 'Cuti telah disetujui oleh: ' . $atasan1->name . " (Atasan 1)\n\n";
         $message .= 'Mohon dapat dilakukan persetujuan pada Aplikasi SIKAP BPR Cianjur';
 
         return self::sendMessage($atasan2->nohp, $message);
