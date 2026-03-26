@@ -66,3 +66,4 @@
 </div>
 </div>
 @endsection
+@include('peraturan.partials.activity_timer', ['peraturan' => $peraturan])

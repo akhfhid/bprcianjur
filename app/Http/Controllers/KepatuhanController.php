@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Pegawai;
+use Carbon\Carbon;
 class KepatuhanController extends Controller
 {
     /**
@@ -1407,12 +1408,143 @@ public function tolakdata(){
         return view ('kepatuhan.tolakatur',['orderatur' => $data,'peraturan'=>$orderatur]);
 
    }
-   public function loguser(Request $request){
-    $loguser = \App\loguser::orderby('created_at','desc')->paginate(10);
+    public function loguser(Request $request)
+    {
+        $logs = $this->getFilteredLogs($request)->paginate(15);
+        return view('kepatuhan.loguser', compact('logs'));
+    }
 
+    public function exportLoguser(Request $request)
+    {
+        $logs = $this->getFilteredLogs($request)->get();
+        $fileName = 'log_pegawai_' . date('Ymd_His') . '.csv';
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
 
-    return view('kepatuhan.loguser',compact('loguser'));
-   }
+        $callback = function() use ($logs) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['No', 'Nama Pegawai', 'Jenis', 'Keterangan', 'Waktu Akses', 'Mulai', 'Selesai', 'Durasi (Menit)']);
+
+            foreach ($logs as $index => $log) {
+                $duration = '-';
+                if (!is_null($log->active_seconds)) {
+                    $duration = floor($log->active_seconds / 60) . " menit";
+                }
+
+                fputcsv($file, [
+                    $index + 1,
+                    $log->nampeg ?? '-',
+                    $log->jenis ?? '-',
+                    $log->keterangan ?? '-',
+                    $log->waktu_akses ? Carbon::parse($log->waktu_akses)->format('d/m/Y H:i:s') : '-',
+                    $log->mulai ? Carbon::parse($log->mulai)->format('d/m/Y H:i:s') : '-',
+                    $log->selesai ? Carbon::parse($log->selesai)->format('d/m/Y H:i:s') : '-',
+                    $duration
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    private function getFilteredLogs(Request $request)
+    {
+        $keyword = trim((string) $request->get('keyword'));
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $filterMonth = $request->get('filter_month'); // YYYY-MM
+        $jenis = $request->get('jenis');
+        $combinedQuery = null;
+        if ($filterMonth) {
+            try {
+                $date = Carbon::createFromFormat('Y-m', $filterMonth);
+                $startDate = $date->startOfMonth()->format('Y-m-d');
+                $endDate = $date->endOfMonth()->format('Y-m-d');
+            } catch (\Exception $e) {
+            }
+        }
+
+        if (\Schema::hasTable('logusers')) {
+            $logAksesQuery = \DB::table('logusers as lu')
+                ->select([
+                    'lu.nampeg as nampeg',
+                    \DB::raw("COALESCE(NULLIF(lu.jenis, ''), 'Akses') as jenis"),
+                    \DB::raw("CASE 
+                        WHEN lu.jenis = 'Print' THEN 'Cetak Dokumen'
+                        WHEN lu.jenis = 'Lihat Dokumen' THEN 'Lihat Detail'
+                        WHEN lu.jenis = 'Permintaan Data' THEN 'Permintaan Data Peraturan'
+                        ELSE 'Log Akses'
+                    END as sub_jenis"),
+                    \DB::raw('lu.keterangan as keterangan'),
+                    \DB::raw('lu.created_at as waktu_akses'),
+                    \DB::raw('NULL as mulai'),
+                    \DB::raw('NULL as selesai'),
+                    \DB::raw('NULL as active_seconds'),
+                ]);
+
+            if ($keyword) {
+                $logAksesQuery->where(function ($q) use ($keyword) {
+                    $q->where('lu.nampeg', 'like', "%{$keyword}%")
+                      ->orWhere('lu.keterangan', 'like', "%{$keyword}%")
+                      ->orWhere('lu.jenis', 'like', "%{$keyword}%");
+                });
+            }
+
+            if ($startDate) $logAksesQuery->whereDate('lu.created_at', '>=', $startDate);
+            if ($endDate) $logAksesQuery->whereDate('lu.created_at', '<=', $endDate);
+
+            $combinedQuery = $logAksesQuery;
+        }
+
+        if (\Schema::hasTable('peraturan_view_sessions')) {
+            $aktivitasPeraturanQuery = \DB::table('peraturan_view_sessions as pvs')
+                ->leftJoin('peraturans as p', 'p.id', '=', 'pvs.peraturan_id')
+                ->leftJoin('pegawais as peg', 'peg.id', '=', 'pvs.pegawai_id')
+                ->select([
+                    \DB::raw('COALESCE(peg.name, "-") as nampeg'),
+                    \DB::raw("'Lihat Dokumen' as jenis"),
+                    \DB::raw("'Durasi Baca Aktif' as sub_jenis"),
+                    \DB::raw('COALESCE(p.name, "-") as keterangan'),
+                    \DB::raw('pvs.started_at as waktu_akses'),
+                    \DB::raw('pvs.started_at as mulai'),
+                    \DB::raw('pvs.ended_at as selesai'),
+                    \DB::raw('pvs.active_seconds as active_seconds'),
+                ]);
+
+            if ($keyword) {
+                $aktivitasPeraturanQuery->where(function ($q) use ($keyword) {
+                    $q->where('peg.name', 'like', "%{$keyword}%")
+                      ->orWhere('p.name', 'like', "%{$keyword}%");
+                });
+            }
+
+            if ($startDate) $aktivitasPeraturanQuery->whereDate('pvs.started_at', '>=', $startDate);
+            if ($endDate) $aktivitasPeraturanQuery->whereDate('pvs.started_at', '<=', $endDate);
+
+            if ($combinedQuery) {
+                $combinedQuery = $combinedQuery->unionAll($aktivitasPeraturanQuery);
+            } else {
+                $combinedQuery = $aktivitasPeraturanQuery;
+            }
+        }
+
+        if ($combinedQuery) {
+            return \DB::query()
+                ->fromSub($combinedQuery, 'logs')
+                ->orderByDesc('waktu_akses')
+                ->when($jenis, function ($q) use ($jenis) {
+                    $q->where('jenis', $jenis);
+                });
+        }
+        return \DB::table('logusers')->whereRaw('1 = 0');
+    }
+
     public function cutiwajib()
     {
         $user = \Auth::user()->pegawai_id;

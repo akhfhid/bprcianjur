@@ -563,6 +563,7 @@ class ComposerStaticInit3f4448e56716491b612eade1e2d4e284
         'App\\Exceptions\\Handler' => __DIR__ . '/../..' . '/app/Exceptions/Handler.php',
         'App\\Exports\\LogExport' => __DIR__ . '/../..' . '/app/Exports/LogExport.php',
         'App\\Helpers\\AuditHelper' => __DIR__ . '/../..' . '/app/Helpers/AuditHelper.php',
+        'App\\Helpers\\WhatsAppHelper' => __DIR__ . '/../..' . '/app/Helpers/WhatsAppHelper.php',
         'App\\Http\\Controllers\\Auth\\ConfirmPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ConfirmPasswordController.php',
         'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
         'App\\Http\\Controllers\\Auth\\LoginController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/LoginController.php',

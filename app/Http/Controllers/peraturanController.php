@@ -25,46 +25,46 @@ class peraturanController extends Controller
             abort(403, 'Anda tidak memiliki hak akses');
         });
     }
-public function index(Request $request)
-{
-    if ($request->ajax()) {
-        $query = Peraturan::query()
-            ->when($request->kategori, function ($q) use ($request) {
-                $q->where('kategori', $request->kategori);
-            })
-            ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
-                $q->where('jenis_surat', $request->jenis_surat);
-            })
-            ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
-                $q->where('jenis_ojk', $request->sub_jenis);
-            })
-            ->latest();
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = Peraturan::query()
+                ->when($request->kategori, function ($q) use ($request) {
+                    $q->where('kategori', $request->kategori);
+                })
+                ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
+                    $q->where('jenis_surat', $request->jenis_surat);
+                })
+                ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
+                    $q->where('jenis_ojk', $request->sub_jenis);
+                })
+                ->latest();
 
-        return DataTables::of($query)
-            ->addColumn('action', function ($data) {
-                // Menggunakan data-id dan class modern sesuai style UI
-                $btn = '';
-                
-                // Tombol View
-                $btn .= '<a href="' . url("peraturan/" . $data->id) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a> ';
-                
-                // Tombol Edit
-                $btn .= '<a href="' . url("peraturan/" . $data->id . "/edit") . '" class="action-btn edit" title="Edit"><i class="fas fa-edit"></i></a> ';
-                
-                // Tombol Delete
-                $btn .= '<button type="button" data-id="' . $data->id . '" class="action-btn delete delete-btn" title="Hapus"><i class="fas fa-trash"></i></button>';
+            return DataTables::of($query)
+                ->addColumn('action', function ($data) {
+                    // Menggunakan data-id dan class modern sesuai style UI
+                    $btn = '';
 
-                return $btn;
-            })
-            ->addColumn('jenis_ojk', function ($data) {
-                return $data->jenis_ojk ?? '-';
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+                    // Tombol View
+                    $btn .= '<a href="' . url('peraturan/' . $data->id) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a> ';
+
+                    // Tombol Edit
+                    $btn .= '<a href="' . url('peraturan/' . $data->id . '/edit') . '" class="action-btn edit" title="Edit"><i class="fas fa-edit"></i></a> ';
+
+                    // Tombol Delete
+                    $btn .= '<button type="button" data-id="' . $data->id . '" class="action-btn delete delete-btn" title="Hapus"><i class="fas fa-trash"></i></button>';
+
+                    return $btn;
+                })
+                ->addColumn('jenis_ojk', function ($data) {
+                    return $data->jenis_ojk ?? '-';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('peraturan.index');
     }
-
-    return view('peraturan.index');
-}
 
     public function statistik()
     {
@@ -176,7 +176,57 @@ public function index(Request $request)
         $edit_peraturan = \App\peraturan::findorFail($id);
         return view('peraturan.edit', ['peraturan' => $edit_peraturan]);
     }
+    public function loguser(Request $request)
+    {
+        $keyword = trim((string) $request->get('keyword'));
+        $perPage = 15;
 
+        $combinedQuery = null;
+
+        if (\Schema::hasTable('logusers')) {
+            $logAksesQuery = \DB::table('logusers as lu')->select([\DB::raw("'Log Akses' as sumber"), 'lu.nampeg as nampeg', \DB::raw('lu.keterangan as keterangan'), \DB::raw('lu.created_at as waktu_akses'), \DB::raw('NULL as mulai'), \DB::raw('NULL as selesai'), \DB::raw('NULL as active_seconds')]);
+
+            if ($keyword !== '') {
+                $logAksesQuery->where(function ($q) use ($keyword) {
+                    $q->where('lu.nampeg', 'like', "%{$keyword}%")->orWhere('lu.keterangan', 'like', "%{$keyword}%");
+                });
+            }
+
+            $combinedQuery = $logAksesQuery;
+        }
+
+        if (\Schema::hasTable('peraturan_view_sessions')) {
+            $aktivitasPeraturanQuery = \DB::table('peraturan_view_sessions as pvs')
+                ->leftJoin('peraturans as p', 'p.id', '=', 'pvs.peraturan_id')
+                ->leftJoin('pegawais as peg', 'peg.id', '=', 'pvs.pegawai_id')
+                ->select([\DB::raw("'Aktivitas Peraturan' as sumber"), \DB::raw('COALESCE(peg.name, "-") as nampeg'), \DB::raw('COALESCE(p.name, "-") as keterangan'), \DB::raw('pvs.started_at as waktu_akses'), \DB::raw('pvs.started_at as mulai'), \DB::raw('pvs.ended_at as selesai'), \DB::raw('pvs.active_seconds as active_seconds')]);
+
+            if ($keyword !== '') {
+                $aktivitasPeraturanQuery->where(function ($q) use ($keyword) {
+                    $q->where('peg.name', 'like', "%{$keyword}%")
+                        ->orWhere('p.name', 'like', "%{$keyword}%")
+                        ->orWhere('pvs.role', 'like', "%{$keyword}%");
+                });
+            }
+
+            if ($combinedQuery) {
+                $combinedQuery = $combinedQuery->unionAll($aktivitasPeraturanQuery);
+            } else {
+                $combinedQuery = $aktivitasPeraturanQuery;
+            }
+        }
+
+        if ($combinedQuery) {
+            $logs = \DB::query()->fromSub($combinedQuery, 'logs')->orderByDesc('waktu_akses')->simplePaginate($perPage)->appends($request->query());
+        } else {
+            $logs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage, $request->integer('page', 1), [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+        }
+
+        return view('kepatuhan.loguser', compact('keyword', 'logs'));
+    }
     public function simpanedit(Request $request, $id)
     {
         $request->validate([
@@ -187,51 +237,57 @@ public function index(Request $request)
             'tglsk' => 'required|date',
             'tgllaku' => 'required|date',
             'pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'description' => 'nullable|string',
         ]);
 
         $edit_peraturan = \App\peraturan::findOrFail($id);
-        $edit_peraturan = \App\peraturan::findorFail($id);
-        $description = $request->get('description');
-        $dom = new \DomDocument('1.0', 'UTF-8');
-        libxml_use_internal_errors(true);
-        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        $images = $dom->getElementsByTagName('img');
-        $bs64 = 'base64';
+        $description = $request->get('description') ?? '';
+        $description_save = null;
 
-        foreach ($images as $k => $img) {
-            $data = $img->getAttribute('src');
-            if (strpos($data, $bs64) == true) {
-                $data = base64_decode(preg_replace('#^data:image/\w+;base64.#i', '', $data));
-                //list($type, $data) = explode(';', $data);
-                //list(, $data)      = explode(',', $data);
+        if (!empty($description)) {
+            $dom = new \DomDocument('1.0', 'UTF-8');
+            libxml_use_internal_errors(true);
 
-                $image_name = '/storage/peraturan/' . 'post_' . time() . $k . '.png';
-                $path = public_path() . $image_name;
+            $dom->loadHTML($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
-                file_put_contents($path, $data);
+            $images = $dom->getElementsByTagName('img');
 
-                $img->removeAttribute('src');
-                $img->setAttribute('src', $image_name);
-            } else {
-                $image_name = '/' . $data;
-                $img->setAttribute('src', $image_name);
+            foreach ($images as $k => $img) {
+                $data = $img->getAttribute('src');
+
+                if (strpos($data, 'base64') !== false) {
+                    $data = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $data));
+
+                    $image_name = '/storage/peraturan/post_' . time() . $k . '.png';
+                    $path = public_path() . $image_name;
+
+                    file_put_contents($path, $data);
+
+                    $img->setAttribute('src', $image_name);
+                } else {
+                    $img->setAttribute('src', $data);
+                }
             }
+
+            $description_save = $dom->saveHTML();
         }
 
-        $description_save = $dom->saveHTML();
+        $edit_peraturan->name = $request->name;
+        $edit_peraturan->kategori = $request->kategori;
+        $edit_peraturan->jenis_surat = $request->jenis_surat;
+        $edit_peraturan->nosk = $request->nosk;
+        $edit_peraturan->tglsk = $request->tglsk;
+        $edit_peraturan->tgllaku = $request->tgllaku;
+        $edit_peraturan->uraian = $request->uraian;
 
-        $edit_peraturan->name = $request->get('name');
-        $edit_peraturan->kategori = $request->get('kategori');
-        $edit_peraturan->jenis_surat = $request->get('jenis_surat');
-        $edit_peraturan->nosk = $request->get('nosk');
-        $edit_peraturan->tglsk = $request->get('tglsk');
-        $edit_peraturan->tgllaku = $request->get('tgllaku');
-        $edit_peraturan->uraian = $request->get('uraian');
-
-        //$edit_peraturan->pdf = $description_save;
+        if ($description_save !== null) {
+            $edit_peraturan->description = $description_save;
+        }
 
         $edit_peraturan->updated_by = \Auth::user()->id;
+
         $edit_peraturan->save();
+
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Diperbaharui');
     }
 
@@ -241,21 +297,21 @@ public function index(Request $request)
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-  public function destroy($id)
-{
-    $peraturan = \App\peraturan::findOrFail($id);
-    $peraturan->delete();
+    public function destroy($id)
+    {
+        $peraturan = \App\peraturan::findOrFail($id);
+        $peraturan->delete();
 
-    // Jika request via AJAX (dari DataTables)
-    if (request()->ajax()) {
-        return response()->json([
-            'success' => true,
-            'message' => 'Peraturan berhasil dipindahkan ke Trash.'
-        ]);
+        // Jika request via AJAX (dari DataTables)
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Peraturan berhasil dipindahkan ke Trash.',
+            ]);
+        }
+
+        return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
     }
-
-    return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
-}
 
     public function trash()
     {

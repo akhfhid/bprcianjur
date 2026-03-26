@@ -16,6 +16,6 @@
 	<li><a href="{{route('kepatuhan.cutiindex')}}"><span class="oi oi-inbox"></span>Otorisasi Cuti Pegawai</a></li>
 	<li><a href="{{route('peraturan.index')}}"><span class="oi oi-book"></span>Peraturan</a></li>
 	<li><a href="{{route('kepatuhan.statusatur')}}"><span class="oi oi-inbox"></span>Permintaan Data Peraturan</a></li>
-	<li><a href="{{route('Loguser.index')}}"><span class="oi oi-inbox"></span>Log Akses</a></li>
+	<li><a href="{{route('kepatuhan.loguser')}}"><span class="oi oi-inbox"></span>Log Akses</a></li>
 						
 </div>

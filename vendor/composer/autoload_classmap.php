@@ -17,6 +17,7 @@ return array(
     'App\\Exceptions\\Handler' => $baseDir . '/app/Exceptions/Handler.php',
     'App\\Exports\\LogExport' => $baseDir . '/app/Exports/LogExport.php',
     'App\\Helpers\\AuditHelper' => $baseDir . '/app/Helpers/AuditHelper.php',
+    'App\\Helpers\\WhatsAppHelper' => $baseDir . '/app/Helpers/WhatsAppHelper.php',
     'App\\Http\\Controllers\\Auth\\ConfirmPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ConfirmPasswordController.php',
     'App\\Http\\Controllers\\Auth\\ForgotPasswordController' => $baseDir . '/app/Http/Controllers/Auth/ForgotPasswordController.php',
     'App\\Http\\Controllers\\Auth\\LoginController' => $baseDir . '/app/Http/Controllers/Auth/LoginController.php',

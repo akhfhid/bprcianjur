@@ -48,7 +48,7 @@ document.addEventListener('contextmenu', function(e){
 <div class="col-md-12 text-right">
 
 @if(!$order)
-    <a href="{{route('pincab.permohonandownload',$peraturan->id)}}" 
+    <a href="{{route('pincab.permohonandownload', $peraturan->id)}}" 
        class="btn btn-primary btn-sm ">
         Print
     </a>
@@ -59,14 +59,14 @@ document.addEventListener('contextmenu', function(e){
     </button>
 
 @elseif($order->print == "f")
-    <a href="{{route('pincab.show_pdf',$peraturan->id)}}" 
+    <a href="{{route('pincab.show_pdf', $peraturan->id)}}" 
        class="btn btn-success btn-sm ">
          Print 
     </a>
 
 @else
     
-    <a href="{{route('pincab.permohonandownload',$peraturan->id)}}" 
+    <a href="{{route('pincab.permohonandownload', $peraturan->id)}}" 
        class="btn btn-primary btn-sm shadow-sm">
     Print
     </a>
@@ -131,3 +131,4 @@ pdfjsLib.getDocument(url).promise.then(function(pdf) {
 </script>
 
 @endsection
+@include('peraturan.partials.activity_timer', ['peraturan' => $peraturan])

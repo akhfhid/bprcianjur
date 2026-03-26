@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderCutiNotificationController;
+use App\Http\Controllers\KepatuhanController;
+
 
 Route::get('/', function () {
     return view('auth.login');
@@ -31,13 +33,8 @@ Route::get('/peraturan/statistik', 'peraturanController@statistik');
 Route::get('/cekcurl', function () {
     return function_exists('curl_init');
 });
-Route::get('/lihat-cuti-wajib-lama', function() {
-    $cutiLama = \App\ordercuti::with('pegawai')
-        ->where('jeniscuti', 'Cuti Wajib')
-        ->where('status', 'DISETUJUI')
-        ->whereDate('created_at', '<', '2026-02-20')
-        ->whereDate('updated_at', \Carbon\Carbon::today())
-        ->get();
+Route::get('/lihat-cuti-wajib-lama', function () {
+    $cutiLama = \App\ordercuti::with('pegawai')->where('jeniscuti', 'Cuti Wajib')->where('status', 'DISETUJUI')->whereDate('created_at', '<', '2026-02-20')->whereDate('updated_at', \Carbon\Carbon::today())->get();
 
     $html = "<h2 style='font-family: sans-serif; color: #2c3e50;'>Daftar 81 Data Cuti Wajib yang Berhasil Diproses</h2>";
     $html .= "<table border='1' cellpadding='10' cellspacing='0' style='font-family: sans-serif; border-collapse: collapse; width: 100%;'>";
@@ -55,33 +52,33 @@ Route::get('/lihat-cuti-wajib-lama', function() {
         // Ambil nama dari relasi pegawai, jika tidak ada tampilkan 'Tidak Ditemukan'
         $namaPegawai = $cuti->pegawai ? $cuti->pegawai->name : "<span style='color:red;'>Pegawai Tidak Ditemukan</span>";
 
-        $html .= "<tr>";
+        $html .= '<tr>';
         $html .= "<td align='center'>{$cuti->id}</td>";
-        $html .= "<td><b>{$namaPegawai}</b></td>"; 
+        $html .= "<td><b>{$namaPegawai}</b></td>";
         $html .= "<td align='center'>{$cuti->jeniscuti}</td>";
         $html .= "<td align='center'>{$cuti->tglawal}</td>";
         $html .= "<td align='center'>{$cuti->tglakhir}</td>";
         $html .= "<td align='center'>{$cuti->jmlcuti} Hari</td>";
         $html .= "<td align='center' style='color: #27ae60; font-weight: bold;'>{$cuti->status}</td>";
-        $html .= "</tr>";
+        $html .= '</tr>';
     }
-    
-    $html .= "</table>";
-    $html .= "<p style='font-family: sans-serif;'>Total Data: <b>" . $cutiLama->count() . "</b></p>";
+
+    $html .= '</table>';
+    $html .= "<p style='font-family: sans-serif;'>Total Data: <b>" . $cutiLama->count() . '</b></p>';
 
     return $html;
 });
 // Route::get('/auto-approve-cuti-lama', function() {
 //     $cutiLama = \App\ordercuti::where('jeniscuti', 'Cuti Wajib')
-//         ->where('status', 'SUBMIT') 
-//         ->whereDate('created_at', '<', '2026-02-20')
+//         ->where('status', 'SUBMIT')
+//         ->whereDate('created_at', '<', '2026-12-20')
 //         ->get();
 
 //     $count = 0;
 
 //     foreach ($cutiLama as $cuti) {
 //         $pegawai = \App\Pegawai::find($cuti->pegawai_id);
-        
+
 //         if ($pegawai) {
 //             $pegawai->scuti -= $cuti->jmlcuti;
 //             $pegawai->save();
@@ -98,12 +95,11 @@ Route::get('/lihat-cuti-wajib-lama', function() {
 
 //     return "Selesai! Berhasil menyetujui dan memotong saldo untuk $count data Cuti Wajib lama.";
 // });
+
 Route::post('/pegawai/{pegawai}/scuti', [CutiController::class, 'updateSisaCutiAjax'])->name('pegawai.scuti.ajax');
 Route::post('/pegawai/{pegawai}/sisacuti', [CutiController::class, 'updateSisaCuti'])->name('pegawai.sisacuti');
-Route::post('/pegawai/reset-scuti', [CutiController::class,'resetSisaCuti'])
-    ->name('pegawai.reset.scuti');
-
-
+Route::post('/pegawai/reset-scuti', [CutiController::class, 'resetSisaCuti'])->name('pegawai.reset.scuti');
+Route::get('/loguser/export', [KepatuhanController::class, 'exportLoguser'])->name('kepatuhan.loguser.export');
 Route::middleware(['auth'])
     ->prefix('cuti')
     ->group(function () {
@@ -118,6 +114,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/users/{user}/activate', 'UserStatusController@activate')->name('users.activate');
 
     Route::put('/users/{user}/deactivate', 'UserStatusController@deactivate')->name('users.deactivate');
+    Route::post('/peraturan/view-session/start', 'PeraturanViewSessionController@start')->name('peraturan.view-session.start');
+    Route::post('/peraturan/view-session/ping', 'PeraturanViewSessionController@ping')->name('peraturan.view-session.ping');
+    Route::post('/peraturan/view-session/end', 'PeraturanViewSessionController@end')->name('peraturan.view-session.end');
 });
 
 route::middleware(['auth'])->group(function () {
@@ -341,10 +340,10 @@ route::middleware(['auth'])->group(function () {
     route::get('Kadiv/Cuti/CutiWajib', 'KadivController@cutiwajib')->name('kadiv.cutiwajib');
     route::get('Kadiv/Cuti/CutiLainnya', 'KadivController@cutilainnya')->name('kadiv.cutilainnya');
     route::resource('Kadiv', 'KadivController');
-Route::post('/kadiv/peraturan/update-print', 'KadivController@update_status_print')->name('kadiv.update_print');
+    Route::post('/kadiv/peraturan/update-print', 'KadivController@update_status_print')->name('kadiv.update_print');
 
-// Sesuaikan nama controllernya dengan yang Anda pakai
-Route::post('/pincab/peraturan/update-print', 'PincabController@update_status_print')->name('pincab.update_print');
+    // Sesuaikan nama controllernya dengan yang Anda pakai
+    Route::post('/pincab/peraturan/update-print', 'PincabController@update_status_print')->name('pincab.update_print');
     route::get('Kepatuhan/IndexPegawai', 'KepatuhanController@indexpegawai')->name('kepatuhan.indexpegawai');
     route::Get('Kepatuhan/ProfilePegawai/{id}', 'KepatuhanController@detailpegawai')->name('kepatuhan.detailpegawai');
     route::get('Kepatuhan/Edit/{id}', 'KepatuhanController@editpegawai')->name('kepatuhan.editpegawai');

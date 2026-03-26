@@ -289,8 +289,8 @@
                         <div class="select-wrapper">
                             <select id="filterJenis">
                                 <option value="all">Semua Jenis</option>
-								<option value="SK">SK</option>
-								<option value="SE">SE</option>
+                                <option value="SK">SK</option>
+                                <option value="SE">SE</option>
                             </select>
                         </div>
 
@@ -320,7 +320,7 @@
                             <th class="text-center">Nama Peraturan</th>
                             <th class="text-center">Nomor Peraturan</th>
                             <th class="text-center">Tanggal Peraturan</th>
-                            <th class="text-center">Tanggal Masa Berlaku</th>
+                            <th class="text-center">Tanggal Berlaku</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -364,7 +364,7 @@
                 subJenisDipilih = "all";
                 $('#filterSubJenis').val('all');
             }
-            
+
             if (table) table.columns.adjust().draw();
         }
 

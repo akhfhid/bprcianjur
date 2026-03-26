@@ -292,7 +292,7 @@
                             <select id="filterJenis">
                                 <option value="all">Semua Jenis</option>
                                 <option value="SK">SK</option>
-								<option value="SE">SE</option>
+                                <option value="SE">SE</option>
                             </select>
                         </div>
 
@@ -323,6 +323,7 @@
                             <th class="text-center">Nama Peraturan</th>
                             <th class="text-center">Nomor Peraturan</th>
                             <th class="text-center">Tanggal Peraturan</th>
+                            <th class="text-center">Tanggal Berlaku</th>
                             <th id="colSubJenis" class="text-center" style="display:none;font-weight:bold;">Sub Jenis</th>
                             <th class="text-center">Aksi</th>
                         </tr>
@@ -364,13 +365,13 @@
 
             if (showSubJenis) {
                 $('#wrapperSubJenis').slideDown();
-                table.column(3).visible(true);
+                table.column(4).visible(true);
                 $('#colSubJenis').show();
             } else {
                 $('#wrapperSubJenis').slideUp();
                 subJenisDipilih = "all";
                 $('#filterSubJenis').val('all');
-                table.column(3).visible(false);
+                table.column(4).visible(false);
                 $('#colSubJenis').hide();
             }
 
@@ -427,6 +428,7 @@
                     { data: "name", className: "nama-peraturan" },
                     { data: "nosk", className: "text-center" },
                     { data: "tglsk", className: "text-center" },
+                    { data: "tgllaku", className: "text-center" },
                     { data: "jenis_ojk", className: "text-center", visible: false },
                     { data: "action", orderable: false, searchable: false, className: "text-center action-col" }
                 ],

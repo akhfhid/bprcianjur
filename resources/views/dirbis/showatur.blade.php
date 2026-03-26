@@ -5,7 +5,7 @@
 <hr class="my-3">
 	<div class="row mb-3">
 	<div class="col-md-12 text-right">
-		<a href="{{route('dirbis.permohonandownload',$peraturan->id)}}" class="btn btn-primary btn-sm">Download</a>
+		<a href="{{route('dirbis.permohonandownload', $peraturan->id)}}" class="btn btn-primary btn-sm">Download</a>
 
 	</div>
 </div>
@@ -31,3 +31,5 @@
 </div>
 </div>
 @endsection
+@include('peraturan.partials.activity_timer', ['peraturan' => $peraturan])
+
