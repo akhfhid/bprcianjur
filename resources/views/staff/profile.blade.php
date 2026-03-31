@@ -108,7 +108,7 @@
 				@foreach ($riwayatkerja as $riwayatkerjas)
 				<td>{{$riwayatkerjas['name']}}</td>
 				<td>{{$riwayatkerjas['kantorcabang']}}</td>
-				<td>{{$riwayatkerjas['thnangkat']}}</td>
+				{{-- <td>{{$riwayatkerjas['thnangkat']}}</td> --}}
 			</tr>
 			@endforeach
 			</tbody>

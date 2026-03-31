@@ -7,6 +7,7 @@ use PDF;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 use App\peraturan;
+use App\Helpers\WhatsAppHelper;
 use DataTables;
 
 class peraturanController extends Controller
@@ -28,7 +29,7 @@ class peraturanController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Peraturan::query()
+            $query = peraturan::query()
                 ->when($request->kategori, function ($q) use ($request) {
                     $q->where('kategori', $request->kategori);
                 })
@@ -128,7 +129,10 @@ class peraturanController extends Controller
             'nosk' => 'required',
             'tglsk' => 'required|date',
             'tgllaku' => 'required|date',
-            'pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'pdf' => 'nullable|file|mimes:pdf|max:51200',
+        ], [
+            'pdf.mimes' => 'File harus berformat PDF.',
+            'pdf.max' => 'Ukuran file PDF maksimal 50 MB.',
         ]);
 
         $new_peraturan = new \App\peraturan();
@@ -151,7 +155,69 @@ class peraturanController extends Controller
         $new_peraturan->created_by = \Auth::user()->id;
         $new_peraturan->save();
 
+        try {
+            $notifStat = $this->sendPeraturanBaruNotificationToAllPegawai($new_peraturan);
+            \Log::info('Notifikasi WA peraturan baru selesai diproses', $notifStat);
+        } catch (\Throwable $e) {
+            \Log::error('Gagal memproses notifikasi WA peraturan baru', [
+                'peraturan_id' => $new_peraturan->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Ditambahkan');
+    }
+
+    private function sendPeraturanBaruNotificationToAllPegawai($peraturan)
+    {
+        $delayPerPegawaiSeconds = 5;
+
+        $query = \App\Pegawai::query()
+            ->select(['id', 'name', 'nohp'])
+            ->whereNotNull('nohp')
+            ->where('nohp', '<>', '');
+
+        if (\Schema::hasColumn('pegawais', 'status_active')) {
+            $query->where('status_active', 1);
+        }
+
+        $pegawais = $query->orderBy('name')->get();
+
+        $success = 0;
+        $failed = 0;
+        $processed = 0;
+        $sentPhones = [];
+
+        foreach ($pegawais as $pegawai) {
+            $normalizedPhone = WhatsAppHelper::convertPhoneNumber($pegawai->nohp);
+
+            if (!$normalizedPhone || isset($sentPhones[$normalizedPhone])) {
+                continue;
+            }
+
+            $sentPhones[$normalizedPhone] = true;
+            $processed++;
+
+            if ($processed > 1) {
+                sleep($delayPerPegawaiSeconds);
+            }
+
+            $result = WhatsAppHelper::sendPeraturanBaruNotificationToPegawai($peraturan, $pegawai);
+            if (!empty($result['success'])) {
+                $success++;
+            } else {
+                $failed++;
+            }
+        }
+
+        return [
+            'peraturan_id' => $peraturan->id,
+            'total_pegawai' => $pegawais->count(),
+            'processed' => $processed,
+            'success' => $success,
+            'failed' => $failed,
+            'delay_per_pegawai_seconds' => $delayPerPegawaiSeconds,
+        ];
     }
     public function show($id)
     {
@@ -236,8 +302,11 @@ class peraturanController extends Controller
             'nosk' => 'required',
             'tglsk' => 'required|date',
             'tgllaku' => 'required|date',
-            'pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'pdf' => 'nullable|file|mimes:pdf|max:51200',
             'description' => 'nullable|string',
+        ], [
+            'pdf.mimes' => 'File harus berformat PDF.',
+            'pdf.max' => 'Ukuran file PDF maksimal 50 MB.',
         ]);
 
         $edit_peraturan = \App\peraturan::findOrFail($id);

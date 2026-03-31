@@ -38,7 +38,7 @@ class OrderCutiNotificationController extends Controller
 
         Log::info('DEBUG PEGAWAI', [
             'nama' => $pegawai->name,
-            'cabang' => $pegawai->cabang_id,
+            'cabang' => $pegawai->cabang,
             'jabatan' => $pegawai->jabatan
         ]);
 
@@ -48,7 +48,7 @@ class OrderCutiNotificationController extends Controller
         if ($jabatanPemohon->atasan) {
 
             $semuaAtasan = Pegawai::where('jabatan', $jabatanPemohon->atasan)
-                ->where('cabang_id', $pegawai->cabang_id) // 🔥 FIX DI SINI
+                ->where('cabang', $pegawai->cabang)
                 ->whereNotNull('email')
                 ->get();
 
@@ -69,7 +69,7 @@ class OrderCutiNotificationController extends Controller
             if ($jabatanAtasan && $jabatanAtasan->atasan) {
 
                 $semuaDiket = Pegawai::where('jabatan', $jabatanAtasan->atasan)
-                    ->where('cabang_id', $pegawai->cabang_id) // 🔥 FIX JUGA
+                    ->where('cabang', $pegawai->cabang)
                     ->whereNotNull('email')
                     ->get();
 

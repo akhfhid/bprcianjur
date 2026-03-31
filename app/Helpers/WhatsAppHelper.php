@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Http;
 
 class WhatsAppHelper
 {
+    const DEFAULT_API_URL = 'https://wa.bprcianjur.co.id/api/send-message';
+
     public static function convertPhoneNumber($nohp)
     {
         if (empty($nohp)) {
@@ -43,6 +45,8 @@ class WhatsAppHelper
     public static function sendMessage($phoneNumber, $message)
     {
         $phone = self::convertPhoneNumber($phoneNumber);
+        $apiUrl = env('WA_API_URL', self::DEFAULT_API_URL);
+        $apiCode = env('WA_API_CODE', '');
 
         if (!$phone) {
             return array(
@@ -51,8 +55,19 @@ class WhatsAppHelper
             );
         }
 
+        if (empty($apiCode)) {
+            Log::error('WhatsApp Config Error', array(
+                'message' => 'WA_API_CODE kosong'
+            ));
+
+            return array(
+                'success' => false,
+                'message' => 'WA_API_CODE kosong'
+            );
+        }
+
         $data = array(
-            'code' => env('WA_API_CODE', ''),
+            'code' => $apiCode,
             'penerima' => array(
                 array(
                     'name' => '',
@@ -74,7 +89,7 @@ class WhatsAppHelper
             ->withHeaders(array(
                 'Accept' => 'application/json',
             ))
-            ->post(env('WA_API_URL', ''), $data);
+            ->post($apiUrl, $data);
 
             if ($response->failed()) {
                 Log::error('WhatsApp API Error', array(
@@ -95,10 +110,35 @@ class WhatsAppHelper
                 'response' => $response->json()
             ));
 
+            $responseData = $response->json();
+            $apiStatus = is_array($responseData) && isset($responseData['status'])
+                ? (int) $responseData['status']
+                : null;
+            $apiMessage = is_array($responseData) && isset($responseData['message'])
+                ? $responseData['message']
+                : null;
+
+            // Penting: HTTP 200 belum tentu sukses kirim WA.
+            if (!is_null($apiStatus) && $apiStatus !== 200) {
+                Log::warning('WhatsApp API Reject', array(
+                    'phone' => $phone,
+                    'http_code' => $response->status(),
+                    'api_status' => $apiStatus,
+                    'api_message' => $apiMessage
+                ));
+
+                return array(
+                    'success' => false,
+                    'http_code' => $response->status(),
+                    'response' => $responseData,
+                    'message' => $apiMessage ? $apiMessage : 'API WA menolak request'
+                );
+            }
+
             return array(
                 'success' => true,
                 'http_code' => $response->status(),
-                'response' => $response->json()
+                'response' => $responseData
             );
         } catch (\Exception $e) {
             Log::error('WhatsApp Exception', array(
@@ -197,6 +237,45 @@ class WhatsAppHelper
         $message .= 'Alasan: ' . $alasan . "\n";
         $message .= 'Sisa Cuti: ' . $sisaCuti . "\n\n";
         $message .= 'Mohon Maaf tidak disetujui oleh ' . $atasanPenolak;
+
+        return self::sendMessage($pegawai->nohp, $message);
+    }
+
+    public static function sendPeraturanBaruNotificationToPegawai($peraturan, $pegawai)
+    {
+        if (!$peraturan) {
+            return array(
+                'success' => false,
+                'message' => 'Data peraturan tidak ditemukan'
+            );
+        }
+
+        if (!$pegawai || empty($pegawai->nohp)) {
+            return array(
+                'success' => false,
+                'message' => 'Data pegawai tidak ditemukan atau nomor HP kosong'
+            );
+        }
+
+        $namaPegawai = trim((string) $pegawai->name) !== '' ? $pegawai->name : 'Pegawai';
+        $namaPeraturan = trim((string) $peraturan->name) !== '' ? $peraturan->name : '-';
+        $kategori = trim((string) $peraturan->kategori) !== '' ? strtoupper($peraturan->kategori) : '-';
+        $jenisPeraturan = trim((string) $peraturan->jenis_surat) !== '' ? $peraturan->jenis_surat : '-';
+        $subJenis = trim((string) $peraturan->jenis_ojk) !== '' ? $peraturan->jenis_ojk : '-';
+        $nomorSk = trim((string) $peraturan->nosk) !== '' ? $peraturan->nosk : '-';
+        $tanggalSk = $peraturan->tglsk ? date('d-m-Y', strtotime($peraturan->tglsk)) : '-';
+        $tanggalBerlaku = $peraturan->tgllaku ? date('d-m-Y', strtotime($peraturan->tgllaku)) : '-';
+
+        $message = self::getTimeGreeting() . ', ' . $namaPegawai . "\n\n";
+        $message .= "Terdapat peraturan baru yang telah ditambahkan.\n\n";
+        $message .= 'Nama Peraturan: ' . $namaPeraturan . "\n";
+        $message .= 'Kategori: ' . $kategori . "\n";
+        $message .= 'Jenis Peraturan: ' . $jenisPeraturan . "\n";
+        $message .= 'Sub Jenis OJK: ' . $subJenis . "\n";
+        $message .= 'Nomor SK: ' . $nomorSk . "\n";
+        $message .= 'Tanggal SK: ' . $tanggalSk . "\n";
+        $message .= 'Tanggal Berlaku: ' . $tanggalBerlaku . "\n\n";
+        $message .= 'Silakan cek pada aplikasi SIKAP BPR Cianjur.';
 
         return self::sendMessage($pegawai->nohp, $message);
     }

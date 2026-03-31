@@ -673,9 +673,27 @@ try {
         $jabatanPemohon = \App\Jabatan::find($pegawai->jabatan);
 
         if ($jabatanPemohon && $jabatanPemohon->atasan) {
-            $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
-                ->where('status_active', 1)
-                ->first();
+            $isPimpinanCabang = ((int) $jabatanPemohon->id === 78)
+                || (stripos((string) $jabatanPemohon->name, 'pimpinan cabang') !== false);
+
+            if ($isPimpinanCabang) {
+                $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
+                    ->where('status_active', 1)
+                    ->orderBy('id')
+                    ->first();
+            } else {
+                $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
+                    ->where('cabang', $pegawai->cabang)
+                    ->where('status_active', 1)
+                    ->first();
+
+                if (!$atasan1) {
+                    $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
+                        ->where('status_active', 1)
+                        ->orderBy('id')
+                        ->first();
+                }
+            }
 
             if ($atasan1) {
                 \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan1(
@@ -837,8 +855,16 @@ try {
 
         if ($jabatanAtasan1 && $jabatanAtasan1->atasan) {
             $atasan2 = \App\Pegawai::where('jabatan', $jabatanAtasan1->atasan)
+                ->where('cabang', $pegawai->cabang)
                 ->where('status_active', 1)
                 ->first();
+
+            if (!$atasan2) {
+                $atasan2 = \App\Pegawai::where('jabatan', $jabatanAtasan1->atasan)
+                    ->where('status_active', 1)
+                    ->orderBy('id')
+                    ->first();
+            }
 
             if ($atasan2) {
                 \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan2(
