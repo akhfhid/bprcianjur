@@ -140,7 +140,7 @@ class peraturanController extends Controller
         $new_peraturan->name = $request->get('name');
         $new_peraturan->kategori = $request->get('kategori');
         $new_peraturan->jenis_surat = $request->get('jenis_surat');
-        $new_peraturan->jenis_ojk = $request->get('sub_jenis'); // tambahan baru
+        $new_peraturan->jenis_ojk = $request->get('sub_jenis'); 
         $new_peraturan->nosk = $request->get('nosk');
         $new_peraturan->tglsk = $request->get('tglsk');
         $new_peraturan->tgllaku = $request->get('tgllaku');
