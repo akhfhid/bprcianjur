@@ -156,7 +156,7 @@ class peraturanController extends Controller
         $new_peraturan->save();
 
         try {
-            $notifStat = $this->sendPeraturanBaruNotificationToAllPegawai($new_peraturan);
+           dispatch(new \App\Jobs\SendPeraturanNotification($new_peraturan));
             \Log::info('Notifikasi WA peraturan baru selesai diproses', $notifStat);
         } catch (\Throwable $e) {
             \Log::error('Gagal memproses notifikasi WA peraturan baru', [

@@ -624,6 +624,7 @@ class ComposerStaticInit3f4448e56716491b612eade1e2d4e284
         'App\\Hubungan' => __DIR__ . '/../..' . '/app/Hubungan.php',
         'App\\Jabatan' => __DIR__ . '/../..' . '/app/Jabatan.php',
         'App\\Jenkel' => __DIR__ . '/../..' . '/app/Jenkel.php',
+        'App\\Jobs\\SendPeraturanNotification' => __DIR__ . '/../..' . '/app/Jobs/SendPeraturanNotification.php',
         'App\\Kawin' => __DIR__ . '/../..' . '/app/Kawin.php',
         'App\\Mail\\NotifPengajuanCuti' => __DIR__ . '/../..' . '/app/Mail/NotifPengajuanCuti.php',
         'App\\Pangkat' => __DIR__ . '/../..' . '/app/Pangkat.php',

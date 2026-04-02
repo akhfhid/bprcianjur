@@ -78,7 +78,7 @@ class WhatsAppHelper
             'message_schedule' => 'normal',
             'file' => '',
             'pesan' => $message,
-            'delay' => '1000'
+            'delay' => '5000'
         );
 
         try {
@@ -242,41 +242,45 @@ class WhatsAppHelper
     }
 
     public static function sendPeraturanBaruNotificationToPegawai($peraturan, $pegawai)
-    {
-        if (!$peraturan) {
-            return array(
-                'success' => false,
-                'message' => 'Data peraturan tidak ditemukan'
-            );
-        }
-
-        if (!$pegawai || empty($pegawai->nohp)) {
-            return array(
-                'success' => false,
-                'message' => 'Data pegawai tidak ditemukan atau nomor HP kosong'
-            );
-        }
-
-        $namaPegawai = trim((string) $pegawai->name) !== '' ? $pegawai->name : 'Pegawai';
-        $namaPeraturan = trim((string) $peraturan->name) !== '' ? $peraturan->name : '-';
-        $kategori = trim((string) $peraturan->kategori) !== '' ? strtoupper($peraturan->kategori) : '-';
-        $jenisPeraturan = trim((string) $peraturan->jenis_surat) !== '' ? $peraturan->jenis_surat : '-';
-        $subJenis = trim((string) $peraturan->jenis_ojk) !== '' ? $peraturan->jenis_ojk : '-';
-        $nomorSk = trim((string) $peraturan->nosk) !== '' ? $peraturan->nosk : '-';
-        $tanggalSk = $peraturan->tglsk ? date('d-m-Y', strtotime($peraturan->tglsk)) : '-';
-        $tanggalBerlaku = $peraturan->tgllaku ? date('d-m-Y', strtotime($peraturan->tgllaku)) : '-';
-
-        $message = self::getTimeGreeting() . ', ' . $namaPegawai . "\n\n";
-        $message .= "Terdapat peraturan baru yang telah ditambahkan.\n\n";
-        $message .= 'Nama Peraturan: ' . $namaPeraturan . "\n";
-        $message .= 'Kategori: ' . $kategori . "\n";
-        $message .= 'Jenis Peraturan: ' . $jenisPeraturan . "\n";
-        $message .= 'Sub Jenis OJK: ' . $subJenis . "\n";
-        $message .= 'Nomor SK: ' . $nomorSk . "\n";
-        $message .= 'Tanggal SK: ' . $tanggalSk . "\n";
-        $message .= 'Tanggal Berlaku: ' . $tanggalBerlaku . "\n\n";
-        $message .= 'Silakan cek pada aplikasi SIKAP BPR Cianjur.';
-
-        return self::sendMessage($pegawai->nohp, $message);
+{
+    if (!$peraturan) {
+        return [
+            'success' => false,
+            'message' => 'Data peraturan tidak ditemukan'
+        ];
     }
+
+    if (!$pegawai || empty($pegawai->nohp)) {
+        return [
+            'success' => false,
+            'message' => 'Data pegawai tidak ditemukan atau nomor HP kosong'
+        ];
+    }
+
+    $namaPegawai = trim((string) $pegawai->name) !== '' ? $pegawai->name : 'Pegawai';
+    $namaPeraturan = trim((string) $peraturan->name) !== '' ? $peraturan->name : '-';
+    $kategoriRaw = strtolower(trim((string) $peraturan->kategori));
+    $kategori = $kategoriRaw !== '' ? strtoupper($kategoriRaw) : '-';
+    $jenisPeraturan = trim((string) $peraturan->jenis_surat) !== '' ? $peraturan->jenis_surat : '-';
+    $subJenis = trim((string) $peraturan->jenis_ojk) !== '' ? $peraturan->jenis_ojk : '-';
+    $nomorSk = trim((string) $peraturan->nosk) !== '' ? $peraturan->nosk : '-';
+
+    $tanggalSk = $peraturan->tglsk ? date('d-m-Y', strtotime($peraturan->tglsk)) : '-';
+    $tanggalBerlaku = $peraturan->tgllaku ? date('d-m-Y', strtotime($peraturan->tgllaku)) : '-';
+
+    $message = self::getTimeGreeting() . ', ' . $namaPegawai . "\n\n";
+    $message .= "Terdapat peraturan baru yang ditambahkan\n\n";
+    $message .= "Nama Peraturan : " . $namaPeraturan . "\n";
+    $message .= "Kategori       : " . $kategori . "\n";
+    $message .= "Jenis          : " . $jenisPeraturan . "\n";
+    if ($kategoriRaw !== 'internal' && $subJenis !== '-') {
+        $message .= "Sub Jenis OJK  : " . $subJenis . "\n";
+    }
+    $message .= "Nomor SK       : " . $nomorSk . "\n";
+    $message .= "Tanggal SK     : " . $tanggalSk . "\n";
+    $message .= "Berlaku Mulai  : " . $tanggalBerlaku . "\n\n";
+    $message .= "Silakan cek pada aplikasi SIKAP BPR Cianjur.";
+
+    return self::sendMessage($pegawai->nohp, $message);
+}
 }

@@ -78,6 +78,7 @@ return array(
     'App\\Hubungan' => $baseDir . '/app/Hubungan.php',
     'App\\Jabatan' => $baseDir . '/app/Jabatan.php',
     'App\\Jenkel' => $baseDir . '/app/Jenkel.php',
+    'App\\Jobs\\SendPeraturanNotification' => $baseDir . '/app/Jobs/SendPeraturanNotification.php',
     'App\\Kawin' => $baseDir . '/app/Kawin.php',
     'App\\Mail\\NotifPengajuanCuti' => $baseDir . '/app/Mail/NotifPengajuanCuti.php',
     'App\\Pangkat' => $baseDir . '/app/Pangkat.php',
