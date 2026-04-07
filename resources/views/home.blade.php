@@ -17,7 +17,7 @@
 
         /* HERO CARD */
         .hero-card {
-            background: linear-gradient(140deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%);
+            background: linear-gradient(140deg, #1e3a8a 100%);
             border: 0;
             border-radius: 18px;
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);

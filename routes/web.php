@@ -15,6 +15,7 @@ route::get('/reset', function () {
     return view('auth.passwords.reset');
 })->name('reset');
 Auth::routes();
+Route::get('/password/reset-kode', 'Auth\ResetPasswordController@showResetForm')->name('password.code.form');
 route::match(['GET', 'POST'], '/register', function () {
     return redirect('/login');
 })->name('register');
