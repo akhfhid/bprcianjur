@@ -1,56 +1,59 @@
-@extends('layouts.auth-modern')
-
-@section('title', 'Reset Password')
+@extends('layouts.global')
 
 @section('content')
-    <h1 class="auth-title">Atur Ulang Password</h1>
-    <p class="auth-desc">Masukkan email, kode verifikasi 4 digit, dan password baru Anda.</p>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">{{ __('Reset Password') }}</div>
 
-    <form method="POST" action="{{ route('password.update') }}">
-        @csrf
+                <div class="card-body">
+                    @if (session('status'))
+                        <div class="alert alert-success" role="alert">
+                            {{ session('status') }}
+                        </div>
+                    @endif
 
-        <div class="form-group">
-            <label for="email" class="form-label-modern">Email Akun</label>
-            <input id="email" type="email" name="email"
-                value="{{ old('email', $email ?? '') }}"
-                class="form-control-modern @error('email') is-invalid @enderror"
-                required autocomplete="email" autofocus>
-            @error('email')
-                <div class="invalid-feedback d-block">{{ $message }}</div>
-            @enderror
+                    <p class="mb-4">
+                        Reset password untuk email: <strong>{{ $email ?? '-' }}</strong>
+                    </p>
+
+                    <form method="POST" action="{{ route('password.update') }}">
+                        @csrf
+
+                        <div class="form-group row">
+                            <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
+
+                            <div class="col-md-6">
+                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
+
+                                @error('password')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="password-confirm" class="col-md-4 col-form-label text-md-right">{{ __('Confirm Password') }}</label>
+
+                            <div class="col-md-6">
+                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-0">
+                            <div class="col-md-6 offset-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    {{ __('Reset Password') }}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="code" class="form-label-modern">Kode Verifikasi (4 Digit)</label>
-            <input id="code" type="text" name="code" maxlength="4"
-                value="{{ old('code') }}"
-                class="form-control-modern @error('code') is-invalid @enderror"
-                required autocomplete="one-time-code" placeholder="Contoh: 1234">
-            @error('code')
-                <div class="invalid-feedback d-block">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="form-group">
-            <label for="password" class="form-label-modern">Password Baru</label>
-            <input id="password" type="password" name="password"
-                class="form-control-modern @error('password') is-invalid @enderror"
-                required autocomplete="new-password">
-            @error('password')
-                <div class="invalid-feedback d-block">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="form-group">
-            <label for="password-confirm" class="form-label-modern">Konfirmasi Password Baru</label>
-            <input id="password-confirm" type="password" name="password_confirmation"
-                class="form-control-modern" required autocomplete="new-password">
-        </div>
-
-        <button type="submit" class="btn btn-auth btn-block mb-3">Simpan Password Baru</button>
-
-        <div class="text-center">
-            <a href="{{ route('login') }}" class="auth-link">Kembali ke halaman login</a>
-        </div>
-    </form>
+    </div>
+</div>
 @endsection

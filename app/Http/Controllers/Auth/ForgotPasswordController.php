@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\User;
-use App\Notifications\ResetPasswordCodeNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class ForgotPasswordController extends Controller
 {
@@ -24,53 +23,115 @@ class ForgotPasswordController extends Controller
     */
 
     /**
-     * Kirim kode reset password 4 digit (berlaku 3 menit) ke email user.
+     * Kode verifikasi hanya berlaku selama 10 menit.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @var int
      */
-    public function sendResetLinkEmail(Request $request)
+    protected $codeExpireMinutes = 10;
+
+    public function __construct()
+    {
+        $this->middleware('guest');
+    }
+
+    public function showLinkRequestForm()
+    {
+        return view('auth.passwords.email');
+    }
+
+    /**
+     * Kirim kode verifikasi 4 digit ke email user.
+     */
+    public function sendResetCodeEmail(Request $request)
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
-        ], [
-            'email.exists' => 'Email tidak ditemukan pada sistem.',
         ]);
 
-        $email = trim($request->email);
-        $user = User::where('email', $email)->first();
+        $email = $request->email;
+        $code = (string) random_int(1000, 9999);
 
-        if (!$user) {
-            return back()->withErrors([
-                'email' => 'Email tidak ditemukan pada sistem.',
-            ]);
+        DB::table('password_resets')->updateOrInsert(
+            ['email' => $email],
+            [
+                'token' => Hash::make($code),
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        try {
+            Mail::send('emails.password_reset_code', [
+                'code' => $code,
+                'expireMinutes' => $this->codeExpireMinutes,
+            ], function ($message) use ($email) {
+                $message->to($email)->subject('Kode Verifikasi Reset Password');
+            });
+        } catch (\Throwable $e) {
+            return back()
+                ->withInput()
+                ->withErrors(['email' => 'Gagal mengirim kode verifikasi. Silakan coba lagi.']);
         }
 
-        if (!Schema::hasTable('password_resets')) {
-            return back()->withErrors([
-                'email' => 'Tabel password_resets tidak ditemukan. Hubungi administrator sistem.',
-            ]);
+        $request->session()->put('password_reset.email', $email);
+        $request->session()->put('password_reset.verified', false);
+        $request->session()->forget('password_reset.verified_at');
+
+        return redirect()
+            ->route('password.code.form')
+            ->with('status', 'Kode verifikasi 4 digit sudah dikirim ke email Anda.');
+    }
+
+    /**
+     * Tampilkan form input kode verifikasi.
+     */
+    public function showCodeForm(Request $request)
+    {
+        $email = $request->session()->get('password_reset.email');
+
+        if (!$email) {
+            return redirect()->route('password.request');
         }
 
-        $code = str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
-        $now = Carbon::now();
+        return view('auth.passwords.code', compact('email'));
+    }
 
-        DB::table('password_resets')->where('email', $email)->delete();
-        DB::table('password_resets')->insert([
-            'email' => $email,
-            'token' => bcrypt($code),
-            'created_at' => $now,
+    /**
+     * Verifikasi kode 4 digit sebelum user bisa set password baru.
+     */
+    public function verifyCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|digits:4',
         ]);
 
-        $user->notify(new ResetPasswordCodeNotification(
-            $code,
-            3,
-            'Sistem Kepegawaian dan Peraturan',
-            'BPR CIANJUR JABAR'
-        ));
+        $resetData = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->first();
 
-        return back()
-            ->with('status', 'Kode reset password sudah dikirim ke email Anda.')
-            ->with('reset_email', $email);
+        if (!$resetData) {
+            return back()->withErrors(['code' => 'Kode verifikasi tidak valid.']);
+        }
+
+        $expiredAt = Carbon::parse($resetData->created_at)->addMinutes($this->codeExpireMinutes);
+        if (Carbon::now()->greaterThan($expiredAt)) {
+            DB::table('password_resets')->where('email', $request->email)->delete();
+
+            return back()->withErrors(['code' => 'Kode verifikasi sudah kedaluwarsa. Silakan kirim ulang kode.']);
+        }
+
+        if (!Hash::check($request->code, $resetData->token)) {
+            return back()->withErrors(['code' => 'Kode verifikasi salah.']);
+        }
+
+        DB::table('password_resets')->where('email', $request->email)->delete();
+
+        $request->session()->put('password_reset.email', $request->email);
+        $request->session()->put('password_reset.verified', true);
+        $request->session()->put('password_reset.verified_at', Carbon::now()->toDateTimeString());
+
+        return redirect()
+            ->route('password.reset')
+            ->with('status', 'Kode valid. Silakan buat password baru.');
     }
 }

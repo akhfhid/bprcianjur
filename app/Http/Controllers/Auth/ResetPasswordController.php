@@ -2,99 +2,100 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\User;
+use App\Http\Controllers\Controller;
 use Carbon\Carbon;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 class ResetPasswordController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Password Reset Controller
+    |--------------------------------------------------------------------------
+    |
+    | This controller is responsible for handling password reset requests
+    | and uses a simple trait to include this behavior. You're free to
+    | explore this trait and override any methods you wish to tweak.
+    |
+    */
+
     /**
-     * Tampilkan form reset password berbasis kode.
+     * Setelah verifikasi kode, user punya waktu 15 menit untuk set password baru.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string|null  $token
-     * @return \Illuminate\View\View
+     * @var int
      */
-    public function showResetForm(Request $request, $token = null)
+    protected $verifiedSessionMinutes = 15;
+
+    public function __construct()
     {
-        return view('auth.passwords.reset', [
-            'email' => $request->email,
-            'token' => $token,
-        ]);
+        $this->middleware('guest');
     }
 
-    /**
-     * Proses reset password menggunakan kode 4 digit.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    public function showResetForm(Request $request)
+    {
+        if (!$this->hasValidVerificationSession($request)) {
+            return redirect()
+                ->route('password.request')
+                ->withErrors(['email' => 'Silakan lakukan verifikasi kode reset password terlebih dahulu.']);
+        }
+
+        $email = $request->session()->get('password_reset.email');
+
+        return view('auth.passwords.reset', compact('email'));
+    }
+
     public function reset(Request $request)
     {
+        if (!$this->hasValidVerificationSession($request)) {
+            return redirect()
+                ->route('password.request')
+                ->withErrors(['email' => 'Sesi reset password sudah berakhir. Silakan ulangi dari awal.']);
+        }
+
         $request->validate([
-            'email' => 'required|email',
-            'code' => 'required|digits:4',
             'password' => 'required|string|min:8|confirmed',
-        ], [
-            'code.required' => 'Kode reset wajib diisi.',
-            'code.digits' => 'Kode reset harus 4 digit angka.',
         ]);
 
-        $email = trim($request->email);
-        $code = trim($request->code);
-
-        if (!Schema::hasTable('password_resets')) {
-            return back()
-                ->withInput($request->except('password', 'password_confirmation'))
-                ->withErrors(['email' => 'Tabel password_resets tidak ditemukan. Hubungi administrator sistem.']);
-        }
-
-        $row = DB::table('password_resets')
-            ->where('email', $email)
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if (!$row) {
-            return back()
-                ->withInput($request->except('password', 'password_confirmation'))
-                ->withErrors(['email' => 'Permintaan reset password tidak ditemukan untuk email ini.']);
-        }
-
-        $expiredAt = Carbon::parse($row->created_at)->addMinutes(3);
-        if (Carbon::now()->greaterThan($expiredAt)) {
-            DB::table('password_resets')->where('email', $email)->delete();
-
-            return back()
-                ->withInput($request->except('password', 'password_confirmation'))
-                ->withErrors(['code' => 'Kode reset sudah kedaluwarsa. Silakan minta kode baru.']);
-        }
-
-        if (!Hash::check($code, $row->token)) {
-            return back()
-                ->withInput($request->except('password', 'password_confirmation'))
-                ->withErrors(['code' => 'Kode reset tidak valid.']);
-        }
-
+        $email = $request->session()->get('password_reset.email');
         $user = User::where('email', $email)->first();
+
         if (!$user) {
-            return back()
-                ->withInput($request->except('password', 'password_confirmation'))
+            $request->session()->forget('password_reset');
+
+            return redirect()
+                ->route('password.request')
                 ->withErrors(['email' => 'User tidak ditemukan.']);
         }
 
         $user->password = Hash::make($request->password);
-        $user->setRememberToken(Str::random(60));
         $user->save();
 
-        DB::table('password_resets')->where('email', $email)->delete();
-        event(new PasswordReset($user));
+        $request->session()->forget('password_reset');
 
-        return redirect()->route('login')->with('status', 'Password berhasil diubah. Silakan login kembali.');
+        return redirect()
+            ->route('login')
+            ->with('status', 'Password berhasil direset. Silakan login dengan password baru.');
+    }
+
+    protected function hasValidVerificationSession(Request $request)
+    {
+        $verified = $request->session()->get('password_reset.verified');
+        $email = $request->session()->get('password_reset.email');
+        $verifiedAt = $request->session()->get('password_reset.verified_at');
+
+        if (!$verified || !$email || !$verifiedAt) {
+            return false;
+        }
+
+        $expiredAt = Carbon::parse($verifiedAt)->addMinutes($this->verifiedSessionMinutes);
+        if (Carbon::now()->greaterThan($expiredAt)) {
+            $request->session()->forget('password_reset');
+
+            return false;
+        }
+
+        return true;
     }
 }
