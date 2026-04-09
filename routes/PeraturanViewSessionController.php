@@ -90,6 +90,17 @@ class PeraturanViewSessionController extends Controller
     }
 
     /**
+     * Kompatibilitas untuk route lama "ping".
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function ping(Request $request)
+    {
+        return $this->update($request);
+    }
+
+    /**
      * Akhiri sesi lihat dokumen.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -125,4 +136,3 @@ class PeraturanViewSessionController extends Controller
         return 'peraturan:view-session:'.$userId.':'.$peraturanId;
     }
 }
-

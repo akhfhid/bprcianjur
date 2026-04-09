@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\NotificationLogController;
+use App\Http\Controllers\PeraturanViewSessionController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderCutiNotificationController;
@@ -125,6 +127,18 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/users/{user}/activate', 'UserStatusController@activate')->name('users.activate');
 
     Route::put('/users/{user}/deactivate', 'UserStatusController@deactivate')->name('users.deactivate');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notification-logs', [NotificationLogController::class, 'index'])->name('notification-logs.index');
+    Route::match(['GET', 'POST'], '/peraturan/view-session/start', [PeraturanViewSessionController::class, 'start'])
+        ->name('peraturan.view-session.start');
+    Route::match(['GET', 'POST'], '/peraturan/view-session/update', [PeraturanViewSessionController::class, 'update'])
+        ->name('peraturan.view-session.update');
+    Route::match(['GET', 'POST'], '/peraturan/view-session/ping', [PeraturanViewSessionController::class, 'ping'])
+        ->name('peraturan.view-session.ping');
+    Route::match(['GET', 'POST'], '/peraturan/view-session/end', [PeraturanViewSessionController::class, 'end'])
+        ->name('peraturan.view-session.end');
 });
 
 route::middleware(['auth'])->group(function () {

@@ -1,6 +1,7 @@
 <?php
 
 return [
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -22,15 +23,18 @@ return [
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
-    'whatsapp' => [
-        'url' => env('WA_API_URL'), 
-        'code' => env('WA_API_CODE'), 
-        'test_phone' => env('WA_TEST_PHONE'), 
-        'enabled' => env('WA_ENABLED', false)],
 
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+
+    'peraturan_notif' => [
+        'url' => env('WA_API_URL'),
+        'code' => env('WA_API_CODE'),
+        'timeout' => env('WA_API_TIMEOUT', env('PERATURAN_NOTIF_TIMEOUT', 20)),
+        'fallback_email' => env('WA_FALLBACK_EMAIL', false),
+    ],
+
 ];

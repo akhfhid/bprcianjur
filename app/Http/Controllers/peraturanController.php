@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use PDF;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\peraturan;
-use App\Helpers\WhatsAppHelper;
+use App\Pegawai;
+use App\Jobs\SendPeraturanNotificationByCabangJob;
 use DataTables;
 
 class peraturanController extends Controller
@@ -29,53 +32,26 @@ class peraturanController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = peraturan::query()
-                ->when($request->kategori, function ($q) use ($request) {
-                    $q->where('kategori', $request->kategori);
-                })
-                ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
-                    $q->where('jenis_surat', $request->jenis_surat);
-                })
-                ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
-                    $q->where('jenis_ojk', $request->sub_jenis);
-                })
-                ->latest();
+            $data = peraturan::latest()->get();
 
-            return DataTables::of($query)
+            return DataTables::of($data)
                 ->addColumn('action', function ($data) {
-                    // Menggunakan data-id dan class modern sesuai style UI
-                    $btn = '';
-
-                    // Tombol View
-                    $btn .= '<a href="' . url('peraturan/' . $data->id) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a> ';
-
-                    // Tombol Edit
-                    $btn .= '<a href="' . url('peraturan/' . $data->id . '/edit') . '" class="action-btn edit" title="Edit"><i class="fas fa-edit"></i></a> ';
-
-                    // Tombol Delete
-                    $btn .= '<button type="button" data-id="' . $data->id . '" class="action-btn delete delete-btn" title="Hapus"><i class="fas fa-trash"></i></button>';
-
-                    return $btn;
+                    $button = '<a href="peraturan/' . $data->id . '/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>';
+                    $button .= '<a href="peraturan/' . $data->id . '"> <button class="btn btn-success btn-sm">Detail</button></a>';
+                    $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
+                    return $button;
                 })
-                ->addColumn('jenis_ojk', function ($data) {
-                    return $data->jenis_ojk ?? '-';
-                })
-                ->rawColumns(['action'])
+                ->editColumn('id', 'ID: {{ $id }}')
                 ->make(true);
+            //return datatables()->of($data)->toJson();
         }
-
         return view('peraturan.index');
     }
-
-    public function statistik()
-    {
-        return response()->json([
-            'total' => \App\peraturan::count(),
-            'sk' => \App\peraturan::where('jenis_surat', 'SK')->count(),
-            'se' => \App\peraturan::where('jenis_surat', 'SE')->count(),
-            'tahun_ini' => \App\peraturan::whereYear('created_at', date('Y'))->count(),
-        ]);
-    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function create()
     {
         return view('peraturan.create');
@@ -122,103 +98,102 @@ class peraturanController extends Controller
         //     'pdf' => 'nullable|file|mimes:pdf|max:10240', // Hanya menerima file PDF jika ada
         // ]);
 
-        $request->validate([
-            'name' => 'required',
-            'kategori' => 'required|in:internal,external',
-            'jenis_surat' => 'required',
-            'nosk' => 'required',
-            'tglsk' => 'required|date',
-            'tgllaku' => 'required|date',
-            'pdf' => 'nullable|file|mimes:pdf|max:51200',
-        ], [
-            'pdf.mimes' => 'File harus berformat PDF.',
-            'pdf.max' => 'Ukuran file PDF maksimal 50 MB.',
-        ]);
-
+        // Membuat instance baru untuk peraturan
         $new_peraturan = new \App\peraturan();
 
+        // Mengisi data dari request
         $new_peraturan->name = $request->get('name');
-        $new_peraturan->kategori = $request->get('kategori');
-        $new_peraturan->jenis_surat = $request->get('jenis_surat');
-        $new_peraturan->jenis_ojk = $request->get('sub_jenis'); 
         $new_peraturan->nosk = $request->get('nosk');
         $new_peraturan->tglsk = $request->get('tglsk');
         $new_peraturan->tgllaku = $request->get('tgllaku');
         $new_peraturan->uraian = $request->get('uraian');
 
+        // Menangani file PDF jika ada
         if ($request->hasFile('pdf')) {
             $file = $request->file('pdf');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('pdfs', $filename, 'public');
-            $new_peraturan->pdf = $filename;
-        }
-        $new_peraturan->created_by = \Auth::user()->id;
-        $new_peraturan->save();
-
-        try {
-           dispatch(new \App\Jobs\SendPeraturanNotification($new_peraturan));
-            \Log::info('Notifikasi WA peraturan baru selesai diproses', $notifStat);
-        } catch (\Throwable $e) {
-            \Log::error('Gagal memproses notifikasi WA peraturan baru', [
-                'peraturan_id' => $new_peraturan->id,
-                'message' => $e->getMessage(),
-            ]);
+            $filename = time() . '.' . $file->getClientOriginalExtension(); // Menentukan nama file
+            $file->storeAs('pdfs', $filename, 'public'); // Menyimpan file ke folder pdfs dalam public storage
+            $new_peraturan->pdf = $filename; // Menyimpan nama file PDF ke kolom 'pdf'
         }
 
+        // Menyimpan peraturan yang baru
+        $new_peraturan->created_by = \Auth::user()->id; // Menyimpan ID user yang membuat
+        $new_peraturan->save(); // Menyimpan ke database
+
+        // Kirim notif secara bertahap per cabang agar tidak membebani request utama.
+        $this->dispatchPeraturanNotificationsByCabang($new_peraturan);
+
+        // Mengarahkan kembali ke halaman index dengan pesan sukses
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Ditambahkan');
     }
 
-    private function sendPeraturanBaruNotificationToAllPegawai($peraturan)
+    /**
+     * Notifikasi peraturan baru ke pegawai aktif per cabang, dengan jeda 5 detik antar cabang.
+     *
+     * @param  \App\peraturan  $peraturan
+     * @return void
+     */
+    protected function dispatchPeraturanNotificationsByCabang(peraturan $peraturan)
     {
-        $delayPerPegawaiSeconds = 5;
+        try {
+            $recipientQuery = Pegawai::query()
+                ->whereNotNull('email')
+                ->where('email', '<>', '')
+                ->whereNotNull('cabang');
 
-        $query = \App\Pegawai::query()
-            ->select(['id', 'name', 'nohp'])
-            ->whereNotNull('nohp')
-            ->where('nohp', '<>', '');
+            if (Schema::hasColumn('pegawais', 'status_active')) {
+                $recipientQuery->where('status_active', 1);
+            }
 
-        if (\Schema::hasColumn('pegawais', 'status_active')) {
-            $query->where('status_active', 1);
+            $cabangIds = $recipientQuery->select('cabang')
+                ->distinct()
+                ->orderBy('cabang')
+                ->pluck('cabang')
+                ->filter()
+                ->values();
+
+            if ($cabangIds->isEmpty()) {
+                Log::warning('Notifikasi peraturan dilewati karena tidak ada penerima aktif', [
+                    'peraturan_id' => $peraturan->id,
+                ]);
+                return;
+            }
+
+            $isSyncQueue = config('queue.default') === 'sync';
+
+            foreach ($cabangIds as $index => $cabangId) {
+                $delaySeconds = $index * 5;
+
+                if ($isSyncQueue) {
+                    // Saat queue sync, jalankan setelah response agar halaman create tidak timeout.
+                    SendPeraturanNotificationByCabangJob::dispatchAfterResponse(
+                        $peraturan->id,
+                        (int) $cabangId,
+                        $delaySeconds
+                    );
+                    continue;
+                }
+
+                SendPeraturanNotificationByCabangJob::dispatch(
+                    $peraturan->id,
+                    (int) $cabangId,
+                    0
+                )->delay(now()->addSeconds($delaySeconds));
+            }
+        } catch (\Throwable $e) {
+            Log::error('Gagal menjadwalkan notifikasi peraturan', [
+                'peraturan_id' => $peraturan->id,
+                'message' => $e->getMessage(),
+            ]);
         }
-
-        $pegawais = $query->orderBy('name')->get();
-
-        $success = 0;
-        $failed = 0;
-        $processed = 0;
-        $sentPhones = [];
-
-        foreach ($pegawais as $pegawai) {
-            $normalizedPhone = WhatsAppHelper::convertPhoneNumber($pegawai->nohp);
-
-            if (!$normalizedPhone || isset($sentPhones[$normalizedPhone])) {
-                continue;
-            }
-
-            $sentPhones[$normalizedPhone] = true;
-            $processed++;
-
-            if ($processed > 1) {
-                sleep($delayPerPegawaiSeconds);
-            }
-
-            $result = WhatsAppHelper::sendPeraturanBaruNotificationToPegawai($peraturan, $pegawai);
-            if (!empty($result['success'])) {
-                $success++;
-            } else {
-                $failed++;
-            }
-        }
-
-        return [
-            'peraturan_id' => $peraturan->id,
-            'total_pegawai' => $pegawais->count(),
-            'processed' => $processed,
-            'success' => $success,
-            'failed' => $failed,
-            'delay_per_pegawai_seconds' => $delayPerPegawaiSeconds,
-        ];
     }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function show($id)
     {
         $peraturan = \App\peraturan::findorFail($id);
@@ -237,126 +212,68 @@ class peraturanController extends Controller
 
         return view('peraturan.show', ['peraturan' => $peraturan, 'time' => $time]);
     }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function edit($id)
     {
         $edit_peraturan = \App\peraturan::findorFail($id);
         return view('peraturan.edit', ['peraturan' => $edit_peraturan]);
     }
-    public function loguser(Request $request)
-    {
-        $keyword = trim((string) $request->get('keyword'));
-        $perPage = 15;
 
-        $combinedQuery = null;
-
-        if (\Schema::hasTable('logusers')) {
-            $logAksesQuery = \DB::table('logusers as lu')->select([\DB::raw("'Log Akses' as sumber"), 'lu.nampeg as nampeg', \DB::raw('lu.keterangan as keterangan'), \DB::raw('lu.created_at as waktu_akses'), \DB::raw('NULL as mulai'), \DB::raw('NULL as selesai'), \DB::raw('NULL as active_seconds')]);
-
-            if ($keyword !== '') {
-                $logAksesQuery->where(function ($q) use ($keyword) {
-                    $q->where('lu.nampeg', 'like', "%{$keyword}%")->orWhere('lu.keterangan', 'like', "%{$keyword}%");
-                });
-            }
-
-            $combinedQuery = $logAksesQuery;
-        }
-
-        if (\Schema::hasTable('peraturan_view_sessions')) {
-            $aktivitasPeraturanQuery = \DB::table('peraturan_view_sessions as pvs')
-                ->leftJoin('peraturans as p', 'p.id', '=', 'pvs.peraturan_id')
-                ->leftJoin('pegawais as peg', 'peg.id', '=', 'pvs.pegawai_id')
-                ->select([\DB::raw("'Aktivitas Peraturan' as sumber"), \DB::raw('COALESCE(peg.name, "-") as nampeg'), \DB::raw('COALESCE(p.name, "-") as keterangan'), \DB::raw('pvs.started_at as waktu_akses'), \DB::raw('pvs.started_at as mulai'), \DB::raw('pvs.ended_at as selesai'), \DB::raw('pvs.active_seconds as active_seconds')]);
-
-            if ($keyword !== '') {
-                $aktivitasPeraturanQuery->where(function ($q) use ($keyword) {
-                    $q->where('peg.name', 'like', "%{$keyword}%")
-                        ->orWhere('p.name', 'like', "%{$keyword}%")
-                        ->orWhere('pvs.role', 'like', "%{$keyword}%");
-                });
-            }
-
-            if ($combinedQuery) {
-                $combinedQuery = $combinedQuery->unionAll($aktivitasPeraturanQuery);
-            } else {
-                $combinedQuery = $aktivitasPeraturanQuery;
-            }
-        }
-
-        if ($combinedQuery) {
-            $logs = \DB::query()->fromSub($combinedQuery, 'logs')->orderByDesc('waktu_akses')->simplePaginate($perPage)->appends($request->query());
-        } else {
-            $logs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage, $request->integer('page', 1), [
-                'path' => $request->url(),
-                'query' => $request->query(),
-            ]);
-        }
-
-        return view('kepatuhan.loguser', compact('keyword', 'logs'));
-    }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function simpanedit(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required',
-            'kategori' => 'required|in:internal,external',
-            'jenis_surat' => 'required',
-            'nosk' => 'required',
-            'tglsk' => 'required|date',
-            'tgllaku' => 'required|date',
-            'pdf' => 'nullable|file|mimes:pdf|max:51200',
-            'description' => 'nullable|string',
-        ], [
-            'pdf.mimes' => 'File harus berformat PDF.',
-            'pdf.max' => 'Ukuran file PDF maksimal 50 MB.',
-        ]);
+        $edit_peraturan = \App\peraturan::findorFail($id);
+        $description = $request->get('description');
+        $dom = new \DomDocument('1.0', 'UTF-8');
+        libxml_use_internal_errors(true);
+        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $images = $dom->getElementsByTagName('img');
+        $bs64 = 'base64';
 
-        $edit_peraturan = \App\peraturan::findOrFail($id);
-        $description = $request->get('description') ?? '';
-        $description_save = null;
+        foreach ($images as $k => $img) {
+            $data = $img->getAttribute('src');
+            if (strpos($data, $bs64) == true) {
+                $data = base64_decode(preg_replace('#^data:image/\w+;base64.#i', '', $data));
+                //list($type, $data) = explode(';', $data);
+                //list(, $data)      = explode(',', $data);
 
-        if (!empty($description)) {
-            $dom = new \DomDocument('1.0', 'UTF-8');
-            libxml_use_internal_errors(true);
+                $image_name = '/storage/peraturan/' . 'post_' . time() . $k . '.png';
+                $path = public_path() . $image_name;
 
-            $dom->loadHTML($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+                file_put_contents($path, $data);
 
-            $images = $dom->getElementsByTagName('img');
-
-            foreach ($images as $k => $img) {
-                $data = $img->getAttribute('src');
-
-                if (strpos($data, 'base64') !== false) {
-                    $data = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $data));
-
-                    $image_name = '/storage/peraturan/post_' . time() . $k . '.png';
-                    $path = public_path() . $image_name;
-
-                    file_put_contents($path, $data);
-
-                    $img->setAttribute('src', $image_name);
-                } else {
-                    $img->setAttribute('src', $data);
-                }
+                $img->removeAttribute('src');
+                $img->setAttribute('src', $image_name);
+            } else {
+                $image_name = '/' . $data;
+                $img->setAttribute('src', $image_name);
             }
-
-            $description_save = $dom->saveHTML();
         }
 
-        $edit_peraturan->name = $request->name;
-        $edit_peraturan->kategori = $request->kategori;
-        $edit_peraturan->jenis_surat = $request->jenis_surat;
-        $edit_peraturan->nosk = $request->nosk;
-        $edit_peraturan->tglsk = $request->tglsk;
-        $edit_peraturan->tgllaku = $request->tgllaku;
-        $edit_peraturan->uraian = $request->uraian;
+        $description_save = $dom->saveHTML();
 
-        if ($description_save !== null) {
-            $edit_peraturan->description = $description_save;
-        }
+        $edit_peraturan->name = $request->get('name');
+        $edit_peraturan->nosk = $request->get('nosk');
+        $edit_peraturan->tglsk = $request->get('tglsk');
+        $edit_peraturan->tgllaku = $request->get('tgllaku');
+        $edit_peraturan->uraian = $request->get('uraian');
+
+        //$edit_peraturan->pdf = $description_save;
 
         $edit_peraturan->updated_by = \Auth::user()->id;
-
         $edit_peraturan->save();
-
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Berhasil Diperbaharui');
     }
 
@@ -371,21 +288,12 @@ class peraturanController extends Controller
         $peraturan = \App\peraturan::findOrFail($id);
         $peraturan->delete();
 
-        // Jika request via AJAX (dari DataTables)
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Peraturan berhasil dipindahkan ke Trash.',
-            ]);
-        }
-
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
     }
 
     public function trash()
     {
-        $deletedperaturan = \App\peraturan::onlyTrashed()->latest('deleted_at')->paginate(10);
-
+        $deletedperaturan = \App\peraturan::onlyTrashed()->paginate(10);
         return view('peraturan.trash', ['peraturan' => $deletedperaturan]);
     }
     public function restore($id)
