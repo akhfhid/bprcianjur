@@ -136,10 +136,38 @@ class peraturanController extends Controller
     protected function dispatchPeraturanNotificationsByCabang(peraturan $peraturan)
     {
         try {
+            $hasNoHpColumn = Schema::hasColumn('pegawais', 'nohp');
+            $hasPhoneColumn = Schema::hasColumn('pegawais', 'phone');
+
+            if (!$hasNoHpColumn && !$hasPhoneColumn) {
+                Log::warning('Notifikasi peraturan dilewati karena kolom nomor WhatsApp tidak tersedia', [
+                    'peraturan_id' => $peraturan->id,
+                ]);
+                return;
+            }
+
             $recipientQuery = Pegawai::query()
-                ->whereNotNull('email')
-                ->where('email', '<>', '')
                 ->whereNotNull('cabang');
+
+            $recipientQuery->where(function ($query) use ($hasNoHpColumn, $hasPhoneColumn) {
+                if ($hasNoHpColumn) {
+                    $query->where(function ($phoneQuery) {
+                        $phoneQuery->whereNotNull('nohp')->where('nohp', '<>', '');
+                    });
+                }
+
+                if ($hasPhoneColumn) {
+                    if ($hasNoHpColumn) {
+                        $query->orWhere(function ($phoneQuery) {
+                            $phoneQuery->whereNotNull('phone')->where('phone', '<>', '');
+                        });
+                    } else {
+                        $query->where(function ($phoneQuery) {
+                            $phoneQuery->whereNotNull('phone')->where('phone', '<>', '');
+                        });
+                    }
+                }
+            });
 
             if (Schema::hasColumn('pegawais', 'status_active')) {
                 $recipientQuery->where('status_active', 1);

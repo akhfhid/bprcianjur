@@ -44,9 +44,16 @@
                                 <div class="col-md-12">
                                     <label for="password"
                                         class="col-md-4 col-form-label text-md-left pl-0">{{ __('Password') }}</label>
-                                    <input id="password" type="password"
-                                        class="form-control{{ $errors->has('password') ? 'is-invalid' : '' }}"
+                                <div class="input-group">
+                                    <input id="password" type="password" class="form-control{{ $errors->has('password') ? 'is-invalid' : '' }}"
                                         name="password" required>
+
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" onclick="togglePassword()" style="cursor: pointer;">
+                                            <i id="eyeIcon" class="fa fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
                                     @if ($errors->has('password'))
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $errors->first('password') }}</strong>
@@ -83,3 +90,19 @@
         </div>
     </div>
 @endsection
+<script>
+    function togglePassword() {
+        const password = document.getElementById("password");
+        const icon = document.getElementById("eyeIcon");
+
+        if (password.type === "password") {
+            password.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            password.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+</script>

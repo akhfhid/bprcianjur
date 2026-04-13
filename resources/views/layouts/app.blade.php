@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{asset('polished/polished.min.css')}}">
     <link rel="stylesheet" href="{{asset('polished/iconic/css/open-iconic-bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{asset('polished/summernote/summernote-bs4.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{asset('polished/summernote/summernote-bs4.js')}}">
     <!-- General CSS Files -->
  <meta name="csrf-token" content="{{ csrf_token() }}">
