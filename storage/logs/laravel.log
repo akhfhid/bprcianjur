@@ -26217,3 +26217,5 @@ Stack trace:
 [2026-04-15 17:23:51] local.WARNING: WhatsApp API Reject {"phone":"628170130851","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
 [2026-04-15 17:38:40] local.INFO: WhatsApp API Response {"phone":"6285714701769","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
 [2026-04-15 17:38:40] local.WARNING: WhatsApp API Reject {"phone":"6285714701769","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-04-16 09:23:24] local.INFO: WhatsApp API Response {"phone":"6289664041456","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-04-16 09:23:24] local.WARNING: WhatsApp API Reject {"phone":"6289664041456","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 

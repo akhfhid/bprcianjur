@@ -229,7 +229,7 @@
                             </div>
                             <div class="filter-action">
                                 <button type="submit" class="btn btn-success">Terapkan</button>
-                                <a href="{{ url('/home') }}" class="btn btn-outline-secondary">Reset</a>
+                                <a href="{{ url('/home') }}" class="btn btn-outline">Reset</a>
                             </div>
                         </form>
 
@@ -301,7 +301,7 @@
                             </div>
                             <div class="filter-action">
                                 <button type="submit" class="btn btn-success">Terapkan</button>
-                                <a href="{{ url('/home') }}" class="btn btn-outline-secondary">Reset</a>
+                                <a href="{{ url('/home') }}" class="btn btn-outline-">Reset</a>
                             </div>
                         </form>
 
