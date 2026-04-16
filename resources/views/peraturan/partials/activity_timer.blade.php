@@ -40,8 +40,8 @@
                     })
                 });
                 const data = await response.json();
-                if (data && data.ok) {
-                    sessionId = data.session_id;
+                if (data && (data.ok || data.success)) {
+                    sessionId = data.session_id || (data.data && data.data.session_id) || null;
                     lastSyncAt = Date.now();
                 }
             } catch (e) {
@@ -60,6 +60,7 @@
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
+                        peraturan_id: PERATURAN_ID,
                         session_id: sessionId,
                         active_seconds: activeSeconds,
                         idle_seconds: idleSeconds
@@ -74,6 +75,7 @@
             if (!sessionId) return;
             const data = new FormData();
             data.append('_token', TOKEN);
+            data.append('peraturan_id', String(PERATURAN_ID));
             data.append('session_id', String(sessionId));
             data.append('active_seconds', String(activeSeconds));
             data.append('idle_seconds', String(idleSeconds));

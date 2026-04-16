@@ -140,6 +140,7 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['GET', 'POST'], '/peraturan/view-session/end', [PeraturanViewSessionController::class, 'end'])
         ->name('peraturan.view-session.end');
 });
+route::get('Kepatuhan/Peraturan/Log/Export', 'KepatuhanController@exportLoguser')->name('kepatuhan.loguser.export');
 
 route::middleware(['auth'])->group(function () {
     Route::prefix('set-user')
