@@ -277,7 +277,7 @@ class PeraturanNotificationBlastService
      */
     protected function getDelaySeconds()
     {
-        $delaySeconds = (int) env('WA_THROTTLE_SECONDS', 30);
+        $delaySeconds = (int) env('WA_THROTTLE_SECONDS', 10);
 
         return max(0, $delaySeconds);
     }
