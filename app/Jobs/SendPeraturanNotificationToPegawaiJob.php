@@ -1,4 +1,4 @@
-php artisan queue:flush<?php
+<?php
 
 namespace App\Jobs;
 
