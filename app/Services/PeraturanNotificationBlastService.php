@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Cabang;
+use App\Jabatan;
 use App\Helpers\NotificationLogHelper;
 use App\Helpers\WhatsAppHelper;
 use App\Pegawai;

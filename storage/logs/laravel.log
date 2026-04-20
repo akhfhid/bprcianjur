@@ -44,3 +44,4 @@
 [2026-04-20 14:54:38] local.INFO: WhatsApp API Response {"phone":"6285793333766","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
 [2026-04-20 14:54:38] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":4,"cabang_id":4} 
 [2026-04-20 14:56:16] local.ERROR: Gagal menjalankan blast notif peraturan tanpa queue worker {"peraturan_id":690,"message":"Undefined property: App\\pegawai::$jabatan"} 
+[2026-04-20 15:02:55] local.ERROR: Gagal menjalankan blast notif peraturan tanpa queue worker {"peraturan_id":691,"message":"Undefined property: App\\pegawai::$jabatan"} 
