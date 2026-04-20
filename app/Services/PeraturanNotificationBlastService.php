@@ -197,8 +197,10 @@ class PeraturanNotificationBlastService
      */
     protected function sendToPegawai(peraturan $peraturan, Pegawai $pegawai, $cabangName = null)
     {
-        $jabatanName = optional($pegawai->jabatan)->name;
-        $cabangName = $cabangName ?: optional($pegawai->cabang)->name;
+        $jabatanId = $pegawai->getAttribute('jabatan');
+        $cabangId = $pegawai->getAttribute('cabang');
+        $jabatanName = optional($pegawai->getRelation('jabatan'))->name;
+        $cabangName = $cabangName ?: optional($pegawai->getRelation('cabang'))->name;
 
         try {
             $result = WhatsAppHelper::sendPeraturanBaruNotificationToPegawai($peraturan, $pegawai);
@@ -214,7 +216,7 @@ class PeraturanNotificationBlastService
                 'channel' => 'wa',
                 'reference_type' => 'peraturan',
                 'reference_id' => $peraturan->id,
-                'cabang_id' => $pegawai->cabang,
+                'cabang_id' => $cabangId,
                 'recipient_pegawai_id' => $pegawai->id,
                 'recipient_name' => $pegawai->name,
                 'recipient_email' => $pegawai->email,
@@ -232,9 +234,9 @@ class PeraturanNotificationBlastService
                 'peraturan_id' => $peraturan->id,
                 'pegawai_id' => $pegawai->id,
                 'pegawai_name' => $pegawai->name,
-                'cabang_id' => $pegawai->cabang,
+                'cabang_id' => $cabangId,
                 'cabang_name' => $cabangName,
-                'jabatan_id' => $pegawai->jabatan,
+                'jabatan_id' => $jabatanId,
                 'jabatan_name' => $jabatanName,
             ]);
         } catch (\Throwable $e) {
@@ -244,7 +246,7 @@ class PeraturanNotificationBlastService
                 'channel' => 'wa',
                 'reference_type' => 'peraturan',
                 'reference_id' => $peraturan->id,
-                'cabang_id' => $pegawai->cabang,
+                'cabang_id' => $cabangId,
                 'recipient_pegawai_id' => $pegawai->id,
                 'recipient_name' => $pegawai->name,
                 'recipient_email' => $pegawai->email,
@@ -263,9 +265,9 @@ class PeraturanNotificationBlastService
                 'peraturan_id' => $peraturan->id,
                 'pegawai_id' => $pegawai->id,
                 'pegawai_name' => $pegawai->name,
-                'cabang_id' => $pegawai->cabang,
+                'cabang_id' => $cabangId,
                 'cabang_name' => $cabangName,
-                'jabatan_id' => $pegawai->jabatan,
+                'jabatan_id' => $jabatanId,
                 'jabatan_name' => $jabatanName,
                 'message' => $e->getMessage(),
             ]);
