@@ -1,0 +1,27 @@
+[2026-04-20 14:42:48] local.ERROR: Gagal menjadwalkan notifikasi peraturan {"peraturan_id":688,"message":"Target class [App\\Services\\PeraturanNotificationBlastService] does not exist."} 
+[2026-04-20 14:43:59] local.INFO: WhatsApp API Response {"phone":"6285862686432","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:43:59] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":30,"cabang_id":2} 
+[2026-04-20 14:44:29] local.INFO: WhatsApp API Response {"phone":"6285624742643","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:44:29] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":51,"cabang_id":2} 
+[2026-04-20 14:44:59] local.INFO: WhatsApp API Response {"phone":"6282117442298","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:44:59] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":17,"cabang_id":2} 
+[2026-04-20 14:45:30] local.INFO: WhatsApp API Response {"phone":"6285721209665","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:45:30] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":75,"cabang_id":3} 
+[2026-04-20 14:46:00] local.INFO: WhatsApp API Response {"phone":"6285846224263","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:46:00] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":89,"cabang_id":3} 
+[2026-04-20 14:46:31] local.INFO: WhatsApp API Response {"phone":"628211551637","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:46:31] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":76,"cabang_id":3} 
+[2026-04-20 14:47:01] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:47:01] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":20,"cabang_id":5} 
+[2026-04-20 14:47:31] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:47:31] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":25,"cabang_id":5} 
+[2026-04-20 14:48:02] local.INFO: WhatsApp API Response {"phone":"6281910830026","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:48:02] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":55,"cabang_id":5} 
+[2026-04-20 14:48:32] local.INFO: WhatsApp API Response {"phone":"6281563511129","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:48:32] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":82,"cabang_id":6} 
+[2026-04-20 14:49:03] local.INFO: WhatsApp API Response {"phone":"6285624488325","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:49:03] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":79,"cabang_id":6} 
+[2026-04-20 14:49:33] local.INFO: WhatsApp API Response {"phone":"6282316262041","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:49:33] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":83,"cabang_id":6} 
+[2026-04-20 14:50:03] local.INFO: WhatsApp API Response {"phone":"6287774355568","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-04-20 14:50:03] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":689,"pegawai_id":95,"cabang_id":7} 
