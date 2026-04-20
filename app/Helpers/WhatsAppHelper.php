@@ -64,6 +64,90 @@ class WhatsAppHelper
         return null;
     }
 
+    protected static function getValue($source, array $keys)
+    {
+        if (!$source) {
+            return null;
+        }
+
+        foreach ($keys as $key) {
+            if (is_array($source) && array_key_exists($key, $source)) {
+                return $source[$key];
+            }
+
+            if (is_object($source)) {
+                if (isset($source->{$key})) {
+                    return $source->{$key};
+                }
+
+                if (method_exists($source, 'getAttribute')) {
+                    $value = $source->getAttribute($key);
+                    if (!is_null($value) && $value !== '') {
+                        return $value;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected static function getLoadedRelation($model, $relation)
+    {
+        if (!$model || !is_object($model)) {
+            return null;
+        }
+
+        if (method_exists($model, 'relationLoaded') && $model->relationLoaded($relation)) {
+            return $model->getRelation($relation);
+        }
+
+        return isset($model->{$relation}) ? $model->{$relation} : null;
+    }
+
+    protected static function resolvePegawaiGreetingTitle($pegawai)
+    {
+        $gender = self::getValue($pegawai, array('kelamin'));
+        $normalized = strtolower(trim((string) $gender));
+
+        if (in_array($normalized, array('1', 'l', 'laki', 'laki-laki', 'pria', 'male', 'm'), true)
+            || strpos($normalized, 'laki') !== false
+            || strpos($normalized, 'pria') !== false
+            || strpos($normalized, 'male') !== false) {
+            return 'Bapak';
+        }
+
+        if (in_array($normalized, array('2', 'p', 'perempuan', 'wanita', 'female', 'f'), true)
+            || strpos($normalized, 'perempuan') !== false
+            || strpos($normalized, 'wanita') !== false
+            || strpos($normalized, 'female') !== false) {
+            return 'Ibu';
+        }
+
+        return '';
+    }
+
+    protected static function resolvePegawaiJabatanName($pegawai)
+    {
+        $jabatanName = self::getValue($pegawai, array('jabatan_name', 'nama_jabatan'));
+        if (!is_null($jabatanName) && trim((string) $jabatanName) !== '') {
+            return trim((string) $jabatanName);
+        }
+
+        $jabatan = self::getLoadedRelation($pegawai, 'jabatan');
+        $jabatanName = self::getValue($jabatan, array('name', 'nama'));
+        if (!is_null($jabatanName) && trim((string) $jabatanName) !== '') {
+            return trim((string) $jabatanName);
+        }
+
+        $rawJabatan = self::getValue($pegawai, array('jabatan'));
+        if (!is_null($rawJabatan) && trim((string) $rawJabatan) !== '' && !is_numeric($rawJabatan)) {
+            return trim((string) $rawJabatan);
+        }
+
+        return '-';
+    }
+
     public static function sendMessage($phoneNumber, $message)
     {
         $phone = self::convertPhoneNumber($phoneNumber);
@@ -288,6 +372,9 @@ class WhatsAppHelper
         }
 
         $namaPegawai = trim((string) $pegawai->name) !== '' ? $pegawai->name : 'Pegawai';
+        $sapaanPegawai = self::resolvePegawaiGreetingTitle($pegawai);
+        $penerima = trim($sapaanPegawai . ' ' . $namaPegawai);
+        $namaJabatan = self::resolvePegawaiJabatanName($pegawai);
         $namaPeraturan = trim((string) $peraturan->name) !== '' ? $peraturan->name : '-';
         $kategoriRaw = strtolower(trim((string) $peraturan->kategori));
         $kategori = $kategoriRaw !== '' ? strtoupper($kategoriRaw) : '-';
@@ -298,8 +385,9 @@ class WhatsAppHelper
         $tanggalSk = $peraturan->tglsk ? date('d-m-Y', strtotime($peraturan->tglsk)) : '-';
         $tanggalBerlaku = $peraturan->tgllaku ? date('d-m-Y', strtotime($peraturan->tgllaku)) : '-';
 
-        $message = self::getTimeGreeting() . ', ' . $namaPegawai . "\n\n";
+        $message = self::getTimeGreeting() . ', ' . $penerima . "\n\n";
         $message .= "Terdapat peraturan baru yang ditambahkan\n\n";
+        $message .= "Jabatan        : " . $namaJabatan . "\n";
         $message .= "Nama Peraturan : " . $namaPeraturan . "\n";
         $message .= "Kategori       : " . $kategori . "\n";
         $message .= "Jenis          : " . $jenisPeraturan . "\n";
