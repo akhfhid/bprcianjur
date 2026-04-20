@@ -6,31 +6,13 @@ use Illuminate\Http\Request;
 use PDF;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\peraturan;
-use App\Pegawai;
-use App\Jobs\SendPeraturanNotificationByCabangJob;
-use App\Jobs\SendPeraturanNotificationToPegawaiJob;
+use App\Services\PeraturanNotificationBlastService;
 use DataTables;
 
 class peraturanController extends Controller
 {
-    /**
-     * Daftar jabatan penerima notifikasi peraturan.
-     *
-     * @var array
-     */
-    protected $jabatanNotifikasiPeraturan = [
-        'Pimpinan Cabang',
-        'Kepala Bagian',
-        'Kepala Divisi',
-        'Kepala Seksi Kredit & Dana',
-        'Kepala Seksi Umum & Akunting',
-        'Kepala SKAI',
-        'Kepala Kantor Kas',
-    ];
     /**
      * Display a listing of the resource.
      *
@@ -136,7 +118,7 @@ class peraturanController extends Controller
         $new_peraturan->created_by = \Auth::user()->id; // Menyimpan ID user yang membuat
         $new_peraturan->save(); // Menyimpan ke database
 
-        // Kirim notif secara bertahap per cabang agar tidak membebani request utama.
+        // Kirim notif setelah response, tanpa queue worker, dengan filter penerima yang sama.
         $this->dispatchPeraturanNotificationsByCabang($new_peraturan);
 
         // Mengarahkan kembali ke halaman index dengan pesan sukses
@@ -144,7 +126,7 @@ class peraturanController extends Controller
     }
 
     /**
-     * Notifikasi peraturan baru ke pegawai aktif per cabang, dengan jeda 5 detik antar cabang.
+     * Notifikasi peraturan baru ke pegawai aktif tanpa queue worker.
      *
      * @param  \App\peraturan  $peraturan
      * @return void
@@ -152,108 +134,7 @@ class peraturanController extends Controller
     protected function dispatchPeraturanNotificationsByCabang(peraturan $peraturan)
     {
         try {
-            $hasNoHpColumn = Schema::hasColumn('pegawais', 'nohp');
-            $hasPhoneColumn = Schema::hasColumn('pegawais', 'phone');
-
-            if (!$hasNoHpColumn && !$hasPhoneColumn) {
-                Log::warning('Notifikasi peraturan dilewati karena kolom nomor WhatsApp tidak tersedia', [
-                    'peraturan_id' => $peraturan->id,
-                ]);
-                return;
-            }
-
-            $recipientQuery = Pegawai::query()
-                ->whereNotNull('cabang')
-                ->whereNotNull('jabatan')
-                ->whereHas('jabatan', function ($query) {
-                    $query->where(function ($jabatanQuery) {
-                        foreach ($this->jabatanNotifikasiPeraturan as $jabatanName) {
-                            $jabatanQuery->orWhere('name', 'like', $jabatanName.'%');
-                        }
-                    });
-                });
-
-            $recipientQuery->where(function ($query) use ($hasNoHpColumn, $hasPhoneColumn) {
-                if ($hasNoHpColumn) {
-                    $query->where(function ($phoneQuery) {
-                        $phoneQuery->whereNotNull('nohp')->where('nohp', '<>', '');
-                    });
-                }
-
-                if ($hasPhoneColumn) {
-                    if ($hasNoHpColumn) {
-                        $query->orWhere(function ($phoneQuery) {
-                            $phoneQuery->whereNotNull('phone')->where('phone', '<>', '');
-                        });
-                    } else {
-                        $query->where(function ($phoneQuery) {
-                            $phoneQuery->whereNotNull('phone')->where('phone', '<>', '');
-                        });
-                    }
-                }
-            });
-
-            if (Schema::hasColumn('pegawais', 'status_active')) {
-                $recipientQuery->where('status_active', 1);
-            }
-
-            // Urutkan cabang dari jumlah penerima paling sedikit.
-            // Sekaligus hitung jumlah penerima untuk dipakai sebagai estimasi delay start job per cabang
-            // agar tidak overlap antar cabang saat throttle per-pegawai aktif.
-            $cabangStats = $recipientQuery->select('cabang', DB::raw('COUNT(*) as recipient_count'))
-                ->groupBy('cabang')
-                ->orderBy('recipient_count', 'asc')
-                ->orderBy('cabang', 'asc')
-                ->get();
-
-            $cabangIds = $cabangStats->pluck('cabang')
-                ->filter()
-                ->values();
-
-            if ($cabangIds->isEmpty()) {
-                Log::warning('Notifikasi peraturan dilewati karena tidak ada penerima aktif', [
-                    'peraturan_id' => $peraturan->id,
-                ]);
-                return;
-            }
-
-            $isSyncQueue = config('queue.default') === 'sync';
-
-            foreach ($cabangStats as $stat) {
-                $cabangId = (int) ($stat->cabang ?? 0);
-                if ($cabangId <= 0) {
-                    continue;
-                }
-
-                $recipients = (clone $recipientQuery)
-                    ->where('cabang', $cabangId)
-                    ->orderBy('name', 'asc')
-                    ->get(['id', 'name', 'email', 'cabang', 'nohp', 'phone']);
-
-                foreach ($recipients as $pegawai) {
-                    // Kirim payload minimal agar job tidak perlu query ulang DB untuk data pegawai.
-                    $payload = [
-                        'id' => (int) $pegawai->id,
-                        'name' => (string) ($pegawai->name ?? ''),
-                        'email' => (string) ($pegawai->email ?? ''),
-                        'cabang' => (int) ($pegawai->cabang ?? 0),
-                        'nohp' => $pegawai->nohp ?? null,
-                        'phone' => $pegawai->phone ?? null,
-                    ];
-
-                    if ($isSyncQueue) {
-                        SendPeraturanNotificationToPegawaiJob::dispatchAfterResponse(
-                            $peraturan->id,
-                            $payload
-                        );
-                    } else {
-                        SendPeraturanNotificationToPegawaiJob::dispatch(
-                            $peraturan->id,
-                            $payload
-                        );
-                    }
-                }
-            }
+            app(PeraturanNotificationBlastService::class)->sendAfterResponse($peraturan);
         } catch (\Throwable $e) {
             Log::error('Gagal menjadwalkan notifikasi peraturan', [
                 'peraturan_id' => $peraturan->id,
