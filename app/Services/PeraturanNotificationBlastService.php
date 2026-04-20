@@ -168,7 +168,10 @@ class PeraturanNotificationBlastService
                 continue;
             }
 
-            $selectColumns = ['id', 'name', 'email', 'cabang'];
+            $selectColumns = ['id', 'name', 'email', 'cabang', 'jabatan'];
+            if (Schema::hasColumn('pegawais', 'kelamin')) {
+                $selectColumns[] = 'kelamin';
+            }
             if ($hasNoHpColumn) {
                 $selectColumns[] = 'nohp';
             }
