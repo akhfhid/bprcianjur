@@ -30,10 +30,16 @@ class SendPeraturanNotification implements ShouldQueue
      */
     public function handle()
     {
-        $delayPerPegawaiSeconds = 2; // lebih ringan dari 5 detik
+        $delayPerPegawaiSeconds = 10;
+
+        $selectColumns = ['id', 'name', 'nohp', 'jabatan'];
+        if (\Schema::hasColumn('pegawais', 'kelamin')) {
+            $selectColumns[] = 'kelamin';
+        }
 
         $query = Pegawai::query()
-            ->select(['id', 'name', 'nohp'])
+            ->select($selectColumns)
+            ->with(['jabatan'])
             ->whereNotNull('nohp')
             ->where('nohp', '<>', '');
 
