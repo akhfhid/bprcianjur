@@ -61,12 +61,12 @@ class SendPeraturanNotificationToPegawaiJob implements ShouldQueue
      */
     public function handle()
     {
-        // Global throttle: 1 request / N detik (default 30) tanpa sleep.
+        // Global throttle: 1 request / N detik (default 10) tanpa sleep.
         // Implementasi sederhana untuk kompatibilitas Laravel versi lama (tanpa RateLimiter facade):
         // simpan timestamp terakhir kirim di cache, lalu release job dengan sisa waktu jika masih dalam window.
-        $throttleSeconds = (int) (env('WA_THROTTLE_SECONDS', 30));
+        $throttleSeconds = (int) (env('WA_THROTTLE_SECONDS', 10));
         if ($throttleSeconds < 1) {
-            $throttleSeconds = 30;
+            $throttleSeconds = 10;
         }
 
         $cacheKey = 'wa:send:last_ts';
@@ -135,6 +135,9 @@ class SendPeraturanNotificationToPegawaiJob implements ShouldQueue
         $pegawaiCabang = (int) ($this->pegawai['cabang'] ?? 0);
         $pegawaiNoHp = $this->pegawai['nohp'] ?? null;
         $pegawaiPhone = $this->pegawai['phone'] ?? null;
+        $pegawaiJabatan = $this->pegawai['jabatan'] ?? null;
+        $pegawaiJabatanName = $this->pegawai['jabatan_name'] ?? null;
+        $pegawaiKelamin = $this->pegawai['kelamin'] ?? null;
 
         if ($pegawaiId <= 0 || $pegawaiCabang <= 0) {
             NotificationLogHelper::error([
@@ -159,6 +162,9 @@ class SendPeraturanNotificationToPegawaiJob implements ShouldQueue
             'cabang' => $pegawaiCabang,
             'nohp' => $pegawaiNoHp,
             'phone' => $pegawaiPhone,
+            'jabatan' => $pegawaiJabatan,
+            'jabatan_name' => $pegawaiJabatanName,
+            'kelamin' => $pegawaiKelamin,
         ];
 
         $cabangName = optional(Cabang::find($pegawaiCabang))->name;
