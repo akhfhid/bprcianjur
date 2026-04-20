@@ -50,6 +50,13 @@ class PeraturanNotificationBlastService
     public function sendNow(peraturan $peraturan)
     {
         try {
+            if (!$this->isBlastEnabled()) {
+                Log::info('Blast notif peraturan tidak dijalankan karena dinonaktifkan', [
+                    'peraturan_id' => $peraturan->id,
+                ]);
+                return;
+            }
+
             $recipientsByCabang = $this->getRecipientsByCabang();
 
             if ($recipientsByCabang->isEmpty()) {
@@ -67,6 +74,14 @@ class PeraturanNotificationBlastService
                 $cabangName = optional(Cabang::find($cabangId))->name;
 
                 foreach ($recipients as $pegawai) {
+                    if (!$this->isBlastEnabled()) {
+                        Log::warning('Blast notif peraturan dihentikan dari env', [
+                            'peraturan_id' => $peraturan->id,
+                            'total_sent_before_stop' => $total,
+                        ]);
+                        return;
+                    }
+
                     if (!$isFirstSend && $delaySeconds > 0) {
                         sleep($delaySeconds);
                     }
@@ -161,6 +176,7 @@ class PeraturanNotificationBlastService
             }
 
             $recipients = (clone $recipientQuery)
+                ->with(['jabatan', 'cabang'])
                 ->where('cabang', $cabangId)
                 ->orderBy('name', 'asc')
                 ->get($selectColumns);
@@ -181,6 +197,9 @@ class PeraturanNotificationBlastService
      */
     protected function sendToPegawai(peraturan $peraturan, Pegawai $pegawai, $cabangName = null)
     {
+        $jabatanName = optional($pegawai->jabatan)->name;
+        $cabangName = $cabangName ?: optional($pegawai->cabang)->name;
+
         try {
             $result = WhatsAppHelper::sendPeraturanBaruNotificationToPegawai($peraturan, $pegawai);
             $recipientPhone = (string) (WhatsAppHelper::resolvePegawaiPhoneNumber($pegawai) ?? '');
@@ -204,6 +223,7 @@ class PeraturanNotificationBlastService
                 'message' => 'Notifikasi WA berhasil dikirim.',
                 'meta' => [
                     'cabang_name' => $cabangName,
+                    'jabatan_name' => $jabatanName,
                     'mode' => 'after_response_without_worker',
                 ],
             ]);
@@ -211,7 +231,11 @@ class PeraturanNotificationBlastService
             Log::info('Notif peraturan WA success tanpa queue worker', [
                 'peraturan_id' => $peraturan->id,
                 'pegawai_id' => $pegawai->id,
+                'pegawai_name' => $pegawai->name,
                 'cabang_id' => $pegawai->cabang,
+                'cabang_name' => $cabangName,
+                'jabatan_id' => $pegawai->jabatan,
+                'jabatan_name' => $jabatanName,
             ]);
         } catch (\Throwable $e) {
             NotificationLogHelper::error([
@@ -230,6 +254,7 @@ class PeraturanNotificationBlastService
                 'error_message' => $e->getMessage(),
                 'meta' => [
                     'cabang_name' => $cabangName,
+                    'jabatan_name' => $jabatanName,
                     'mode' => 'after_response_without_worker',
                 ],
             ]);
@@ -237,7 +262,11 @@ class PeraturanNotificationBlastService
             Log::warning('Gagal kirim notif peraturan tanpa queue worker', [
                 'peraturan_id' => $peraturan->id,
                 'pegawai_id' => $pegawai->id,
+                'pegawai_name' => $pegawai->name,
                 'cabang_id' => $pegawai->cabang,
+                'cabang_name' => $cabangName,
+                'jabatan_id' => $pegawai->jabatan,
+                'jabatan_name' => $jabatanName,
                 'message' => $e->getMessage(),
             ]);
         }
@@ -251,5 +280,13 @@ class PeraturanNotificationBlastService
         $delaySeconds = (int) env('WA_THROTTLE_SECONDS', 30);
 
         return max(0, $delaySeconds);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isBlastEnabled()
+    {
+        return filter_var(env('WA_PERATURAN_BLAST_ENABLED', true), FILTER_VALIDATE_BOOLEAN);
     }
 }
