@@ -148,6 +148,9 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
                 'cabang' => (int) ($pegawai->cabang ?? 0),
                 'nohp' => $pegawai->nohp ?? null,
                 'phone' => $pegawai->phone ?? null,
+                'jabatan' => $pegawai->jabatan ?? null,
+                'jabatan_name' => optional($pegawai->getRelation('jabatan'))->name,
+                'kelamin' => $pegawai->kelamin ?? null,
             ];
 
             if ($isSyncQueue) {
@@ -221,6 +224,9 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
         });
 
         $selectColumns = ['id', 'name', 'email', 'cabang', 'jabatan'];
+        if (Schema::hasColumn('pegawais', 'kelamin')) {
+            $selectColumns[] = 'kelamin';
+        }
         if ($hasNoHpColumn) {
             $selectColumns[] = 'nohp';
         }
@@ -228,7 +234,7 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
             $selectColumns[] = 'phone';
         }
 
-        return $query->get($selectColumns);
+        return $query->with(['jabatan'])->get($selectColumns);
     }
 
     /**
