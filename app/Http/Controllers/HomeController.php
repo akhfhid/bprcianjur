@@ -33,7 +33,7 @@ class HomeController extends Controller
                 $query->where('jenis_surat', $internalJenis);
             })
             ->latest()
-            ->limit(5) // ✅ hanya 5 terbaru
+            ->limit(5) 
             ->get();
 
         $externalPeraturan = peraturan::query()
@@ -51,7 +51,7 @@ class HomeController extends Controller
                 $query->where('jenis_ojk', $externalSubJenis);
             })
             ->latest()
-            ->limit(5) // ✅ hanya 5 terbaru
+            ->limit(5) 
             ->get();
 
         return view('home', [

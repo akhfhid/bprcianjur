@@ -99,14 +99,17 @@ class WhatsAppHelper
             'message_type' => '1',
             'message_schedule' => 'normal',
             'file' => '',
-            'pesan' => $message,
-            'delay' => '5000'
+            // Catatan: throttling/delay dilakukan di layer queue (job), bukan di API payload.
+            // Ini menghindari double-delay (queue delay + API delay) yang membuat timing tidak predictable.
+            'pesan' => $message
         );
 
         try {
             $response = Http::withOptions(array(
                 'verify' => false,
-                'timeout' => 30,
+                // Production defaults: fail fast saat koneksi bermasalah, tapi cukup longgar untuk request normal.
+                'connect_timeout' => 5,
+                'timeout' => 15,
             ))
             ->withHeaders(array(
                 'Accept' => 'application/json',
@@ -122,6 +125,8 @@ class WhatsAppHelper
 
                 return array(
                     'success' => false,
+                    'http_code' => $response->status(),
+                    'response' => $response->json(),
                     'message' => 'Request failed with status ' . $response->status()
                 );
             }
@@ -170,6 +175,7 @@ class WhatsAppHelper
 
             return array(
                 'success' => false,
+                'http_code' => null,
                 'message' => $e->getMessage()
             );
         }

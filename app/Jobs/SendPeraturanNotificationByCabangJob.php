@@ -7,6 +7,7 @@ use App\Helpers\NotificationLogHelper;
 use App\Helpers\WhatsAppHelper;
 use App\Pegawai;
 use App\peraturan;
+use App\Jobs\SendPeraturanNotificationToPegawaiJob;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,6 +21,21 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * Daftar jabatan penerima notifikasi peraturan.
+     *
+     * @var array
+     */
+    protected $jabatanNotifikasiPeraturan = [
+        'Pimpinan Cabang',
+        'Kepala Bagian',
+        'Kepala Divisi',
+        'Kepala Seksi Kredit & Dana',
+        'Kepala Seksi Umum & Akunting',
+        'Kepala SKAI',
+        'Kepala Kantor Kas',
+    ];
+
+    /**
      * Batas maksimal eksekusi job (detik).
      *
      * @var int
@@ -31,7 +47,7 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 3;
+    public $tries = 10;
 
     /**
      * @var int
@@ -120,76 +136,40 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
             return;
         }
 
-        $sent = 0;
-        $failed = 0;
+        // 1 pegawai = 1 job. Job ini hanya menjadwalkan job per pegawai (tanpa sleep).
+        // Rate limiting dilakukan di job per pegawai via Cache timestamp.
+        $isSyncQueue = config('queue.default') === 'sync';
 
-        foreach ($recipients as $pegawai) {
-            try {
-                $result = WhatsAppHelper::sendPeraturanBaruNotificationToPegawai($peraturan, $pegawai);
+        foreach ($recipients->values() as $pegawai) {
+            $payload = [
+                'id' => (int) $pegawai->id,
+                'name' => (string) ($pegawai->name ?? ''),
+                'email' => (string) ($pegawai->email ?? ''),
+                'cabang' => (int) ($pegawai->cabang ?? 0),
+                'nohp' => $pegawai->nohp ?? null,
+                'phone' => $pegawai->phone ?? null,
+            ];
 
-                if (empty($result['success'])) {
-                    throw new \RuntimeException($result['message'] ?? 'Pengiriman WA gagal.');
-                }
-
-                NotificationLogHelper::success([
-                    'actor_id' => $peraturan->created_by ?? null,
-                    'category' => 'peraturan',
-                    'channel' => 'wa',
-                    'reference_type' => 'peraturan',
-                    'reference_id' => $peraturan->id,
-                    'cabang_id' => $this->cabangId,
-                    'recipient_pegawai_id' => $pegawai->id,
-                    'recipient_name' => $pegawai->name,
-                    'recipient_email' => $pegawai->email,
-                    'recipient_phone' => $this->resolveWaTarget($pegawai),
-                    'subject' => 'Peraturan Baru: '.$peraturan->name,
-                    'message' => 'Notifikasi WA berhasil dikirim.',
-                    'meta' => [
-                        'cabang_name' => $cabangName,
-                    ],
-                ]);
-
-                $sent++;
-            } catch (\Throwable $e) {
-                $failed++;
-
-                NotificationLogHelper::error([
-                    'actor_id' => $peraturan->created_by ?? null,
-                    'category' => 'peraturan',
-                    'channel' => 'wa',
-                    'reference_type' => 'peraturan',
-                    'reference_id' => $peraturan->id,
-                    'cabang_id' => $this->cabangId,
-                    'recipient_pegawai_id' => $pegawai->id,
-                    'recipient_name' => $pegawai->name,
-                    'recipient_email' => $pegawai->email,
-                    'recipient_phone' => $this->resolveWaTarget($pegawai),
-                    'subject' => 'Peraturan Baru: '.$peraturan->name,
-                    'message' => 'Notifikasi gagal dikirim.',
-                    'error_message' => $e->getMessage(),
-                    'meta' => [
-                        'cabang_name' => $cabangName,
-                    ],
-                ]);
-
-                Log::warning('Gagal kirim notif peraturan ke penerima', [
-                    'peraturan_id' => $this->peraturanId,
-                    'cabang_id' => $this->cabangId,
-                    'pegawai_id' => $pegawai->id,
-                    'email' => $pegawai->email,
-                    'nohp' => $pegawai->nohp ?? null,
-                    'message' => $e->getMessage(),
-                ]);
+            if ($isSyncQueue) {
+                // Queue sync tidak mendukung delay, jadi akan dieksekusi setelah response tanpa jeda.
+                SendPeraturanNotificationToPegawaiJob::dispatchAfterResponse(
+                    $peraturan->id,
+                    $payload
+                );
+                continue;
             }
+
+            SendPeraturanNotificationToPegawaiJob::dispatch(
+                $peraturan->id,
+                $payload
+            );
         }
 
-        Log::info('Selesai proses notif peraturan per cabang', [
+        Log::info('Selesai menjadwalkan notif peraturan per cabang', [
             'peraturan_id' => $this->peraturanId,
             'cabang_id' => $this->cabangId,
             'cabang_name' => $cabangName,
             'total' => $recipients->count(),
-            'sent' => $sent,
-            'failed' => $failed,
         ]);
     }
 
@@ -206,7 +186,15 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
         }
 
         $query = Pegawai::query()
-            ->where('cabang', $this->cabangId);
+            ->where('cabang', $this->cabangId)
+            ->whereNotNull('jabatan')
+            ->whereHas('jabatan', function ($query) {
+                $query->where(function ($jabatanQuery) {
+                    foreach ($this->jabatanNotifikasiPeraturan as $jabatanName) {
+                        $jabatanQuery->orWhere('name', 'like', $jabatanName.'%');
+                    }
+                });
+            });
 
         if (Schema::hasColumn('pegawais', 'status_active')) {
             $query->where('status_active', 1);
@@ -232,7 +220,7 @@ class SendPeraturanNotificationByCabangJob implements ShouldQueue
             }
         });
 
-        $selectColumns = ['id', 'name', 'email', 'cabang'];
+        $selectColumns = ['id', 'name', 'email', 'cabang', 'jabatan'];
         if ($hasNoHpColumn) {
             $selectColumns[] = 'nohp';
         }
