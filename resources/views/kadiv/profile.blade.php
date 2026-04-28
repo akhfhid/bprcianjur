@@ -24,6 +24,9 @@
                     <tr>
                         <td style="height: 10px;"><b>Tempat, Tanggal Lahir <b></td><td>:</td><td>{{$pegawai->templahir}},{{$pegawai->tgllahir}}</td>
                     </tr>
+                        <tr>
+                            <td style="height: 10px;"><b>Tempat, Tanggal Lahir <b></td><td>:</td><td>{{$pegawai->templahir}}, {{Carbon\Carbon::parse($pegawai->tgllahir)->format('d-m-Y')}}</td><td>&nbsp</td>
+                        </tr>
                     <tr>
                         <td style="height: 10px;"><b>Umur<b> </td><td>:</td><td>{{$umur}}</td>
                     </tr>
@@ -111,6 +114,7 @@
                         <tr>
                             <td>{{$keluargas['name']}}</td>
                             <td>{{$keluargas['templahir']}}, {{$keluargas['tgllahir']}}</td>
+                                <td>{{$keluargas['templahir']}}, {{Carbon\Carbon::parse($keluargas['tgllahir'])->format('d-m-Y')}}</td>
                             <td>{{$keluargas['umurkel']}} Tahun</td>
                             <td>{{$keluargas['alamat']}}</td>
                             <td>{{$keluargas['hub']}}</td>
@@ -193,7 +197,7 @@
                         @foreach ($riwayatkerja as $riwayatkerjas)
                             <td>{{$riwayatkerjas['name']}}</td>
                             <td>{{$riwayatkerjas['kantorcabang']}}</td>
-                            <td>{{$riwayatkerjas['tglawal']}} - {{$riwayatkerjas['tglakhir']}}</td>
+                            <td>{{\Carbon\Carbon::parse($riwayatkerjas['tglawal'])->format('d-m-Y')}} - {{\Carbon\Carbon::parse($riwayatkerjas['tglakhir'])->format('d-m-Y')}}</td>
                             <td>{{$riwayatkerjas['periode']}}</td>
                     </tr>
                     @endforeach
@@ -248,11 +252,11 @@
                     <tbody>
 
                     <tr align="center">
-                        <td>{{$tglberkala}}</td>
-                        <td>{{$tglpangkat}}</td>
+                        <td>{{\Carbon\Carbon::parse($tglberkala)->format('d-m-Y')}}</td>
+                        <td>{{\Carbon\Carbon::parse($tglpangkat)->format('d-m-Y')}}</td>
                         <td>{{$tunda}} Bulan</td>
-                        <td>{{$jdber}}</td>
-                        <td>{{$jdpang}}</td>
+                        <td>{{\Carbon\Carbon::parse($jdber)->format('d-m-Y')}}</td>
+                        <td>{{\Carbon\Carbon::parse($jdpang)->format('d-m-Y')}}</td>
                     </tr>
 
                     </tbody>
@@ -356,7 +360,7 @@
                             <td>{{$latih->thnlatih}}</td>
                             <td>
                                 @if($latih->image)
-                                    <img src="{{asset('storage/'.$latih->image)}}" width="70px">
+                                     <button type="button" class="btn btn-sm btn-info preview-cert" data-src="{{asset('storage/'.$latih->image)}}" data-type="{{pathinfo(storage_path('app/public/'.basename($latih->image)), PATHINFO_EXTENSION)}}" title="Preview">Lihat Sertifikat</button>
                                 @else
                                     N/A
                                 @endif
@@ -373,3 +377,7 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+@include('partials.cert_preview')
+@endpush

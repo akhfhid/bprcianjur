@@ -36,7 +36,7 @@ class peraturanController extends Controller
                 ->addColumn('action', function ($data) {
                     $button = '<a href="peraturan/' . $data->id . '/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>';
                     $button .= '<a href="peraturan/' . $data->id . '"> <button class="btn btn-success btn-sm">Detail</button></a>';
-                    $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" id="' . $data->id . '" class="delete btn btn-danger btn-sm">Delete</button>';
+                    $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" data-id="' . $data->id . '" class="delete-btn btn btn-danger btn-sm">Delete</button>';
                     return $button;
                 })
                 ->editColumn('id', 'ID: {{ $id }}')
@@ -241,7 +241,16 @@ class peraturanController extends Controller
     public function destroy($id)
     {
         $peraturan = \App\peraturan::findOrFail($id);
+        $peraturan->deleted_by = \Auth::id();
+        $peraturan->save();
         $peraturan->delete();
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Peraturan berhasil dipindahkan ke Trash',
+            ]);
+        }
 
         return redirect()->route('peraturan.index')->with('status', 'Peraturan Successfully moved to trash');
     }
@@ -256,6 +265,8 @@ class peraturanController extends Controller
         $peraturan = \App\peraturan::withTrashed()->findOrFail($id);
 
         if ($peraturan->trashed()) {
+            $peraturan->deleted_by = null;
+            $peraturan->save();
             $peraturan->restore();
         } else {
             return redirect()->route('peraturan.index')->with('status', 'peraturan is not in trash');

@@ -17,7 +17,8 @@
     <link rel="stylesheet" href="{{asset('polished/summernote/summernote-bs4.js')}}">
     <!-- General CSS Files -->
  <meta name="csrf-token" content="{{ csrf_token() }}">
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
   <!-- CSS Libraries -->
   <link rel="stylesheet" href="{{asset('node_modules/jqvmap/dist/jqvmap.min.css')}}">
   <link rel="stylesheet" href="{{asset('summernote/summernote-bs4.css')}}">

@@ -18,7 +18,7 @@
 		
 	</tr>
 		<tr>
-			<td><b>Tempat, Tanggal Lahir <b></td><td>:</td><td>{{$pegawai->templahir}},{{$pegawai->tgllahir}}</td><td>&nbsp</td>
+			<td><b>Tempat, Tanggal Lahir <b></td><td>:</td><td>{{$pegawai->templahir}}, {{\Carbon\\Carbon::parse($pegawai->tgllahir)->format('d-m-Y')}}</td><td>&nbsp</td>
 				<td><b>Status Pegawai<b></td><td>:</td><td>{{$pegawai->spegawai}}</td>
 		</tr>
 		<tr>
@@ -59,7 +59,7 @@
 			@foreach ($keluarga as $keluargas)
 			<tr>
 				<td>{{$keluargas['name']}}</td>
-				<td>{{$keluargas['templahir']}}, {{$keluargas['tgllahir']}}</td>
+				<td>{{$keluargas['templahir']}}, {{\Carbon\\Carbon::parse($keluargas['tgllahir'])->format('d-m-Y')}}</td>
 				<td>{{$keluargas['umurkel']}}</td>
 				<td>{{$keluargas['alamat']}}</td>
 				<td>{{$keluargas['hub']}}</td>
@@ -165,7 +165,7 @@
 				<td>{{$latih->thnlatih}}</td>
 				<td>
 					@if($latih->image)
-					<img src="{{asset('storage/'.$latih->image)}}" width="70px">
+					<button type="button" class="btn btn-sm btn-info preview-cert" data-src="{{asset('storage/'.$latih->image)}}" data-type="{{pathinfo(storage_path('app/public/'.basename($latih->image)), PATHINFO_EXTENSION)}}" title="Preview"><i class="fa fa-eye"></i></button>
 					@else
 					N/A
 					@endif
@@ -173,12 +173,17 @@
 			</tr>
 			@endforeach
 			</tbody>
-		</table>
+					<td>{{$pegawai->templahir}}, {{Carbon\Carbon::parse($pegawai->tgllahir)->format('d-m-Y')}}</td><td>&nbsp</td>
 			<div class="col-md-12 text-right">
 		<a href="{{route('pegawai.cetak',$pegawai->id)}}" class="btn btn-primary">Cetak Data Pegawai</a>
+						<td>{{$keluargas['templahir']}}, {{Carbon\Carbon::parse($keluargas['tgllahir'])->format('d-m-Y')}}</td>
 
 	</div>
 </div>
 </div>
 </div>
 @endsection
+
+@push('scripts')
+@include('partials.cert_preview')
+@endpush

@@ -212,6 +212,7 @@ header('Access-Control-Allow-Origin: localhost');
 
 
         @yield('footer-scripts')
+        @stack('scripts')
 
 </body>
 
