@@ -535,39 +535,39 @@ class KadivController extends Controller
 
         return view('kadiv.permohonancuti', ['pega' => $pegawai]);
     }
-    public function cutikadiv()
-    {
-        $user = \Auth::user()->pegawai_id;
-        $role = \Auth::user()->roles;
-        $ordercuti = \App\ordercuti::where('pegawai_id', $user)->get();
-        $data = [];
-        foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
+public function cutikadiv(Request $request)
+{
+    $user = \Auth::user()->pegawai_id;
 
-            $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
+    $tahun = $request->get('tahun', date('Y'));
 
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
+    $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
+        ->where('pegawai_id', $user)
+        ->whereYear('tglawal', $tahun)
+        ->orderBy('created_at', 'DESC')
+        ->get();
 
-            $data[] = [
-                'id' => $cuti['id'],
-                'namapeg' => $namapeg,
-                'tglmohon' => $cuti['created_at'],
-                'jmlcuti' => $cuti['jmlcuti'],
-                'tglawal' => $cuti['tglawal'],
-                'tglakhir' => $cuti['tglakhir'],
-                'alasan' => $cuti['alasan'],
-                'namacab' => $namacab,
-                'status' => $cuti['status'],
-            ];
-        }
+    $data = [];
 
-        return view('kadiv.cutikadiv', ['orderc' => $data]);
+    foreach ($ordercuti as $cuti) {
+
+        $data[] = [
+            'id' => $cuti['id'],
+            'namapeg' => $cuti->pegawai->name ?? '-',
+            'tglmohon' => $cuti['created_at'],
+            'jmlcuti' => $cuti['jmlcuti'],
+            'tglawal' => $cuti['tglawal'],
+            'tglakhir' => $cuti['tglakhir'],
+            'alasan' => $cuti['alasan'],
+            'namacab' => $cuti->cabang->name ?? '-',
+            'status' => $cuti['status'],
+        ];
     }
+
+    return view('kadiv.cutikadiv', [
+        'orderc' => $data
+    ]);
+}
 
     public function mintacuti(Request $request)
     {
@@ -759,51 +759,77 @@ class KadivController extends Controller
 
         return view('kadiv.setujucuti', ['orderc' => $data]);
     }
-    public function cutiindex(Request $request)
-    {
-        $idcabang = \Auth::user()->cabang;
-        $idpeg = \Auth::user()->pegawai_id;
-        $peg = \App\Pegawai::where('id', $idpeg)->first();
-        $jabpeg = $peg->jabatan;
-        $name = $request->get('name');
-        $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
-            ->wherehas('pegawai', function ($query) use ($name) {
+public function cutiindex(Request $request)
+{
+    $idcabang = \Auth::user()->cabang;
+    $idpeg = \Auth::user()->pegawai_id;
+
+    $peg = \App\Pegawai::where('id', $idpeg)->first();
+    $jabpeg = $peg->jabatan;
+
+    $name = $request->get('name');
+    $tahun = $request->get('tahun');
+
+    $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
+
+        ->where(function ($q) use ($jabpeg, $idcabang) {
+
+            $q->where([
+                ['status', 'LIKE', 'SUBMIT'],
+                ['statasan', 'like', 'SUBMIT'],
+                ['otoatasan', $jabpeg],
+                ['cabang', $idcabang]
+            ])
+
+            ->orWhere([
+                ['status', 'LIKE', 'SUBMIT'],
+                ['statasan', 'like', 'DISETUJUI'],
+                ['statdiket', 'like', 'SUBMIT'],
+                ['diketatasan', $jabpeg],
+                ['cabang', $idcabang]
+            ]);
+        })
+
+        ->whereHas('pegawai', function ($query) use ($name) {
+            if ($name) {
                 $query->where('name', 'LIKE', "%$name%");
-            })
-            ->where([['status', 'LIKE', 'SUBMIT'], ['statasan', 'like', 'SUBMIT'], ['otoatasan', $jabpeg], ['cabang', $idcabang]])
-            ->orwhere([['status', 'LIKE', 'SUBMIT'], ['statasan', 'like', 'DISETUJUI'], ['statdiket', 'like', 'SUBMIT'], ['diketatasan', $jabpeg], ['cabang', $idcabang]])
+            }
+        })
 
-            ->where('cabang', $idcabang)
-            ->get();
-        $data = [];
-        foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
+        ->when($tahun, function ($query) use ($tahun) {
+            $query->whereYear('tglawal', $tahun);
+        })
 
-            $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
+        ->get();
 
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
+    $data = [];
 
-            $data[] = [
-                'id' => $cuti['id'],
-                'namapeg' => $namapeg,
-                'tglmohon' => $cuti['created_at'],
-                'jmlcuti' => $cuti['jmlcuti'],
-                'tglawal' => $cuti['tglawal'],
-                'tglakhir' => $cuti['tglakhir'],
-                'alasan' => $cuti['alasan'],
-                'namacab' => $namacab,
-                'status' => $cuti['status'],
-                'statasan' => $cuti['statasan'],
-            ];
-        }
+    foreach ($ordercuti as $cuti) {
 
-        return view('kadiv.cutiindex', ['orderc' => $data]);
+        $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
+        $namapeg = $pegawai['name'];
+
+        $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
+        $namacab = $cabang['name'];
+
+        $data[] = [
+            'id' => $cuti['id'],
+            'namapeg' => $namapeg,
+            'tglmohon' => $cuti['created_at'],
+            'jmlcuti' => $cuti['jmlcuti'],
+            'tglawal' => $cuti['tglawal'],
+            'tglakhir' => $cuti['tglakhir'],
+            'alasan' => $cuti['alasan'],
+            'namacab' => $namacab,
+            'status' => $cuti['status'],
+            'statasan' => $cuti['statasan'],
+        ];
     }
+
+    return view('kadiv.cutiindex', [
+        'orderc' => $data
+    ]);
+}
     public function setuju($id)
     {
         $ordercuti = \App\ordercuti::findorFail($id);

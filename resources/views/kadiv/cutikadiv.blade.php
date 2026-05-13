@@ -1,74 +1,120 @@
 @extends('layouts.global')
-@section('title')List Permohonan Cuti @endsection
+@section('title')
+    List Permohonan Cuti
+@endsection
 @section('content')
+    <div class="row">
+        <div class="col-md-12">
+            @if (session('status'))
+                <div class="alert alert-success">
+                    {{ session('status') }}
+                </div>
+            @endif
+            <hr class="my-3">
+            <div class="row mb-3">
+                <div class="col-md-12 text-right">
+                    <div class="row mb-3">
+                        <div class="col-md-12 text-right">
 
+                            <div class="d-inline-flex align-items-center flex-wrap">
 
-		<div class="row">
-	<div class="col-md-12">
-@if(session('status'))
-<div class="alert alert-success">
-{{session('status')}}
-</div>
+                                <form action="{{ route('kadiv.cutikadiv') }}" method="GET"
+                                    class="d-inline-flex align-items-center mr-2">
 
-@endif
-<hr class="my-3">
-<div class="row mb-3">
-	<div class="col-md-12 text-right">
-		<a href="{{route('kadiv.permohonancuti')}}" class="btn btn-primary">Permohonan Cuti Tahunan</a>
-		<a href="{{route('kadiv.cutiwajib')}}" class="btn btn-primary">Permohonan Cuti Wajib</a>
-        <a href="{{route('kadiv.cutilainnya')}}" class="btn btn-primary">Permohonan Cuti Lainnya</a>
-		<a href="{{route('kadiv.setujucuti')}}" class="btn btn-primary">Disetujui</a>
-		<a href="{{route('kadiv.tolakcuti')}}" class="btn btn-primary">Ditolak</a>
-	</div>
-</div>
-		<table class="table table-stripped table-bordered">
-			<thead>
-				<tr align="center">
-					
-					<th><b>Nama Pegawai</b></th>
-					<th><b>Kantor</b></th>
-					<th><b>Jumlah Cuti</b></th>
-					<th><b>Tanggal Awal Cuti</b></th>
-					<th><b>Tanggal Akhir Cuti</b></th>
-					<th><b>Alasan Cuti</b></th>
-					<th><b>Status</b></th>
-				</tr>
-			</thead>
-			<tbody>
-				@foreach($orderc as $order)
-				<tr>
-					
-					<td>{{$order['namapeg']}}</td>
-					<td>{{$order['namacab']}}</td>
-					<td>{{$order['jmlcuti']}}</td>
-					<td>{{$order['tglawal']}}</td>
-					<td>{{$order['tglakhir']}}</td>
-					<td>{{$order['alasan']}}</td>
-					<td>
-						@if($order['status'] =="SUBMIT")
-						<span class="badge bg-warning text-light">{{$order['status']}}</span>
-						@elseif($order['status'] =="DISETUJUI")
-						<span class="badge bg-success text-light">{{$order['status']}}</span>
-						@elseif($order['status'] =="DITOLAK")
-						<span class="badge bg-info text-light">{{$order['status']}}</span>
-						@elseif($order['status'] =="DIBATALKAN")
-						<span class="badge bg-dark text-light">{{$order['status']}}</span>
-						@endif
-					</td>
+                                    @php
+                                        $currentYear = date('Y');
+                                        $selectedYear = Request::get('tahun', $currentYear);
+                                    @endphp
 
-					</td>
-				</tr>
-			</tbody>
-			@endforeach
-			<tfoot>
-				<tr>
-				<td colspan="10">
-				</td>
-			</tr>
-			</tfoot>
-		</table>
-		
-	</div>
-</div>
+                                    <select name="tahun" class="form-control mr-2">
+                                        @for ($year = $currentYear; $year >= 2020; $year--)
+                                            <option value="{{ $year }}"
+                                                {{ $selectedYear == $year ? 'selected' : '' }}>
+                                                {{ $year }}
+                                            </option>
+                                        @endfor
+                                    </select>
 
+                                    <button type="submit" class="btn btn-primary">
+                                        Filter
+                                    </button>
+
+                                </form>
+
+                                <a href="{{ route('kadiv.permohonancuti') }}" class="btn btn-primary mr-1">
+                                    Permohonan Cuti Tahunan
+                                </a>
+
+                                <a href="{{ route('kadiv.cutiwajib') }}" class="btn btn-primary mr-1">
+                                    Permohonan Cuti Wajib
+                                </a>
+
+                                <a href="{{ route('kadiv.cutilainnya') }}" class="btn btn-primary mr-1">
+                                    Permohonan Cuti Lainnya
+                                </a>
+
+                                <a href="{{ route('kadiv.setujucuti') }}" class="btn btn-primary mr-1">
+                                    Disetujui
+                                </a>
+
+                                <a href="{{ route('kadiv.tolakcuti') }}" class="btn btn-primary">
+                                    Ditolak
+                                </a>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-stripped table-bordered">
+                <thead>
+                    <tr align="center">
+
+                        <th><b>Nama Pegawai</b></th>
+                        <th><b>Kantor</b></th>
+                        <th><b>Jumlah Cuti</b></th>
+                        <th><b>Tanggal Awal Cuti</b></th>
+                        <th><b>Tanggal Akhir Cuti</b></th>
+                        <th><b>Alasan Cuti</b></th>
+                        <th><b>Status</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($orderc as $order)
+                        <tr>
+
+                            <td>{{ $order['namapeg'] }}</td>
+                            <td>{{ $order['namacab'] }}</td>
+                            <td>{{ $order['jmlcuti'] }}</td>
+                            <td>{{ $order['tglawal'] }}</td>
+                            <td>{{ $order['tglakhir'] }}</td>
+                            <td>{{ $order['alasan'] }}</td>
+                            <td>
+                                @if ($order['status'] == 'SUBMIT')
+                                    <span class="badge bg-warning text-light">{{ $order['status'] }}</span>
+                                @elseif($order['status'] == 'DISETUJUI')
+                                    <span class="badge bg-success text-light">{{ $order['status'] }}</span>
+                                @elseif($order['status'] == 'DITOLAK')
+                                    <span class="badge bg-info text-light">{{ $order['status'] }}</span>
+                                @elseif($order['status'] == 'DIBATALKAN')
+                                    <span class="badge bg-dark text-light">{{ $order['status'] }}</span>
+                                @endif
+                            </td>
+
+                            </td>
+                        </tr>
+                </tbody>
+                @endforeach
+                <tfoot>
+                    <tr>
+                        <td colspan="10">
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+        </div>
+    </div>
 @endsection
