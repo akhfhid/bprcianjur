@@ -232,6 +232,11 @@ class peraturanController extends Controller
             $edit_peraturan->uraian = $request->get('uraian');
         }
 
+        // Save jenis_ojk if provided from the edit form
+        if ($request->has('jenis_ojk')) {
+            $edit_peraturan->jenis_ojk = $request->get('jenis_ojk');
+        }
+
         //$edit_peraturan->pdf = $description_save;
 
         $edit_peraturan->updated_by = \Auth::user()->id;
