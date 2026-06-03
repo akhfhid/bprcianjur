@@ -232,9 +232,12 @@ class peraturanController extends Controller
             $edit_peraturan->uraian = $request->get('uraian');
         }
 
-        // Save jenis_ojk if provided from the edit form
+        // Save jenis_ojk if provided from the edit form.
+        // Some forms submit this value as `jenis_ojk`, others as `sub_jenis` (see request payload).
         if ($request->has('jenis_ojk')) {
             $edit_peraturan->jenis_ojk = $request->get('jenis_ojk');
+        } elseif ($request->has('sub_jenis')) {
+            $edit_peraturan->jenis_ojk = $request->get('sub_jenis');
         }
 
         //$edit_peraturan->pdf = $description_save;
