@@ -1,5 +1,5 @@
 <?php
-//test
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -225,7 +225,12 @@ class peraturanController extends Controller
         $edit_peraturan->nosk = $request->get('nosk');
         $edit_peraturan->tglsk = $request->get('tglsk');
         $edit_peraturan->tgllaku = $request->get('tgllaku');
-        $edit_peraturan->uraian = $request->get('uraian');
+        // If rich-text `description` was provided and processed, save it; otherwise keep plain `uraian` input
+        if (!empty($description_save)) {
+            $edit_peraturan->uraian = $description_save;
+        } else {
+            $edit_peraturan->uraian = $request->get('uraian');
+        }
 
         //$edit_peraturan->pdf = $description_save;
 
