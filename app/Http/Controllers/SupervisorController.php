@@ -464,42 +464,34 @@ class SupervisorController extends Controller
     }
     public function cutiindex(Request $request)
     {
-        $idcabang = \Auth::user()->cabang;
         $idpeg = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id', $idpeg)->first();
         $jabpeg = $peg->jabatan;
         $idcab = $peg->cabang;
         $name = $request->get('name');
+
         $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
-            ->wherehas('pegawai', function ($query) use ($name) {
-                $query->where('name', 'LIKE', "%$name%");
+            ->when($name, function ($query) use ($name) {
+                $query->whereHas('pegawai', function ($subQuery) use ($name) {
+                    $subQuery->where('name', 'LIKE', "%$name%");
+                });
             })
             ->where('statasan', 'like', 'SUBMIT')
             ->where('otoatasan', $jabpeg)
             ->where('cabang', $idcab)
             ->get();
+
         $data = [];
         foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
-
-            $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
-
             $data[] = [
                 'id' => $cuti['id'],
-                'namapeg' => $namapeg,
+                'namapeg' => optional($cuti->pegawai)->name ?? '-',
                 'tglmohon' => $cuti['created_at'],
                 'jmlcuti' => $cuti['jmlcuti'],
                 'tglawal' => $cuti['tglawal'],
                 'tglakhir' => $cuti['tglakhir'],
                 'alasan' => $cuti['alasan'],
-                'namacab' => $namacab,
+                'namacab' => optional($cuti->cabang)->name ?? '-',
                 'status' => $cuti['status'],
             ];
         }
@@ -662,7 +654,7 @@ class SupervisorController extends Controller
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = 'SUBMIT';
             $new_cuti->otosdm = 'ADMIN';
-            $new_cuti->statsdm = 'SUBMIT';
+            $new_cuti->statsdm = 'DISETUJUI';
         }
 
         $new_cuti->save();
@@ -845,6 +837,9 @@ public function setuju($id)
     $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
 
     $ordercuti->statasan = 'DISETUJUI';
+    if ($ordercuti->jeniscuti == 'Cuti Wajib') {
+        $ordercuti->statsdm = 'DISETUJUI';
+    }
     $ordercuti->save();
 
 try {

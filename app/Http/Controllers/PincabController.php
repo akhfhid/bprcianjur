@@ -643,7 +643,7 @@ class PincabController extends Controller
             $new_cuti->diketatasan = "$jabketat";
             $new_cuti->statdiket = 'SUBMIT';
             $new_cuti->otosdm = 'ADMIN';
-            $new_cuti->statsdm = 'SUBMIT';
+            $new_cuti->statsdm = 'DISETUJUI';
         } elseif ($jeniscuti == 'Cuti Lainnya') {
             $new_cuti = new \App\ordercuti();
             $new_cuti->user_id = \Auth::user()->id;
@@ -802,34 +802,41 @@ class PincabController extends Controller
         $idpeg = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id', $idpeg)->first();
         $jabpeg = $peg->jabatan;
-        //$cabpeg = $peg->cabang;
         $name = $request->get('name');
-        $ordercuti = \App\ordercuti::where([['status', 'LIKE', 'SUBMIT'], ['otoatasan', $jabpeg], ['statasan', 'like', 'SUBMIT'], ['cabang', $idcabang]])
-            ->orwhere([['status', 'LIKE', 'SUBMIT'], ['statasan', 'like', 'DISETUJUI'], ['statdiket', 'like', 'SUBMIT'], ['diketatasan', $jabpeg], ['cabang', $idcabang]])
-            //->where('cabang',$idcabang)
+
+        $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
+            ->where(function ($query) use ($jabpeg, $idcabang) {
+                $query->where([
+                    ['status', 'LIKE', 'SUBMIT'],
+                    ['otoatasan', $jabpeg],
+                    ['statasan', 'like', 'SUBMIT'],
+                    ['cabang', $idcabang],
+                ])->orWhere([
+                    ['status', 'LIKE', 'SUBMIT'],
+                    ['statasan', 'like', 'DISETUJUI'],
+                    ['statdiket', 'like', 'SUBMIT'],
+                    ['diketatasan', $jabpeg],
+                    ['cabang', $idcabang],
+                ]);
+            })
+            ->when($name, function ($query) use ($name) {
+                $query->whereHas('pegawai', function ($subQuery) use ($name) {
+                    $subQuery->where('name', 'LIKE', "%$name%");
+                });
+            })
             ->get();
+
         $data = [];
         foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
-
-            $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
-
             $data[] = [
                 'id' => $cuti['id'],
-                'namapeg' => $namapeg,
+                'namapeg' => optional($cuti->pegawai)->name ?? '-',
                 'tglmohon' => $cuti['created_at'],
                 'jmlcuti' => $cuti['jmlcuti'],
                 'tglawal' => $cuti['tglawal'],
                 'tglakhir' => $cuti['tglakhir'],
                 'alasan' => $cuti['alasan'],
-                'namacab' => $namacab,
+                'namacab' => optional($cuti->cabang)->name ?? '-',
                 'status' => $cuti['status'],
                 'statasan' => $cuti['statasan'],
                 'statdiket' => $cuti['statdiket'],
@@ -851,7 +858,7 @@ class PincabController extends Controller
         if ($statasan == 'SUBMIT') {
             if ($jeniscuti == 'Cuti Wajib') {
                 $ordercuti->statasan = 'DISETUJUI';
-                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->statsdm = 'DISETUJUI';
                 $ordercuti->save();
             } elseif ($jeniscuti == 'Cuti Tahunan') {
                 $ordercuti->status = 'DISETUJUI';
@@ -869,6 +876,8 @@ class PincabController extends Controller
         } else {
             if ($jeniscuti == 'Cuti Wajib') {
                 $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->statsdm = 'DISETUJUI';
+                $ordercuti->status = 'DISETUJUI';
                 $ordercuti->save();
             } elseif ($jeniscuti == 'Cuti Tahunan') {
                 $ordercuti->status = 'DISETUJUI';

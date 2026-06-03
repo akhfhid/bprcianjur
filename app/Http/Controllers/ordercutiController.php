@@ -121,7 +121,7 @@ class ordercutiController extends Controller
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = 'SUBMIT';
             $new_cuti->otosdm = 'ADMIN';
-            $new_cuti->statsdm = 'SUBMIT';
+            $new_cuti->statsdm = 'DISETUJUI';
         } elseif ($jeniscuti == 'Cuti Lainnya') {
             $new_cuti = new \App\ordercuti();
             $new_cuti->user_id = \Auth::user()->id;

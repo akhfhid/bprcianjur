@@ -453,45 +453,40 @@ class KepatuhanController extends Controller
         $peg = \App\Pegawai::where('id',$idpeg)->first();
         $jabpeg = $peg->jabatan;
         $name = $request->get('name');
+
         $ordercuti = \App\ordercuti::with('pegawai','cabang')
-            ->wherehas('pegawai', function($query) use ($name){
-                $query->where('name','LIKE',"%$name%");})
-            ->where([
-                ['status',"LIKE","SUBMIT"],
-                ['statasan',"like","SUBMIT"],
-                ['otoatasan',$jabpeg],
-                ['cabang',$idcabang]
-            ])
-            ->orwhere([
-                ['status',"LIKE","SUBMIT"],
-                ['statasan',"like","DISETUJUI"],
-                ['statdiket',"like","SUBMIT"],
-                ['diketatasan',$jabpeg],
-                ['cabang',$idcabang]
-            ])
+            ->where(function ($query) use ($jabpeg, $idcabang) {
+                $query->where([
+                    ['status',"LIKE","SUBMIT"],
+                    ['statasan',"like","SUBMIT"],
+                    ['otoatasan',$jabpeg],
+                    ['cabang',$idcabang]
+                ])->orWhere([
+                    ['status',"LIKE","SUBMIT"],
+                    ['statasan',"like","DISETUJUI"],
+                    ['statdiket',"like","SUBMIT"],
+                    ['diketatasan',$jabpeg],
+                    ['cabang',$idcabang]
+                ]);
+            })
+            ->when($name, function ($query) use ($name) {
+                $query->whereHas('pegawai', function ($subQuery) use ($name) {
+                    $subQuery->where('name','LIKE',"%$name%");
+                });
+            })
+            ->get();
 
-            ->where('cabang',$idcabang)->get();        $data=[];
+        $data=[];
         foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id',$cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
-
-            $cabang = \App\Cabang::where('id',$cuti['cabang'])->first();
-            $namacab=$cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
-
             $data[] = [
                 "id" => $cuti['id'],
-                "namapeg" => $namapeg,
+                "namapeg" => optional($cuti->pegawai)->name ?? '-',
                 "tglmohon"=> $cuti['created_at'],
                 "jmlcuti" => $cuti['jmlcuti'],
                 "tglawal" => $cuti['tglawal'],
                 "tglakhir" => $cuti['tglakhir'],
                 "alasan" => $cuti['alasan'],
-                "namacab"=>$namacab,
+                "namacab"=>optional($cuti->cabang)->name ?? '-',
                 "status"=>$cuti['status'],
                 "statasan"=>$cuti['statasan']
             ];
@@ -673,7 +668,7 @@ class KepatuhanController extends Controller
             $new_cuti->diketatasan = $jabketat;
             $new_cuti->statdiket = 'SUBMIT';
             $new_cuti->otosdm = "ADMIN";
-            $new_cuti->statsdm = "SUBMIT";
+            $new_cuti->statsdm = "DISETUJUI";
         }
 
 
@@ -798,7 +793,7 @@ class KepatuhanController extends Controller
         if($statasan == "SUBMIT"){
             if ($jeniscuti == "Cuti Wajib") {
                 $ordercuti->statasan = 'DISETUJUI';
-                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->statsdm = 'DISETUJUI';
             $ordercuti->save();
 
         } elseif ($jeniscuti == "Cuti Tahunan") {
@@ -818,6 +813,8 @@ class KepatuhanController extends Controller
         }else{
             if ($jeniscuti == "Cuti Wajib"){
                 $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->statsdm = 'DISETUJUI';
+                $ordercuti->status = 'DISETUJUI';
                 $ordercuti->save();
 
             } elseif ($jeniscuti == "Cuti Tahunan") {

@@ -626,51 +626,42 @@ class DirbisController extends Controller
     }
     public function cutiindex(Request $request){
 
-        $idcabang = \Auth::user()->cabang;
         $idpeg = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id',$idpeg)->first();
         $jabpeg = $peg->jabatan;
         $name = $request->get('name');
-        $ordercuti = \App\ordercuti::with('pegawai','cabang')
-            ->wherehas('pegawai', function($query) use ($name){
-                $query->where('name','LIKE',"%$name%");})
-            ->where([
-                ['status',"LIKE","SUBMIT"],
-                ['statasan',"like","SUBMIT"],
-                ['otoatasan',$jabpeg],
-                //['cabang',$idcabang]
-            ])
-            ->orwhere([
-                ['status',"LIKE","SUBMIT"],
-                ['otoatasan',$jabpeg],
-                ['diketatasan',$jabpeg],
-                //['cabang',$idcabang]
-            ])
 
-            //->where('cabang',$idcabang)
+        $ordercuti = \App\ordercuti::with('pegawai','cabang')
+            ->where(function ($query) use ($jabpeg) {
+                $query->where([
+                    ['status',"LIKE","SUBMIT"],
+                    ['statasan',"like","SUBMIT"],
+                    ['otoatasan',$jabpeg],
+                ])->orWhere([
+                    ['status',"LIKE","SUBMIT"],
+                    ['statasan',"like","DISETUJUI"],
+                    ['statdiket',"like","SUBMIT"],
+                    ['diketatasan',$jabpeg],
+                ]);
+            })
+            ->when($name, function ($query) use ($name) {
+                $query->whereHas('pegawai', function ($subQuery) use ($name) {
+                    $subQuery->where('name','LIKE',"%$name%");
+                });
+            })
             ->get();
+
         $data=[];
         foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id',$cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
-
-            $cabang = \App\Cabang::where('id',$cuti['cabang'])->first();
-            $namacab=$cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
-
             $data[] = [
                 "id" => $cuti['id'],
-                "namapeg" => $namapeg,
+                "namapeg" => optional($cuti->pegawai)->name ?? '-',
                 "tglmohon"=> $cuti['created_at'],
                 "jmlcuti" => $cuti['jmlcuti'],
                 "tglawal" => $cuti['tglawal'],
                 "tglakhir" => $cuti['tglakhir'],
                 "alasan" => $cuti['alasan'],
-                "namacab"=>$namacab,
+                "namacab"=>optional($cuti->cabang)->name ?? '-',
                 "status"=>$cuti['status'],
                 "statasan"=>$cuti['statasan']
             ];
@@ -697,11 +688,14 @@ class DirbisController extends Controller
         $cabang = $ordercuti->cabang;
         //if($jabdiket != 1){
             if ($jeniscuti == "Cuti Wajib") {
-
+                if ($statasan == "SUBMIT") {
                 $ordercuti->statasan = 'DISETUJUI';
-                $ordercuti->statdiket = 'DISETUJUI';
-                $pegawai->scuti = $sisacuti;
-                $pegawai->save();
+                $ordercuti->statsdm = 'DISETUJUI';
+                } else {
+                    $ordercuti->statdiket = 'DISETUJUI';
+                    $ordercuti->statsdm = 'DISETUJUI';
+                    $ordercuti->status = 'DISETUJUI';
+                }
                 $ordercuti->save();
 
             } elseif ($jeniscuti == "Cuti Tahunan") {

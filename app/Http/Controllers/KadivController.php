@@ -607,7 +607,7 @@ public function cutikadiv(Request $request)
 
             $new_cuti->statdiket = 'SUBMIT';
             $new_cuti->otosdm = 'ADMIN';
-            $new_cuti->statsdm = 'SUBMIT';
+            $new_cuti->statsdm = 'DISETUJUI';
         } elseif ($jeniscuti == 'Cuti Lainnya') {
             $new_cuti = new \App\ordercuti();
             $new_cuti->user_id = \Auth::user()->id;
@@ -805,22 +805,15 @@ public function cutiindex(Request $request)
     $data = [];
 
     foreach ($ordercuti as $cuti) {
-
-        $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-        $namapeg = $pegawai['name'];
-
-        $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-        $namacab = $cabang['name'];
-
         $data[] = [
             'id' => $cuti['id'],
-            'namapeg' => $namapeg,
+            'namapeg' => optional($cuti->pegawai)->name ?? '-',
             'tglmohon' => $cuti['created_at'],
             'jmlcuti' => $cuti['jmlcuti'],
             'tglawal' => $cuti['tglawal'],
             'tglakhir' => $cuti['tglakhir'],
             'alasan' => $cuti['alasan'],
-            'namacab' => $namacab,
+            'namacab' => optional($cuti->cabang)->name ?? '-',
             'status' => $cuti['status'],
             'statasan' => $cuti['statasan'],
         ];
@@ -843,7 +836,7 @@ public function cutiindex(Request $request)
         if ($statasan == 'SUBMIT') {
             if ($jeniscuti == 'Cuti Wajib') {
                 $ordercuti->statasan = 'DISETUJUI';
-                $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->statsdm = 'DISETUJUI';
                 $ordercuti->save();
             } elseif ($jeniscuti == 'Cuti Tahunan') {
                 $ordercuti->status = 'DISETUJUI';
@@ -861,6 +854,8 @@ public function cutiindex(Request $request)
         } else {
             if ($jeniscuti == 'Cuti Wajib') {
                 $ordercuti->statdiket = 'DISETUJUI';
+                $ordercuti->statsdm = 'DISETUJUI';
+                $ordercuti->status = 'DISETUJUI';
                 $ordercuti->save();
             } elseif ($jeniscuti == 'Cuti Tahunan') {
                 $ordercuti->status = 'DISETUJUI';

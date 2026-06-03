@@ -4,7 +4,7 @@
 
 <div class="row">
 	<div class="col-md-12">
-		<form action="{{route('direksi.cutiindex')}}" >
+		<form action="{{route('dirbis.cutiindex')}}" >
 			<div class="row">
 				<div class="col-md-5">
 					<input value="{{Request::get('name')}}" name="name" type="text" class="form-control" placeholder="Search By Name">
@@ -88,8 +88,8 @@
 
 					</td>
 				</tr>
-			</tbody>
 			@endforeach
+			</tbody>
 			<tfoot>
 				<tr>
 				<td colspan="10">

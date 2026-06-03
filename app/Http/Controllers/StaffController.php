@@ -348,9 +348,9 @@ class StaffController extends Controller
         $new_cuti->otosdm = 'ADMIN';
 
         if ($jeniscuti == 'Cuti Wajib') {
-            $new_cuti->status = 'DISETUJUI';
-            $new_cuti->statasan = 'DISETUJUI';
-            $new_cuti->statdiket = 'DISETUJUI';
+            $new_cuti->status = 'SUBMIT';
+            $new_cuti->statasan = 'SUBMIT';
+            $new_cuti->statdiket = 'SUBMIT';
             $new_cuti->statsdm = 'DISETUJUI';
         } else {
             $new_cuti->status = 'SUBMIT';

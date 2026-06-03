@@ -82,8 +82,8 @@
 
 					</td>
 				</tr>
-			</tbody>
 			@endforeach
+			</tbody>
 			<tfoot>
 				<tr>
 				<td colspan="10">
