@@ -191,33 +191,35 @@ class peraturanController extends Controller
     {
         $edit_peraturan = \App\peraturan::findorFail($id);
         $description = $request->get('description');
-        $dom = new \DomDocument('1.0', 'UTF-8');
-        libxml_use_internal_errors(true);
-        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        $images = $dom->getElementsByTagName('img');
-        $bs64 = 'base64';
+        $description_save = '';
 
-        foreach ($images as $k => $img) {
-            $data = $img->getAttribute('src');
-            if (strpos($data, $bs64) == true) {
-                $data = base64_decode(preg_replace('#^data:image/\w+;base64.#i', '', $data));
-                //list($type, $data) = explode(';', $data);
-                //list(, $data)      = explode(',', $data);
+        if (!empty(trim($description))) {
+            $dom = new \DomDocument('1.0', 'UTF-8');
+            libxml_use_internal_errors(true);
+            $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+            $images = $dom->getElementsByTagName('img');
+            $bs64 = 'base64';
 
-                $image_name = '/storage/peraturan/' . 'post_' . time() . $k . '.png';
-                $path = public_path() . $image_name;
+            foreach ($images as $k => $img) {
+                $data = $img->getAttribute('src');
+                if (strpos($data, $bs64) == true) {
+                    $data = base64_decode(preg_replace('#^data:image/\w+;base64.#i', '', $data));
 
-                file_put_contents($path, $data);
+                    $image_name = '/storage/peraturan/' . 'post_' . time() . $k . '.png';
+                    $path = public_path() . $image_name;
 
-                $img->removeAttribute('src');
-                $img->setAttribute('src', $image_name);
-            } else {
-                $image_name = '/' . $data;
-                $img->setAttribute('src', $image_name);
+                    file_put_contents($path, $data);
+
+                    $img->removeAttribute('src');
+                    $img->setAttribute('src', $image_name);
+                } else {
+                    $image_name = '/' . $data;
+                    $img->setAttribute('src', $image_name);
+                }
             }
-        }
 
-        $description_save = $dom->saveHTML();
+            $description_save = $dom->saveHTML();
+        }
 
         $edit_peraturan->name = $request->get('name');
         $edit_peraturan->nosk = $request->get('nosk');
