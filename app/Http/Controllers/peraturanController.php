@@ -101,10 +101,19 @@ class peraturanController extends Controller
 
         // Mengisi data dari request
         $new_peraturan->name = $request->get('name');
+        $new_peraturan->kategori = $request->get('kategori');
+        $new_peraturan->jenis_surat = $request->get('jenis_surat');
         $new_peraturan->nosk = $request->get('nosk');
         $new_peraturan->tglsk = $request->get('tglsk');
         $new_peraturan->tgllaku = $request->get('tgllaku');
         $new_peraturan->uraian = $request->get('uraian');
+
+        // Save jenis_ojk if provided
+        if ($request->has('jenis_ojk')) {
+            $new_peraturan->jenis_ojk = $request->get('jenis_ojk');
+        } elseif ($request->has('sub_jenis')) {
+            $new_peraturan->jenis_ojk = $request->get('sub_jenis');
+        }
 
         // Menangani file PDF jika ada
         if ($request->hasFile('pdf')) {
@@ -222,6 +231,8 @@ class peraturanController extends Controller
         }
 
         $edit_peraturan->name = $request->get('name');
+        $edit_peraturan->kategori = $request->get('kategori');
+        $edit_peraturan->jenis_surat = $request->get('jenis_surat');
         $edit_peraturan->nosk = $request->get('nosk');
         $edit_peraturan->tglsk = $request->get('tglsk');
         $edit_peraturan->tgllaku = $request->get('tgllaku');
