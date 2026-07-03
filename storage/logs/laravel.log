@@ -5229,3 +5229,227 @@
 [2026-06-18 08:41:58] local.INFO: WhatsApp API Response {"phone":"6281999119996","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
 [2026-06-18 08:46:20] local.INFO: WhatsApp API Response {"phone":"6282115090419","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
 [2026-06-18 08:46:30] local.INFO: WhatsApp API Response {"phone":"6282115090419","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-18 13:42:56] local.INFO: WhatsApp API Response {"phone":"6285721209665","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-18 13:42:59] local.INFO: WhatsApp API Response {"phone":"6285721209665","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-18 13:43:01] local.INFO: WhatsApp API Response {"phone":"6285721209665","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-19 07:29:41] local.INFO: WhatsApp API Response {"phone":"6285155277706","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-19 07:29:47] local.INFO: WhatsApp API Response {"phone":"6285155277706","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-19 07:29:59] local.INFO: WhatsApp API Response {"phone":"6282277223430","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-19 07:30:02] local.INFO: WhatsApp API Response {"phone":"6285797954458","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-19 07:30:04] local.INFO: WhatsApp API Response {"phone":"6285863330190","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-19 08:46:58] local.INFO: WhatsApp API Response {"phone":"6283817505679","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 07:10:52] local.INFO: WhatsApp API Response {"phone":"6281313020833","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 07:11:24] local.INFO: WhatsApp API Response {"phone":"6283818280520","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 11:00:21] local.INFO: WhatsApp API Response {"phone":"6282240996186","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 15:21:48] local.INFO: WhatsApp API Response {"phone":"6289611457319","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 15:38:29] local.INFO: WhatsApp API Response {"phone":"6281809605533","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 15:38:33] local.INFO: WhatsApp API Response {"phone":"6281809605533","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 15:48:43] local.INFO: WhatsApp API Response {"phone":"6287726032050","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 15:48:46] local.INFO: WhatsApp API Response {"phone":"6281999119996","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 15:48:51] local.INFO: WhatsApp API Response {"phone":"6281573777731","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-22 16:00:03] local.INFO: WhatsApp API Response {"phone":"6281222967556","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-23 15:38:01] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 07:22:12] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 08:17:48] local.INFO: WhatsApp API Response {"phone":"6281999119996","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 08:20:26] local.INFO: WhatsApp API Response {"phone":"6281563147118","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 08:20:28] local.INFO: WhatsApp API Response {"phone":"6281563147118","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 10:05:09] local.INFO: WhatsApp API Response {"phone":"6285797172490","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 10:05:33] local.INFO: WhatsApp API Response {"phone":"6282317007647","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 10:05:37] local.INFO: WhatsApp API Response {"phone":"628777866054","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 10:05:41] local.INFO: WhatsApp API Response {"phone":"6281387647997","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 10:05:43] local.INFO: WhatsApp API Response {"phone":"6282317007647","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-24 15:55:02] local.INFO: WhatsApp API Response {"phone":"6281999119996","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 08:05:32] local.INFO: WhatsApp API Response {"phone":"6287708302075","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 08:05:37] local.INFO: WhatsApp API Response {"phone":"6285871231904","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 08:05:42] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 08:05:46] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 08:06:04] local.INFO: WhatsApp API Response {"phone":"6287708302075","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 09:29:08] local.INFO: WhatsApp API Response {"phone":"628777866054","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:11:03] local.INFO: WhatsApp API Response {"phone":"6285862686432","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:11:03] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":30,"pegawai_name":"Ahmad Sopandi, SE","cabang_id":2,"cabang_name":"Kantor Cabang Warungkondang","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:11:14] local.INFO: WhatsApp API Response {"phone":"6285624742643","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:11:14] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":51,"pegawai_name":"Erwin Firmansyah, S.Pd.","cabang_id":2,"cabang_name":"Kantor Cabang Warungkondang","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:11:24] local.INFO: WhatsApp API Response {"phone":"6282117442298","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:11:24] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":17,"pegawai_name":"Ganis Rahayu Sopandi","cabang_id":2,"cabang_name":"Kantor Cabang Warungkondang","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:11:35] local.INFO: WhatsApp API Response {"phone":"6285721209665","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:11:35] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":75,"pegawai_name":"Euis Widaningsih, SE","cabang_id":3,"cabang_name":"Kantor Cabang Sindangbarang","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:11:45] local.INFO: WhatsApp API Response {"phone":"6285846224263","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:11:45] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":89,"pegawai_name":"Nineu Gustini, A.Ma.Pust.","cabang_id":3,"cabang_name":"Kantor Cabang Sindangbarang","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:11:55] local.INFO: WhatsApp API Response {"phone":"628211551637","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:11:55] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":76,"pegawai_name":"Ronald Mauladi Akbar, S.Pd.","cabang_id":3,"cabang_name":"Kantor Cabang Sindangbarang","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:12:06] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:12:06] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":20,"pegawai_name":"Andi Ruhyandi, S.AP","cabang_id":5,"cabang_name":"Kantor Cabang Pacet","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:12:16] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:12:16] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":25,"pegawai_name":"Angga Noviar","cabang_id":5,"cabang_name":"Kantor Cabang Pacet","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:12:27] local.INFO: WhatsApp API Response {"phone":"6281910830026","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:12:27] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":55,"pegawai_name":"Oktaviani Siti Harliati, ST","cabang_id":5,"cabang_name":"Kantor Cabang Pacet","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:12:37] local.INFO: WhatsApp API Response {"phone":"6281563511129","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:12:37] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":82,"pegawai_name":"Eneng Trisna Yulianti, SE","cabang_id":6,"cabang_name":"Kantor Cabang Cidaun","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:12:47] local.INFO: WhatsApp API Response {"phone":"6285624488325","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:12:47] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":79,"pegawai_name":"Ika Supartika, SE","cabang_id":6,"cabang_name":"Kantor Cabang Cidaun","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:12:58] local.INFO: WhatsApp API Response {"phone":"6282316262041","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:12:58] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":83,"pegawai_name":"Pipin Supini, SE","cabang_id":6,"cabang_name":"Kantor Cabang Cidaun","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:13:08] local.INFO: WhatsApp API Response {"phone":"6287774355568","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:13:08] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":95,"pegawai_name":"Aji Sutiaji, SE","cabang_id":7,"cabang_name":"Kantor Cabang Cibeber","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:13:19] local.INFO: WhatsApp API Response {"phone":"6281222041025","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:13:19] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":38,"pegawai_name":"Mia Irmaya, S.Ak.","cabang_id":7,"cabang_name":"Kantor Cabang Cibeber","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:13:29] local.INFO: WhatsApp API Response {"phone":"6287708488800","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:13:29] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":92,"pegawai_name":"Rizky Rhamdani, SE","cabang_id":7,"cabang_name":"Kantor Cabang Cibeber","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:13:39] local.INFO: WhatsApp API Response {"phone":"6281313020833","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:13:39] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":70,"pegawai_name":"Ghea Ganeffiady, A.Md.","cabang_id":9,"cabang_name":"Kantor Cabang Cikalongkulon","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:13:46] local.INFO: WhatsApp API Response {"phone":"6285862686432","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:13:46] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":30,"pegawai_name":"Ahmad Sopandi, SE","cabang_id":2,"cabang_name":"Kantor Cabang Warungkondang","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:13:50] local.INFO: WhatsApp API Response {"phone":"6283818280520","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:13:50] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":27,"pegawai_name":"Mursyid Aly Mochammad, SE","cabang_id":9,"cabang_name":"Kantor Cabang Cikalongkulon","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:13:57] local.INFO: WhatsApp API Response {"phone":"6285624742643","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:13:57] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":51,"pegawai_name":"Erwin Firmansyah, S.Pd.","cabang_id":2,"cabang_name":"Kantor Cabang Warungkondang","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:14:00] local.INFO: WhatsApp API Response {"phone":"628777866054","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:00] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":63,"pegawai_name":"Nanang Haryadi","cabang_id":9,"cabang_name":"Kantor Cabang Cikalongkulon","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:14:07] local.INFO: WhatsApp API Response {"phone":"6282117442298","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:07] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":17,"pegawai_name":"Ganis Rahayu Sopandi","cabang_id":2,"cabang_name":"Kantor Cabang Warungkondang","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:14:11] local.INFO: WhatsApp API Response {"phone":"6281809605533","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:11] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":90,"pegawai_name":"Eka Permana, A.Md.","cabang_id":10,"cabang_name":"Kantor Cabang Ciranjang","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:14:18] local.INFO: WhatsApp API Response {"phone":"6285721209665","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:18] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":75,"pegawai_name":"Euis Widaningsih, SE","cabang_id":3,"cabang_name":"Kantor Cabang Sindangbarang","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:14:21] local.INFO: WhatsApp API Response {"phone":"6281999119996","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:21] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":125,"pegawai_name":"Naufal Asyraf Faris, S.Ak. M.Ak.","cabang_id":10,"cabang_name":"Kantor Cabang Ciranjang","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:14:28] local.INFO: WhatsApp API Response {"phone":"6285846224263","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:28] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":89,"pegawai_name":"Nineu Gustini, A.Ma.Pust.","cabang_id":3,"cabang_name":"Kantor Cabang Sindangbarang","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:14:32] local.INFO: WhatsApp API Response {"phone":"6281222967556","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:32] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":9,"pegawai_name":"Sri Rahayu, SH","cabang_id":10,"cabang_name":"Kantor Cabang Ciranjang","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:14:39] local.INFO: WhatsApp API Response {"phone":"628211551637","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:39] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":76,"pegawai_name":"Ronald Mauladi Akbar, S.Pd.","cabang_id":3,"cabang_name":"Kantor Cabang Sindangbarang","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:14:42] local.INFO: WhatsApp API Response {"phone":"6285793333766","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:42] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":4,"pegawai_name":"Dandi Ramdani, S.Pd.SD","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:14:49] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:49] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":20,"pegawai_name":"Andi Ruhyandi, S.AP","cabang_id":5,"cabang_name":"Kantor Cabang Pacet","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:14:53] local.INFO: WhatsApp API Response {"phone":"6285722987635","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:14:53] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":50,"pegawai_name":"Dede Hardianti, SE","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":129,"jabatan_name":"Kepala Kantor Kas"} 
+[2026-06-25 11:15:00] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:00] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":25,"pegawai_name":"Angga Noviar","cabang_id":5,"cabang_name":"Kantor Cabang Pacet","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:15:03] local.INFO: WhatsApp API Response {"phone":"62816279796","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:03] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":91,"pegawai_name":"Endi Suryadi, SE","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:15:10] local.INFO: WhatsApp API Response {"phone":"6281910830026","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:10] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":55,"pegawai_name":"Oktaviani Siti Harliati, ST","cabang_id":5,"cabang_name":"Kantor Cabang Pacet","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:15:14] local.INFO: WhatsApp API Response {"phone":"6285793887539","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:14] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":103,"pegawai_name":"Wetri Maryuli, SE","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:15:21] local.INFO: WhatsApp API Response {"phone":"6281563511129","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:21] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":82,"pegawai_name":"Eneng Trisna Yulianti, SE","cabang_id":6,"cabang_name":"Kantor Cabang Cidaun","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:15:24] local.INFO: WhatsApp API Response {"phone":"6285724861434","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:24] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":77,"pegawai_name":"Abdurohman, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":88,"jabatan_name":"Kepala Bagian Kredit"} 
+[2026-06-25 11:15:32] local.INFO: WhatsApp API Response {"phone":"6285624488325","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:32] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":79,"pegawai_name":"Ika Supartika, SE","cabang_id":6,"cabang_name":"Kantor Cabang Cidaun","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:15:35] local.INFO: WhatsApp API Response {"phone":"62811248588","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:35] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":7,"pegawai_name":"Agung Anugratama, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":89,"jabatan_name":"Kepala Bagian Supervisi Kredit"} 
+[2026-06-25 11:15:42] local.INFO: WhatsApp API Response {"phone":"6282316262041","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:42] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":83,"pegawai_name":"Pipin Supini, SE","cabang_id":6,"cabang_name":"Kantor Cabang Cidaun","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:15:45] local.INFO: WhatsApp API Response {"phone":"6281322277077","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:45] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":2,"pegawai_name":"Dimas Setyadi, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":74,"jabatan_name":"Kepala Divisi Perencanaan & TI"} 
+[2026-06-25 11:15:53] local.INFO: WhatsApp API Response {"phone":"6287774355568","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:53] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":95,"pegawai_name":"Aji Sutiaji, SE","cabang_id":7,"cabang_name":"Kantor Cabang Cibeber","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:15:56] local.INFO: WhatsApp API Response {"phone":"6285624519041","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:15:56] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":13,"pegawai_name":"Ina Safitri","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":92,"jabatan_name":"Kepala Bagian Perencanaan"} 
+[2026-06-25 11:16:03] local.INFO: WhatsApp API Response {"phone":"6281222041025","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:03] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":38,"pegawai_name":"Mia Irmaya, S.Ak.","cabang_id":7,"cabang_name":"Kantor Cabang Cibeber","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:16:06] local.INFO: WhatsApp API Response {"phone":"6281320104904","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:06] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":39,"pegawai_name":"M. Luthfi Mubarok","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":93,"jabatan_name":"Kepala Bagian TI"} 
+[2026-06-25 11:16:14] local.INFO: WhatsApp API Response {"phone":"6287708488800","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:14] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":92,"pegawai_name":"Rizky Rhamdani, SE","cabang_id":7,"cabang_name":"Kantor Cabang Cibeber","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:16:17] local.INFO: WhatsApp API Response {"phone":"6283817385391","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:17] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":37,"pegawai_name":"Marwah Dariyyatus Salamah","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":94,"jabatan_name":"Kepala Bagian Pengembangan Prosedur & Produk"} 
+[2026-06-25 11:16:24] local.INFO: WhatsApp API Response {"phone":"6281313020833","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:24] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":70,"pegawai_name":"Ghea Ganeffiady, A.Md.","cabang_id":9,"cabang_name":"Kantor Cabang Cikalongkulon","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:16:27] local.INFO: WhatsApp API Response {"phone":"6289611457319","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:27] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":24,"pegawai_name":"Muhammad Aldi Alfauzi","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":91,"jabatan_name":"Kepala Bagian Akunting"} 
+[2026-06-25 11:16:35] local.INFO: WhatsApp API Response {"phone":"6283818280520","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:35] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":27,"pegawai_name":"Mursyid Aly Mochammad, SE","cabang_id":9,"cabang_name":"Kantor Cabang Cikalongkulon","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:16:38] local.INFO: WhatsApp API Response {"phone":"6285700007291","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:38] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":8,"pegawai_name":"Noval Ramdani, S.IP","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":87,"jabatan_name":"Kepala Bagian Dana"} 
+[2026-06-25 11:16:45] local.INFO: WhatsApp API Response {"phone":"628777866054","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:45] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":63,"pegawai_name":"Nanang Haryadi","cabang_id":9,"cabang_name":"Kantor Cabang Cikalongkulon","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:16:49] local.INFO: WhatsApp API Response {"phone":"628170130851","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:49] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":1,"pegawai_name":"R. Etty Dewati, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":7,"jabatan_name":"Kepala SKAI"} 
+[2026-06-25 11:16:56] local.INFO: WhatsApp API Response {"phone":"6281809605533","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:56] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":90,"pegawai_name":"Eka Permana, A.Md.","cabang_id":10,"cabang_name":"Kantor Cabang Ciranjang","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:16:59] local.INFO: WhatsApp API Response {"phone":"6281212754556","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:16:59] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":11,"pegawai_name":"Ropiki Maulana, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":96,"jabatan_name":"Kepala Bagian Kepatuhan & Manajemen Risiko"} 
+[2026-06-25 11:17:06] local.INFO: WhatsApp API Response {"phone":"6281999119996","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:06] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":125,"pegawai_name":"Naufal Asyraf Faris, S.Ak. M.Ak.","cabang_id":10,"cabang_name":"Kantor Cabang Ciranjang","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:17:10] local.INFO: WhatsApp API Response {"phone":"6282115090419","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:10] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":60,"pegawai_name":"TB Iman Rahmat Taufik, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":77,"jabatan_name":"Kepala Divisi Bisnis"} 
+[2026-06-25 11:17:17] local.INFO: WhatsApp API Response {"phone":"6281222967556","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:17] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":9,"pegawai_name":"Sri Rahayu, SH","cabang_id":10,"cabang_name":"Kantor Cabang Ciranjang","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:17:20] local.INFO: WhatsApp API Response {"phone":"6283817505679","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:20] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":41,"pegawai_name":"Wawan Darmawan, SH","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":95,"jabatan_name":"Kepala Bagian SDM & Umum"} 
+[2026-06-25 11:17:27] local.INFO: WhatsApp API Response {"phone":"6285793333766","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:27] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":4,"pegawai_name":"Dandi Ramdani, S.Pd.SD","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":78,"jabatan_name":"Pimpinan Cabang"} 
+[2026-06-25 11:17:31] local.INFO: WhatsApp API Response {"phone":"6281281055550","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:31] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":701,"pegawai_id":6,"pegawai_name":"Yuniar Agustiani, S.Akt.","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":75,"jabatan_name":"Kepala Divisi Kepatuhan & Manajemen Risiko"} 
+[2026-06-25 11:17:31] local.INFO: Blast notif peraturan selesai tanpa queue worker {"peraturan_id":701,"total":38,"delay_seconds":10} 
+[2026-06-25 11:17:38] local.INFO: WhatsApp API Response {"phone":"6285722987635","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:38] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":50,"pegawai_name":"Dede Hardianti, SE","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":129,"jabatan_name":"Kepala Kantor Kas"} 
+[2026-06-25 11:17:48] local.INFO: WhatsApp API Response {"phone":"62816279796","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:48] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":91,"pegawai_name":"Endi Suryadi, SE","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":101,"jabatan_name":"Kepala Seksi Kredit & Dana"} 
+[2026-06-25 11:17:59] local.INFO: WhatsApp API Response {"phone":"6285793887539","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:17:59] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":103,"pegawai_name":"Wetri Maryuli, SE","cabang_id":4,"cabang_name":"Kantor Cabang Sukanagara","jabatan_id":102,"jabatan_name":"Kepala Seksi Umum & Akunting"} 
+[2026-06-25 11:18:09] local.INFO: WhatsApp API Response {"phone":"6285724861434","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:18:09] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":77,"pegawai_name":"Abdurohman, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":88,"jabatan_name":"Kepala Bagian Kredit"} 
+[2026-06-25 11:18:19] local.INFO: WhatsApp API Response {"phone":"62811248588","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:18:19] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":7,"pegawai_name":"Agung Anugratama, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":89,"jabatan_name":"Kepala Bagian Supervisi Kredit"} 
+[2026-06-25 11:18:30] local.INFO: WhatsApp API Response {"phone":"6281322277077","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:18:30] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":2,"pegawai_name":"Dimas Setyadi, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":74,"jabatan_name":"Kepala Divisi Perencanaan & TI"} 
+[2026-06-25 11:18:40] local.INFO: WhatsApp API Response {"phone":"6285624519041","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:18:40] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":13,"pegawai_name":"Ina Safitri","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":92,"jabatan_name":"Kepala Bagian Perencanaan"} 
+[2026-06-25 11:18:51] local.INFO: WhatsApp API Response {"phone":"6281320104904","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:18:51] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":39,"pegawai_name":"M. Luthfi Mubarok","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":93,"jabatan_name":"Kepala Bagian TI"} 
+[2026-06-25 11:19:01] local.INFO: WhatsApp API Response {"phone":"6283817385391","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:19:01] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":37,"pegawai_name":"Marwah Dariyyatus Salamah","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":94,"jabatan_name":"Kepala Bagian Pengembangan Prosedur & Produk"} 
+[2026-06-25 11:19:11] local.INFO: WhatsApp API Response {"phone":"6289611457319","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:19:11] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":24,"pegawai_name":"Muhammad Aldi Alfauzi","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":91,"jabatan_name":"Kepala Bagian Akunting"} 
+[2026-06-25 11:19:22] local.INFO: WhatsApp API Response {"phone":"6285700007291","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:19:22] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":8,"pegawai_name":"Noval Ramdani, S.IP","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":87,"jabatan_name":"Kepala Bagian Dana"} 
+[2026-06-25 11:19:32] local.INFO: WhatsApp API Response {"phone":"628170130851","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:19:32] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":1,"pegawai_name":"R. Etty Dewati, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":7,"jabatan_name":"Kepala SKAI"} 
+[2026-06-25 11:19:42] local.INFO: WhatsApp API Response {"phone":"6281212754556","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:19:42] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":11,"pegawai_name":"Ropiki Maulana, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":96,"jabatan_name":"Kepala Bagian Kepatuhan & Manajemen Risiko"} 
+[2026-06-25 11:19:53] local.INFO: WhatsApp API Response {"phone":"6282115090419","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:19:53] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":60,"pegawai_name":"TB Iman Rahmat Taufik, SE","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":77,"jabatan_name":"Kepala Divisi Bisnis"} 
+[2026-06-25 11:20:03] local.INFO: WhatsApp API Response {"phone":"6283817505679","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:20:03] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":41,"pegawai_name":"Wawan Darmawan, SH","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":95,"jabatan_name":"Kepala Bagian SDM & Umum"} 
+[2026-06-25 11:20:14] local.INFO: WhatsApp API Response {"phone":"6281281055550","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 11:20:14] local.INFO: Notif peraturan WA success tanpa queue worker {"peraturan_id":702,"pegawai_id":6,"pegawai_name":"Yuniar Agustiani, S.Akt.","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":75,"jabatan_name":"Kepala Divisi Kepatuhan & Manajemen Risiko"} 
+[2026-06-25 11:20:14] local.INFO: Blast notif peraturan selesai tanpa queue worker {"peraturan_id":702,"total":38,"delay_seconds":10} 
+[2026-06-25 12:00:31] local.INFO: WhatsApp API Response {"phone":"6282115090419","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 15:12:02] local.INFO: WhatsApp API Response {"phone":"6287774355568","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:18:20] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:35:43] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:36:30] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:36:35] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:39:48] local.INFO: WhatsApp API Response {"phone":"6287708302075","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:39:56] local.INFO: WhatsApp API Response {"phone":"62818209234","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:39:59] local.INFO: WhatsApp API Response {"phone":"6285624528093","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-25 16:40:08] local.INFO: WhatsApp API Response {"phone":"6287708302075","http_code":200,"response":{"status":200,"data":[],"message":"OK"}} 
+[2026-06-26 13:20:41] local.INFO: WhatsApp API Response {"phone":"6285793333766","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-26 13:20:41] local.WARNING: WhatsApp API Reject {"phone":"6285793333766","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-29 09:28:19] local.INFO: WhatsApp API Response {"phone":"6285724861434","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-29 09:28:19] local.WARNING: WhatsApp API Reject {"phone":"6285724861434","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 07:21:14] local.INFO: WhatsApp API Response {"phone":"628170130851","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 07:21:14] local.WARNING: WhatsApp API Reject {"phone":"628170130851","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 08:08:30] local.INFO: WhatsApp API Response {"phone":"6285793887539","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 08:08:30] local.WARNING: WhatsApp API Reject {"phone":"6285793887539","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 09:07:25] local.INFO: WhatsApp API Response {"phone":"628170130851","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 09:07:25] local.WARNING: WhatsApp API Reject {"phone":"628170130851","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 14:25:24] local.INFO: WhatsApp API Response {"phone":"6283817505679","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 14:25:24] local.WARNING: WhatsApp API Reject {"phone":"6283817505679","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 17:38:55] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 17:38:55] local.WARNING: WhatsApp API Reject {"phone":"6285975256475","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 19:49:02] local.INFO: WhatsApp API Response {"phone":"6287885462651","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 19:49:02] local.WARNING: WhatsApp API Reject {"phone":"6287885462651","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 19:49:45] local.INFO: WhatsApp API Response {"phone":"6285871005409","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 19:49:45] local.WARNING: WhatsApp API Reject {"phone":"6285871005409","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-06-30 19:49:52] local.INFO: WhatsApp API Response {"phone":"6287820001750","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-06-30 19:49:52] local.WARNING: WhatsApp API Reject {"phone":"6287820001750","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-07-01 08:35:11] local.INFO: WhatsApp API Response {"phone":"6289638110619","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-07-01 08:35:11] local.WARNING: WhatsApp API Reject {"phone":"6289638110619","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-07-01 15:07:05] local.INFO: WhatsApp API Response {"phone":"6287885462651","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-07-01 15:07:05] local.WARNING: WhatsApp API Reject {"phone":"6287885462651","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
