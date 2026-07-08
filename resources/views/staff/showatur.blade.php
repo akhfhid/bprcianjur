@@ -29,7 +29,7 @@
                 </div>
             </div>
             <div class="row wrapper">
-            	<div style="text-center">{!! $peraturan->pdf !!}</div> 
+            	 
                 <div id="pdf-container" style="width: 100%;"></div> <!-- Tempat untuk menampilkan PDF -->
 
                 <script>

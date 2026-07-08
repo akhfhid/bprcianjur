@@ -238,6 +238,7 @@ route::middleware(['auth'])->group(function () {
     Route::get('/peraturan/trash', 'TrashController@trash')->name('peraturan.trash');
     Route::get('/peraturan/{id}/restore', 'peraturanController@restore')->name('peraturan.restore');
     Route::delete('/peraturan/{peraturan}/delete-permanent', 'peraturanController@deletePermanent')->name('peraturan.delete-permanent');
+    Route::get('peraturan/pdf-file/{id}', 'peraturanController@pdfFile')->name('peraturan.pdf_file');
     Route::get('Peraturan/Print/{id}', 'peraturanController@show_pdf')->name('peraturan.show_pdf');
     route::post('/Peraturan/Update/{id}', 'peraturanController@simpanedit')->name('peraturan.simpanedit');
     route::get('/peraturan/showtrash/{id}', 'peraturanController@showtrash')->name('peraturan.showtrash');

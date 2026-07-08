@@ -325,4 +325,19 @@ class peraturanController extends Controller
 
         return view('peraturan.show_pdf', ['peraturan' => $peraturan, 'time' => $time]);
     }
+
+    public function pdfFile($id)
+    {
+        $peraturan = \App\peraturan::findOrFail($id);
+        $filePath = storage_path('app/public/pdfs/' . $peraturan->pdf);
+
+        if (!file_exists($filePath)) {
+            abort(404);
+        }
+
+        return response()->file($filePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"',
+        ]);
+    }
 }
