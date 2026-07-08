@@ -38,10 +38,8 @@ class WaSettingController extends Controller
                     }
                 });
             })
-            ->where(function ($q) {
-                $q->where(function ($s) { $s->whereNotNull('nohp')->where('nohp', '<>', ''); })
-                  ->orWhere(function ($s) { $s->whereNotNull('phone')->where('phone', '<>', ''); });
-            })
+            ->whereNotNull('nohp')
+            ->where('nohp', '<>', '')
             ->select('cabang', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
             ->groupBy('cabang')
             ->pluck('total', 'cabang')
