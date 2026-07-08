@@ -52,7 +52,7 @@ class WaSettingController extends Controller
 
         if (!empty($orderedIds)) {
             $orderedCabang = collect($orderedIds)
-                ->map(fn($id) => $allCabang->firstWhere('id', $id))
+                ->map(function($id) use ($allCabang) { return $allCabang->firstWhere('id', $id); })
                 ->filter()
                 ->values();
 
