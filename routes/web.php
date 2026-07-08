@@ -119,6 +119,7 @@ Route::middleware(['auth'])
         Route::get('/', [CutiController::class, 'index'])->name('cuti.index');
         Route::get('/{id}', [CutiController::class, 'show'])->name('cuti.show');
         Route::get('/pegawai/{pegawai}', [CutiController::class, 'pegawai'])->name('cuti.pegawai');
+        Route::patch('/{id}/update-durasi', [CutiController::class, 'updateDurasi'])->name('cuti.update-durasi');
         Route::get('/{id}/edit', [CutiController::class, 'edit'])->name('cuti.edit');
         Route::put('/{id}', [CutiController::class, 'update'])->name('cuti.update');
         Route::delete('/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');

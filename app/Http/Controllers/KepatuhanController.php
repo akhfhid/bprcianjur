@@ -613,7 +613,14 @@ class KepatuhanController extends Controller
         $jeniscuti = $request->get('jeniscuti');
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc= \Carbon\Carbon::parse($akhir);
-        $jumlahcuti = $awlc->diffinDays($akhirc);
+        $jumlahcuti = 0;
+        $current = $awlc->copy();
+        while ($current->lte($akhirc)) {
+            if (!$current->isWeekend()) {
+                $jumlahcuti++;
+            }
+            $current->addDay();
+        }
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id',$user_id)->first();
         $jabpeg = $peg->jabatan;

@@ -194,9 +194,26 @@
                                 </td>
 
                                 <td class="align-middle">
-                                    <span class="badge badge-light border px-2 py-1">
-                                        {{ $cuti->jmlcuti }} Hari
-                                    </span>
+                                    <div class="d-flex justify-content-center align-items-center" id="durasi-container-{{ $cuti->id }}">
+                                        <span class="badge badge-light border px-2 py-1 mr-1" id="durasi-text-{{ $cuti->id }}">
+                                            {{ $cuti->jmlcuti }} Hari
+                                        </span>
+                                        <button class="btn btn-sm btn-light border-0 text-primary p-1 btn-edit-durasi" 
+                                            data-id="{{ $cuti->id }}" data-val="{{ $cuti->jmlcuti }}" title="Edit Durasi">
+                                            <i class="fas fa-pencil-alt" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </div>
+                                    <div class="d-none justify-content-center align-items-center" id="durasi-edit-container-{{ $cuti->id }}">
+                                        <input type="number" class="form-control form-control-sm text-center mr-1" 
+                                            id="input-durasi-{{ $cuti->id }}" value="{{ $cuti->jmlcuti }}" 
+                                            style="width: 60px; padding: 2px;" min="0">
+                                        <button class="btn btn-sm btn-success p-1 mr-1 btn-save-durasi" data-id="{{ $cuti->id }}" title="Simpan">
+                                            <i class="fas fa-check" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger p-1 btn-cancel-durasi" data-id="{{ $cuti->id }}" title="Batal">
+                                            <i class="fas fa-times" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </div>
                                 </td>
 
                                 <td class="align-middle text-left">
@@ -346,4 +363,82 @@
             {{ $cutis->appends(request()->all())->links() }}
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tampilkan input form edit
+            document.querySelectorAll('.btn-edit-durasi').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    let id = this.getAttribute('data-id');
+                    document.getElementById('durasi-container-' + id).classList.remove('d-flex');
+                    document.getElementById('durasi-container-' + id).classList.add('d-none');
+                    document.getElementById('durasi-edit-container-' + id).classList.remove('d-none');
+                    document.getElementById('durasi-edit-container-' + id).classList.add('d-flex');
+                });
+            });
+
+            // Batal edit
+            document.querySelectorAll('.btn-cancel-durasi').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    let id = this.getAttribute('data-id');
+                    document.getElementById('durasi-edit-container-' + id).classList.remove('d-flex');
+                    document.getElementById('durasi-edit-container-' + id).classList.add('d-none');
+                    document.getElementById('durasi-container-' + id).classList.remove('d-none');
+                    document.getElementById('durasi-container-' + id).classList.add('d-flex');
+                });
+            });
+
+            // Simpan edit (AJAX)
+            document.querySelectorAll('.btn-save-durasi').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    let id = this.getAttribute('data-id');
+                    let input = document.getElementById('input-durasi-' + id);
+                    let val = input.value;
+                    let token = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '{{ csrf_token() }}';
+
+                    // Disable button loading state
+                    let originalHtml = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 0.75rem;"></i>';
+                    this.disabled = true;
+
+                    fetch(`{{ url('cuti') }}/${id}/update-durasi`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ jmlcuti: val })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update badge UI
+                            document.getElementById('durasi-text-' + id).innerText = data.new_value + ' Hari';
+                            
+                            // Reset and hide form
+                            document.getElementById('durasi-edit-container-' + id).classList.remove('d-flex');
+                            document.getElementById('durasi-edit-container-' + id).classList.add('d-none');
+                            document.getElementById('durasi-container-' + id).classList.remove('d-none');
+                            document.getElementById('durasi-container-' + id).classList.add('d-flex');
+                            
+                            // Optional: show a small toast or just rely on visual change
+                        } else {
+                            alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan koneksi saat menyimpan.');
+                    })
+                    .finally(() => {
+                        this.innerHTML = originalHtml;
+                        this.disabled = false;
+                    });
+                });
+            });
+        });
+    </script>
+    @endpush
 @endsection

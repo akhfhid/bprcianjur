@@ -312,7 +312,14 @@ class StaffController extends Controller
         $jeniscuti = $request->get('jeniscuti');
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc = \Carbon\Carbon::parse($akhir);
-        $jmlcuti = $awlc->diffInDays($akhirc) + 1;
+        $jmlcuti = 0;
+        $current = $awlc->copy();
+        while ($current->lte($akhirc)) {
+            if (!$current->isWeekend()) {
+                $jmlcuti++;
+            }
+            $current->addDay();
+        }
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::findOrFail($user_id);
 

@@ -94,7 +94,14 @@ class ordercutiController extends Controller
 
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc = \Carbon\Carbon::parse($akhir);
-        $jmlcuti = $awlc->diffinDays($akhirc);
+        $jmlcuti = 0;
+        $current = $awlc->copy();
+        while ($current->lte($akhirc)) {
+            if (!$current->isWeekend()) {
+                $jmlcuti++;
+            }
+            $current->addDay();
+        }
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id', $user_id)->first();
         $jabpeg = $peg->jabatan;
@@ -209,7 +216,14 @@ class ordercutiController extends Controller
 
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc = \Carbon\Carbon::parse($akhir);
-        $jmlcuti = $awlc->diffinDays($akhirc);
+        $jmlcuti = 0;
+        $current = $awlc->copy();
+        while ($current->lte($akhirc)) {
+            if (!$current->isWeekend()) {
+                $jmlcuti++;
+            }
+            $current->addDay();
+        }
         $user_id = \Auth::user()->pegawai_id;
 
         $useradm = \App\User::where('roles', 'ADMIN', 'ADMIN_SDM')->first();

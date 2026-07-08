@@ -101,11 +101,20 @@ class CutiController extends Controller
 
         $awal = Carbon::parse($request->tglawal);
         $akhir = Carbon::parse($request->tglakhir);
+        
+        $jmlcuti = 0;
+        $current = $awal->copy();
+        while ($current->lte($akhir)) {
+            if (!$current->isWeekend()) {
+                $jmlcuti++;
+            }
+            $current->addDay();
+        }
 
         $cuti->update([
             'tglawal' => $request->tglawal,
             'tglakhir' => $request->tglakhir,
-            'jmlcuti' => $awal->diffInDays($akhir) + 1,
+            'jmlcuti' => $jmlcuti,
             'alasan' => $request->alasan,
             'otoatasan' => $request->otoatasan, // ID JABATAN
             'diketatasan' => $request->diketatasan, // ID JABATAN
@@ -148,6 +157,28 @@ public function updateSisaCuti(Request $request, $pegawaiId)
 
     return back()->with('status', 'Sisa cuti berhasil diperbarui');
 }
+public function updateDurasi(Request $request, $id)
+{
+    $request->validate([
+        'jmlcuti' => 'required|integer|min:0'
+    ]);
+
+    $cuti = ordercuti::findOrFail($id);
+    
+    // Simpan durasi lama untuk pesan balasan (opsional)
+    $old = $cuti->jmlcuti;
+    
+    // Update durasi
+    $cuti->jmlcuti = $request->jmlcuti;
+    $cuti->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Durasi cuti berhasil diperbarui dari ' . $old . ' hari menjadi ' . $cuti->jmlcuti . ' hari.',
+        'new_value' => $cuti->jmlcuti
+    ]);
+}
+
 public function updateSisaCutiAjax(Request $request, $pegawaiId)
 {
     $request->validate([

@@ -576,7 +576,14 @@ public function cutikadiv(Request $request)
         $akhir = $request->get('tglakhir');
         $awlc = \Carbon\Carbon::parse($awal);
         $akhirc = \Carbon\Carbon::parse($akhir);
-        $jmlcuti = $awlc->diffinDays($akhirc);
+        $jmlcuti = 0;
+        $current = $awlc->copy();
+        while ($current->lte($akhirc)) {
+            if (!$current->isWeekend()) {
+                $jmlcuti++;
+            }
+            $current->addDay();
+        }
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id', $user_id)->first();
         $jabpeg = $peg->jabatan;
