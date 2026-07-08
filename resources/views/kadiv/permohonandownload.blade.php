@@ -12,7 +12,7 @@
 {{session('status')}}
 </div>
 @endif
-<form action="{{route('pincab.mintadownload')}}" method="POST" enctype="multipart/form-data" class="shadow-sm p-3 bg-white">
+<form action="{{route('kadiv.mintadownload')}}" method="POST" enctype="multipart/form-data" class="shadow-sm p-3 bg-white">
 			@csrf
 
 <label>Nama Pegawai</label><br>
