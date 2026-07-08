@@ -18,6 +18,7 @@
     <li><a href="{{route('pegawai.listberkala')}}"><span class="oi oi-book"></span>Jadwal Kepangkatan</a></li> 
 	<li><a href="{{route('setuser.index')}}"><span class="oi oi-tag"></span>Setup User</a></li>
 	<li><a href="{{route('notification-logs.index')}}"><span class="oi oi-spreadsheet"></span>Notification Log</a></li>
+	<li><a href="{{ route('admin.wa-setting.index') }}"><span class="oi oi-cog"></span>Pengaturan WA</a></li>
    
 	@if(auth()->user()->loguser == 'YA')
         <li><a href="{{route('Loguser.index')}}"><span class="oi oi-inbox"></span>Log Akses</a></li>

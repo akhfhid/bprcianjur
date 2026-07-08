@@ -8,6 +8,7 @@ use App\Helpers\NotificationLogHelper;
 use App\Helpers\WhatsAppHelper;
 use App\Pegawai;
 use App\peraturan;
+use App\WaSetting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -68,11 +69,19 @@ class PeraturanNotificationBlastService
             }
 
             $delaySeconds = $this->getDelaySeconds();
+            $delayPerCabang = $this->getDelayPerCabang();
             $isFirstSend = true;
+            $isFirstCabang = true;
             $total = 0;
 
             foreach ($recipientsByCabang as $cabangId => $recipients) {
                 $cabangName = optional(Cabang::find($cabangId))->name;
+
+                // Delay antar-cabang (setelah cabang pertama)
+                if (!$isFirstCabang && $delayPerCabang > 0) {
+                    sleep($delayPerCabang);
+                }
+                $isFirstCabang = false;
 
                 foreach ($recipients as $pegawai) {
                     if (!$this->isBlastEnabled()) {
@@ -96,7 +105,8 @@ class PeraturanNotificationBlastService
             Log::info('Blast notif peraturan selesai tanpa queue worker', [
                 'peraturan_id' => $peraturan->id,
                 'total' => $total,
-                'delay_seconds' => $delaySeconds,
+                'delay_per_person' => $delaySeconds,
+                'delay_per_cabang' => $delayPerCabang,
             ]);
         } catch (\Throwable $e) {
             Log::error('Gagal menjalankan blast notif peraturan tanpa queue worker', [
@@ -159,6 +169,19 @@ class PeraturanNotificationBlastService
             ->orderBy('recipient_count', 'asc')
             ->orderBy('cabang', 'asc')
             ->get();
+
+        // Ambil urutan cabang dari WaSetting
+        $setting = WaSetting::getSetting();
+        $orderedIds = $setting->getCabangOrderArray();
+
+        // Urutkan cabangStats berdasarkan urutan yang tersimpan, fallback ke count asc
+        if (!empty($orderedIds)) {
+            $orderMap = array_flip($orderedIds); // id => position
+            $cabangStats = $cabangStats->sortBy(function ($stat) use ($orderMap) {
+                $id = (int) ($stat->cabang ?? 0);
+                return $orderMap[$id] ?? PHP_INT_MAX;
+            })->values();
+        }
 
         $result = collect();
 
@@ -283,9 +306,25 @@ class PeraturanNotificationBlastService
      */
     protected function getDelaySeconds()
     {
-        $delaySeconds = (int) env('WA_THROTTLE_SECONDS', 10);
+        try {
+            $setting = WaSetting::getSetting();
+            return max(0, (int) $setting->delay_per_person);
+        } catch (\Throwable $e) {
+            return max(0, (int) env('WA_THROTTLE_SECONDS', 10));
+        }
+    }
 
-        return max(0, $delaySeconds);
+    /**
+     * @return int
+     */
+    protected function getDelayPerCabang()
+    {
+        try {
+            $setting = WaSetting::getSetting();
+            return max(0, (int) $setting->delay_per_cabang);
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Http\Controllers\PeraturanViewSessionController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderCutiNotificationController;
+use App\Http\Controllers\WaSettingController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -124,6 +125,16 @@ Route::middleware(['auth'])
         Route::put('/{id}', [CutiController::class, 'update'])->name('cuti.update');
         Route::delete('/{id}', [CutiController::class, 'destroy'])->name('cuti.destroy');
     });
+
+// WA Setting (Admin Only)
+Route::middleware(['auth'])->prefix('admin/wa-setting')->group(function () {
+    Route::get('/', [WaSettingController::class, 'index'])->name('admin.wa-setting.index');
+    Route::post('/delay', [WaSettingController::class, 'updateDelay'])->name('admin.wa-setting.delay');
+    Route::post('/env', [WaSettingController::class, 'updateEnv'])->name('admin.wa-setting.env');
+    Route::post('/test-send', [WaSettingController::class, 'testSend'])->name('admin.wa-setting.test-send');
+    Route::post('/cabang-order', [WaSettingController::class, 'updateCabangOrder'])->name('admin.wa-setting.cabang-order');
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::put('/users/{user}/activate', 'UserStatusController@activate')->name('users.activate');
 
