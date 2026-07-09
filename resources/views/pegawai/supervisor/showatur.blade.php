@@ -29,8 +29,15 @@
 	<div class="row wrapper">
 	
 
-                <div id="pdf-container" style="width: 100%;"></div>
-                <script>
+                @if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
+    <div id="pdf-container" style="width: 100%;"></div>
+@else
+    <div id="html-container" class="p-3" style="width: 100%; overflow-x: auto; background: white;">
+        {!! $peraturan->pdf !!}
+    </div>
+@endif
+                @if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
+<script>
                     const url = {!! json_encode(asset('storage/pdfs/' . trim($peraturan->pdf))) !!}; 
                     const container = document.getElementById('pdf-container'); 
                     async function renderPages(pdf) {
@@ -54,6 +61,7 @@
                         container.innerHTML = '<p class="text-danger">Gagal membuka PDF. Silakan hubungi admin.</p>';
                     });
                 </script>
+@endif
 </div>
 	<div class="text-center">
 	<div class="rounded mx-auto d-block">

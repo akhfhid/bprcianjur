@@ -27,8 +27,15 @@
 	</div>
 	<div class="row wrapper">
 				 
-                <div id="pdf-container" style="width: 1800px;"></div> <!-- Tempat untuk menampilkan PDF -->
-                <script>
+                @if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
+    <div id="pdf-container" style="width: 1800px;"></div>
+@else
+    <div id="html-container" class="p-3" style="width: 100%; overflow-x: auto; background: white;">
+        {!! $peraturan->pdf !!}
+    </div>
+@endif <!-- Tempat untuk menampilkan PDF -->
+                @if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
+<script>
                     const url = {!! json_encode(asset('storage/pdfs/' . trim($peraturan->pdf))) !!}; 
                     const container = document.getElementById('pdf-container'); 
 
@@ -54,6 +61,7 @@
                         console.error("Error loading PDF: ", error);
                     });
                 </script>
+@endif
 				</div>
 	<div class="text-center">
 	<div class="rounded mx-auto d-block">

@@ -88,7 +88,13 @@ document.addEventListener('contextmenu', function(e){
 
             <!-- PDF Container -->
             <div class="pdf-wrapper">
-                <div id="pdf-container"></div>
+                @if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
+    <div id="pdf-container"></div>
+@else
+    <div id="html-container" class="p-3" style="width: 100%; overflow-x: auto; background: white;">
+        {!! $peraturan->pdf !!}
+    </div>
+@endif
             </div>
 
             <!-- Footer Info -->
@@ -103,6 +109,7 @@ document.addEventListener('contextmenu', function(e){
     </div>
 </div>
 
+@if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
 <script>
 const url = {!! json_encode(asset('storage/pdfs/' . trim($peraturan->pdf))) !!};
 const container = document.getElementById('pdf-container');
@@ -129,6 +136,7 @@ pdfjsLib.getDocument(url).promise.then(function(pdf) {
     }
 });
 </script>
+@endif
 
 @endsection
 @include('peraturan.partials.activity_timer', ['peraturan' => $peraturan])

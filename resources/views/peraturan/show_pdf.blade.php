@@ -31,7 +31,13 @@
     <div class="container">
         <div>
             <div class="watermark">
-                <div id="pdf-container" style="width: 100%;"></div>
+                @if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
+    <div id="pdf-container" style="width: 100%;"></div>
+@else
+    <div id="html-container" class="p-3" style="width: 100%; overflow-x: auto; background: white;">
+        {!! $peraturan->pdf !!}
+    </div>
+@endif
             </div>
         </div>
         <br>
