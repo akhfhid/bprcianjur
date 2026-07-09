@@ -34,7 +34,7 @@
                 <div id="pdf-container" style="width: 1800px;"></div> <!-- Tempat untuk menampilkan PDF -->
 
                 <script>
-                    const url = '{{ asset('storage/pdfs/' . $peraturan->pdf) }}'; 
+                    const url = {!! json_encode(asset('storage/pdfs/' . trim($peraturan->pdf))) !!}; 
                     const container = document.getElementById('pdf-container'); 
 
                     async function renderPages(pdf) {

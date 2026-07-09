@@ -104,7 +104,7 @@ document.addEventListener('contextmenu', function(e){
 </div>
 
 <script>
-const url = '{{ asset('storage/pdfs/' . $peraturan->pdf) }}';
+const url = {!! json_encode(asset('storage/pdfs/' . trim($peraturan->pdf))) !!};
 const container = document.getElementById('pdf-container');
 
 pdfjsLib.getDocument(url).promise.then(function(pdf) {

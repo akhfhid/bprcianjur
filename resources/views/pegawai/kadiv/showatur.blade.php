@@ -31,7 +31,7 @@
 
                 <div id="pdf-container" style="width: 100%;"></div>
                 <script>
-                    const url = '{{ asset('storage/pdfs/' . $peraturan->pdf) }}'; 
+                    const url = {!! json_encode(asset('storage/pdfs/' . trim($peraturan->pdf))) !!}; 
                     const container = document.getElementById('pdf-container'); 
                     async function renderPages(pdf) {
                         const numPages = pdf.numPages;

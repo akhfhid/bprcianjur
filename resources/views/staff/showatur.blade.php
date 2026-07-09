@@ -33,7 +33,7 @@
                 <div id="pdf-container" style="width: 100%;"></div> <!-- Tempat untuk menampilkan PDF -->
 
                 <script>
-                    const url = '{{ asset('storage/pdfs/' . $peraturan->pdf) }}'; // Path ke PDF
+                    const url = {!! json_encode(asset('storage/pdfs/' . trim($peraturan->pdf))) !!}; // Path ke PDF
                     const container = document.getElementById('pdf-container'); // Tempat untuk menampilkan halaman-halaman PDF
 
                     // Fungsi untuk render halaman secara berurutan
