@@ -29,7 +29,9 @@ document.addEventListener('contextmenu', function(e){
     overflow-x: auto;
 }
 
-#pdf-container canvas {
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
     margin-bottom: 20px;
     border-radius: 6px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);

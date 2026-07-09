@@ -21,7 +21,12 @@
             content: 'Printed By {{ Auth::user()->name }} - {{ Auth::user()->email }} -{{ \Carbon\Carbon::now()->translatedFormat('d/m/Y') }}';
             position: absolute; bottom: 10px; top: 10px; right: 0; opacity: 0.5; font-size: 1.5em;
         }
-    </style>
+    
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
 </head>
 
 <body>

@@ -12,6 +12,12 @@
 </script>
 
 <hr class="my-3">
+<style>
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
 <div class="row mb-3">
     <div class="col-md-12 text-right">
         <a href="{{ route('staff.peraturan') }}" class="btn btn-primary btn-sm">Back</a>
@@ -28,7 +34,13 @@
                     {{ $time }}
                 </div>
             </div>
-            <div class="row wrapper">
+            <style>
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+<div class="row wrapper">
             	 
                 @if(preg_match('/\.pdf$/i', trim($peraturan->pdf)))
     <div id="pdf-container" style="width: 100%;"></div>

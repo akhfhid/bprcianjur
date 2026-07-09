@@ -27,7 +27,12 @@
             opacity:0,5;
             font-size: 1,5em;
         }
-    </style>
+    
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
     <div class="container">
         <div>
             <div class="watermark">

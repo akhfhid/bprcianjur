@@ -12,7 +12,13 @@
     </script>
 
     <hr class="my-3">
-    <div class="row mb-3">
+    <style>
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+<div class="row mb-3">
         <div class="col-md-12 text-right">
             <a href="{{ route('pincab.peraturan') }}" class="btn btn-primary btn-sm">Back</a>
         </div>
@@ -21,7 +27,13 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header">
-                <div class="row align-items-center">
+                <style>
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+<div class="row align-items-center">
                     <div class="col text-center">
                         <small>{{ Auth::user()->name }} - {{ Auth::user()->email }}</small><br>
                         {{ $time }}
@@ -61,15 +73,33 @@
                     <p class="text-muted small mb-4">Dokumen ini akan dicetak dengan watermark keamanan otomatis.</p>
 
                     <div class="bg-light p-3 rounded text-left small">
-                        <div class="row mb-1">
+                        <style>
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+<div class="row mb-1">
                             <div class="col-5 text-muted">Dicetak Oleh</div>
                             <div class="col-7 font-weight-bold">: {{ Auth::user()->name }}</div>
                         </div>
-                        <div class="row mb-1">
+                        <style>
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+<div class="row mb-1">
                             <div class="col-5 text-muted">Tanggal Cetak</div>
                             <div class="col-7 font-weight-bold">: <span id="modalDatePreview"></span></div>
                         </div>
-                        <div class="row">
+                        <style>
+#pdf-container canvas, #html-container img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+<div class="row">
                             <div class="col-5 text-muted">Watermark</div>
                             <div class="col-7 font-weight-bold text-success">: Aktif</div>
                         </div>
