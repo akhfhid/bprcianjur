@@ -30,18 +30,45 @@ class peraturanController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = peraturan::latest()->get();
+            $query = peraturan::query();
+            $kategori = $request->get('kategori');
 
-            return DataTables::of($data)
+            if ($kategori == 'internal') {
+                $query->whereIn('jenis_surat', ['SK', 'SE']);
+            } elseif ($kategori == 'external') {
+                $query->whereIn('jenis_surat', ['OJK', 'LPS', 'Lainnya']);
+            }
+
+            $jenis_surat = $request->get('jenis_surat');
+            if ($jenis_surat && $jenis_surat != 'all') {
+                $query->where('jenis_surat', $jenis_surat);
+            }
+
+            $sub_jenis = $request->get('sub_jenis');
+            if ($sub_jenis && $sub_jenis != 'all') {
+                $query->where('jenis_ojk', $sub_jenis);
+            }
+
+            $query->latest();
+
+            return DataTables::of($query)
                 ->addColumn('action', function ($data) {
-                    $button = '<a href="peraturan/' . $data->id . '/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>';
-                    $button .= '<a href="peraturan/' . $data->id . '"> <button class="btn btn-success btn-sm">Detail</button></a>';
-                    $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" data-id="' . $data->id . '" class="delete-btn btn btn-danger btn-sm">Delete</button>';
+                    $button = '<a href="peraturan/' . $data->id . '" class="btn btn-success btn-sm">Detail</a>';
+                    if (\Gate::allows('ADMIN')) {
+                        $button = '<a href="peraturan/' . $data->id . '/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>' . $button;
+                        $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" data-id="' . $data->id . '" class="delete-btn btn btn-danger btn-sm">Delete</button>';
+                    }
                     return $button;
                 })
+                ->addColumn('jenis_surat_label', function ($data) {
+                    return $data->jenis_surat ?? '-';
+                })
+                ->addColumn('jenis_ojk', function ($data) {
+                    return $data->jenis_ojk ?? '-';
+                })
                 ->editColumn('id', 'ID: {{ $id }}')
+                ->rawColumns(['action'])
                 ->make(true);
-            //return datatables()->of($data)->toJson();
         }
         return view('peraturan.index');
     }
@@ -52,6 +79,9 @@ class peraturanController extends Controller
      */
     public function create()
     {
+        if (!\Gate::allows('ADMIN')) {
+            abort(403, 'Hanya Admin yang dapat menambahkan peraturan.');
+        }
         return view('peraturan.create');
     }
 
@@ -63,6 +93,9 @@ class peraturanController extends Controller
      */
     public function store(Request $request)
     {
+        if (!\Gate::allows('ADMIN')) {
+            abort(403, 'Hanya Admin yang dapat menambahkan peraturan.');
+        }
         // $description=$request->get('description');
         // $dom = new \DomDocument();
         // $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
@@ -185,6 +218,9 @@ class peraturanController extends Controller
      */
     public function edit($id)
     {
+        if (!\Gate::allows('ADMIN')) {
+            abort(403, 'Hanya Admin yang dapat mengedit peraturan.');
+        }
         $edit_peraturan = \App\peraturan::findorFail($id);
         return view('peraturan.edit', ['peraturan' => $edit_peraturan]);
     }
@@ -198,9 +234,13 @@ class peraturanController extends Controller
      */
     public function simpanedit(Request $request, $id)
     {
+        if (!\Gate::allows('ADMIN')) {
+            abort(403, 'Hanya Admin yang dapat mengubah peraturan.');
+        }
         $edit_peraturan = \App\peraturan::findorFail($id);
         $description = $request->get('description');
         $description_save = '';
+
 
         if (!empty(trim($description))) {
             $dom = new \DomDocument('1.0', 'UTF-8');
@@ -266,6 +306,9 @@ class peraturanController extends Controller
      */
     public function destroy($id)
     {
+        if (!\Gate::allows('ADMIN')) {
+            abort(403, 'Hanya Admin yang dapat menghapus peraturan.');
+        }
         $peraturan = \App\peraturan::findOrFail($id);
         $peraturan->deleted_by = \Auth::id();
         $peraturan->save();
@@ -303,6 +346,9 @@ class peraturanController extends Controller
 
     public function deletePermanent($id)
     {
+        if (!\Gate::allows('ADMIN')) {
+            abort(403, 'Hanya Admin yang dapat menghapus peraturan secara permanen.');
+        }
         $peraturan = \App\peraturan::withTrashed()->findOrFail($id);
 
         // if($peraturan->trashed()){

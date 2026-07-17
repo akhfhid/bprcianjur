@@ -326,6 +326,7 @@
                 } else if (kategori === 'external') {
                     jenis.append('<option value="OJK">OJK</option>');
                     jenis.append('<option value="LPS">LPS</option>');
+                    jenis.append('<option value="Lainnya">Lainnya</option>');
                 }
             });
 

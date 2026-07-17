@@ -508,7 +508,7 @@ class StaffController extends Controller
             if ($kategori == 'internal') {
                 $query->whereIn('jenis_surat', ['SK', 'SE']);
             } elseif ($kategori == 'external') {
-                $query->whereIn('jenis_surat', ['OJK', 'LPS']);
+                $query->whereIn('jenis_surat', ['OJK', 'LPS', 'Lainnya']);
             }
 
             $jenis_surat = $request->get('jenis_surat');
@@ -516,7 +516,10 @@ class StaffController extends Controller
                 $query->where('jenis_surat', $jenis_surat);
             }
 
-            $sub_jenis = $request->get('jenis_ojk');
+            $sub_jenis = $request->get('sub_jenis'); // changed from $request->get('jenis_ojk') since in frontend request, we pass sub_jenis
+            if (!$sub_jenis) {
+                $sub_jenis = $request->get('jenis_ojk');
+            }
             if ($sub_jenis && $sub_jenis != 'all') {
                 $query->where('jenis_ojk', $sub_jenis); 
             }
@@ -528,8 +531,11 @@ class StaffController extends Controller
                     $btn .= '</div>';
                     return $btn;
                 })
+                ->addColumn('jenis_surat_label', function ($data) {
+                    return $data->jenis_surat ?? '-';
+                })
                 ->addColumn('jenis_ojk', function ($data) {
-                    return $data->sub_jenis ?? '-';
+                    return $data->jenis_ojk ?? '-';
                 })
                 ->editColumn('tglsk', function ($data) {
                     return $data->tglsk ? \Carbon\Carbon::parse($data->tglsk)->format('d/m/Y') : '-';

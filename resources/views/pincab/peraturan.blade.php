@@ -343,6 +343,7 @@
 						<tr>
 							<th>Nama Peraturan</th>
 							<th class="text-center">Nomor Peraturan</th>
+							<th class="text-center">Jenis</th>
 							<th class="text-center">Tanggal Peraturan</th>
 							<th class="text-center">Tanggal Laku</th>
 							<th id="colSubJenis" class="text-center" style="display:none;font-weight:bold;">Sub Jenis</th>
@@ -377,6 +378,7 @@
 			} else if (kategoriDipilih === "external") {
 				filter.append('<option value="OJK">OJK</option>');
 				filter.append('<option value="LPS">LPS</option>');
+				filter.append('<option value="Lainnya">Lainnya</option>');
 			}
 		}
 
@@ -392,10 +394,10 @@
 			}
 
 			if (showSubJenis) {
-				table.column(4).visible(true);
+				table.column(5).visible(true);
 				$('#colSubJenis').show();
 			} else {
-				table.column(4).visible(false);
+				table.column(5).visible(false);
 				$('#colSubJenis').hide();
 			}
 
@@ -447,6 +449,7 @@
 				serverSide: true,
 				ajax: {
 					url: "{{ route('pincab.peraturan') }}",
+					cache: false,
 					data: function (d) {
 						d.kategori = kategoriDipilih;
 						d.jenis_surat = jenisDipilih;
@@ -456,12 +459,13 @@
 				columns: [
 					{ data: "name", className: "nama-peraturan" },
 					{ data: "nosk", className: "text-center" },
+					{ data: "jenis_surat_label", className: "text-center" },
 					{ data: "tglsk", className: "text-center" },
 					{ data: "tgllaku", className: "text-center" },
 					{ data: "jenis_ojk", className: "text-center", visible: false },
 					{ data: "action", orderable: false, searchable: false, className: "text-center action-col" }
 				],
-				order: [[2, 'desc']],
+				order: [[3, 'desc']],
 				language: {
 					emptyTable: "Tidak ada data peraturan",
 					processing: "<div class='py-5'><i class='fas fa-spinner fa-spin fa-2x text-primary'></i></div>"

@@ -39,6 +39,7 @@
 				<tr align="center">
 					<th><b>Nama Peraturan</b></th>
 					<th><b>Nomor Surat Keputusan</b></th>
+					<th><b>Jenis</b></th>
 					<th><b>Tanggal Surat Keputusan</b></th>
 					<th><b>Tanggal Masa berlaku</b></th>
 					<th><b>Uraian</b></th>
@@ -50,6 +51,7 @@
 				<tr>
 					<td>{{$atur->name}}</td>
 					<td>{{$atur->nosk}}</td>
+					<td>{{$atur->jenis_surat ?? '-'}}</td>
 					<td>{{$atur->tglsk}}</td>
 					<td>{{$atur->tgllaku}}</td>
 					<td>{{$atur->uraian}}</td>

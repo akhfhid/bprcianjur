@@ -1328,7 +1328,7 @@ try {
             if ($kategori == 'internal') {
                 $query->whereIn('jenis_surat', ['SK', 'SE']);
             } elseif ($kategori == 'external') {
-                $query->whereIn('jenis_surat', ['OJK', 'LPS']);
+                $query->whereIn('jenis_surat', ['OJK', 'LPS', 'Lainnya']);
             }
 
             // 2. Logika Filter Jenis Surat Spesifik
@@ -1351,6 +1351,9 @@ try {
                     $btn .= '<a href="' . route('supervisor.showatur', $data->id) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a>';
                     $btn .= '</div>';
                     return $btn;
+                })
+                ->addColumn('jenis_surat_label', function ($data) {
+                    return $data->jenis_surat ?? '-';
                 })
                 ->editColumn('tglsk', function ($data) {
                     // Format Tanggal SK

@@ -1009,8 +1009,12 @@ public function cutiindex(Request $request)
         // Jika request AJAX (dari DataTables)
         if ($request->ajax()) {
             $query = \App\peraturan::query()
-                ->when($request->kategori, function ($q) use ($request) {
-                    $q->where('kategori', $request->kategori);
+                ->when($request->kategori && $request->kategori != 'all', function ($q) use ($request) {
+                    if ($request->kategori === 'internal') {
+                        $q->whereIn('jenis_surat', ['SK', 'SE']);
+                    } elseif ($request->kategori === 'external') {
+                        $q->whereIn('jenis_surat', ['OJK', 'LPS', 'Lainnya']);
+                    }
                 })
                 ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
                     $q->where('jenis_surat', $request->jenis_surat);
@@ -1025,6 +1029,9 @@ public function cutiindex(Request $request)
                     // Hanya tombol Detail sesuai permintaan
                     $btn = '<a href="' . route('kadiv.showatur', [$data->id]) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a>';
                     return $btn;
+                })
+                ->addColumn('jenis_surat_label', function ($data) {
+                    return $data->jenis_surat ?? '-';
                 })
                 ->addColumn('jenis_ojk', function ($data) {
                     return $data->jenis_ojk ?? '-';

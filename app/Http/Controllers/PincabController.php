@@ -1200,8 +1200,12 @@ class PincabController extends Controller
     {
         if ($request->ajax()) {
             $query = \App\peraturan::query()
-                ->when($request->kategori, function ($q) use ($request) {
-                    $q->where('kategori', $request->kategori);
+                ->when($request->kategori && $request->kategori != 'all', function ($q) use ($request) {
+                    if ($request->kategori === 'internal') {
+                        $q->whereIn('jenis_surat', ['SK', 'SE']);
+                    } elseif ($request->kategori === 'external') {
+                        $q->whereIn('jenis_surat', ['OJK', 'LPS', 'Lainnya']);
+                    }
                 })
                 ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
                     $q->where('jenis_surat', $request->jenis_surat);
@@ -1215,6 +1219,9 @@ class PincabController extends Controller
                 ->addColumn('action', function ($data) {
                     $btn = '<a href="' . route('pincab.showatur', [$data->id]) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a>';
                     return $btn;
+                })
+                ->addColumn('jenis_surat_label', function ($data) {
+                    return $data->jenis_surat ?? '-';
                 })
                 ->addColumn('jenis_ojk', function ($data) {
                     return $data->jenis_ojk ?? '-';
