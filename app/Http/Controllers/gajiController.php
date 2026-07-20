@@ -6,6 +6,16 @@ use Illuminate\Http\Request;
 
 class gajiController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!\Gate::allows('ADMIN') && !\Gate::allows('ADMIN_SDM')) {
+                abort(403, 'Unauthorized Action');
+            }
+            return $next($request);
+        });
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -52,10 +62,17 @@ class gajiController extends Controller
         $new_gaji->created_by = \Auth::user()->id;
         $new_gaji->save();
 
+        // Update pangkat and mkpang on pegawais table
+        $peg = \App\Pegawai::findOrFail($pegawai);
+        if ($request->has('pangkat')) {
+            $peg->pangkat = $request->get('pangkat');
+        }
+        if ($request->has('mkpang')) {
+            $peg->mkpang = $request->get('mkpang');
+        }
+        $peg->save();
+
         return redirect()->route('gaji.list',$pegawai)->with('status','Data Tunjangan Berhasil Ditambahkan');
-
-
-
     }
 
     /**
@@ -80,7 +97,34 @@ class gajiController extends Controller
         $gaji = \App\gaji::findOrFail($id);
         $pegawai = \App\Pegawai::where('id',$gaji['idpeg'])->first();
 
-        return view ('gaji.edit',['gaji'=>$gaji,'pegawai'=>$pegawai]);
+        $pangkats = \App\Pangkat::all();
+        $berkalas = \App\berkala::all();
+        
+        $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
+        $jabatan = \App\Jabatan::where('id', $pegawai['jabatan'])->first();
+        $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
+        $spegawai = \App\statuspeg::where('id', $pegawai['spegawai'])->first();
+        
+        $anak = \App\keluarga::where('pegawai_id', $pegawai['id'])->where('hubungan', 'Anak')->get();
+        $jumlahanak = count($anak);
+
+        $nikah = \App\Keluarga::where([['pegawai_id', $pegawai['id']], ['hubungan', 'Istri']])
+            ->orwhere([['pegawai_id', $pegawai['id']], ['hubungan', 'Suami']])
+            ->get();
+        $jumlahnikah = count($nikah);
+
+        return view ('gaji.edit',[
+            'gaji' => $gaji,
+            'pegawai' => $pegawai,
+            'pangkats' => $pangkats,
+            'berkalas' => $berkalas,
+            'cabang' => $cabang,
+            'jabatan' => $jabatan,
+            'tunkin' => $tunkin,
+            'spegawai' => $spegawai,
+            'jumlahanak' => $jumlahanak,
+            'jumlahnikah' => $jumlahnikah,
+        ]);
     }
 
     /**
@@ -93,15 +137,13 @@ class gajiController extends Controller
     public function update(Request $request, $id)
     {
         $gaji =\App\gaji::findOrFail($id);
-        $pegawai = \App\Pegawai::where('id',$gaji['idpeg'])->first();
-
-
         $pegawai = $request->get('idpeg');
         $bpjsks = $request->get('bpjsks');
         $bpjstk = $request->get('bpjstk');
         $jabatan = $request->get('jabatan');
         $pph = $request->get('pph21');
         $fungsi = $request->get('fungsi');
+        
         $gaji->idpeg = $pegawai;
         $gaji->bpjsks = $bpjsks;
         $gaji->bpjstk = $bpjstk;
@@ -110,6 +152,17 @@ class gajiController extends Controller
         $gaji->fungsi = $fungsi;
         $gaji->created_by = \Auth::user()->id;
         $gaji->save();
+
+        // Update pangkat and mkpang on pegawais table
+        $peg = \App\Pegawai::findOrFail($pegawai);
+        if ($request->has('pangkat')) {
+            $peg->pangkat = $request->get('pangkat');
+        }
+        if ($request->has('mkpang')) {
+            $peg->mkpang = $request->get('mkpang');
+        }
+        $peg->save();
+
         return redirect()->route('gaji.list',$pegawai)->with('status','Data Tunjangan Berhasil Diperbaharui');
     }
 
@@ -123,11 +176,37 @@ class gajiController extends Controller
     {
         //
     }
-     public function tambah($id)
+
+    public function tambah($id)
     {
-     $pegawai = \App\Pegawai::findOrFail($id);
+        $pegawai = \App\Pegawai::findOrFail($id);
+        $pangkats = \App\Pangkat::all();
+        $berkalas = \App\berkala::all();
         
-        return view('gaji.create',['pegawai'=>$pegawai]);    
+        $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
+        $jabatan = \App\Jabatan::where('id', $pegawai['jabatan'])->first();
+        $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
+        $spegawai = \App\statuspeg::where('id', $pegawai['spegawai'])->first();
+        
+        $anak = \App\keluarga::where('pegawai_id', $pegawai['id'])->where('hubungan', 'Anak')->get();
+        $jumlahanak = count($anak);
+
+        $nikah = \App\Keluarga::where([['pegawai_id', $pegawai['id']], ['hubungan', 'Istri']])
+            ->orwhere([['pegawai_id', $pegawai['id']], ['hubungan', 'Suami']])
+            ->get();
+        $jumlahnikah = count($nikah);
+
+        return view('gaji.create',[
+            'pegawai' => $pegawai,
+            'pangkats' => $pangkats,
+            'berkalas' => $berkalas,
+            'cabang' => $cabang,
+            'jabatan' => $jabatan,
+            'tunkin' => $tunkin,
+            'spegawai' => $spegawai,
+            'jumlahanak' => $jumlahanak,
+            'jumlahnikah' => $jumlahnikah,
+        ]);
     }
     public function list($id){
         $pegawai = \App\Pegawai::findorfail($id);

@@ -339,12 +339,14 @@
                 </table>
 
                 <hr class="my-3">
+                @if(\Gate::allows('ADMIN') || \Gate::allows('ADMIN_SDM'))
                 <div class="row mb-3">
                     <div class="col-md-12 text-right">
                         <a href="{{ route('gaji.list', $pegawai->id) }}" class="btn btn-info btn-sm">Manage Data Gaji
                         </a><br>
                     </div>
                 </div>
+                @endif
                 <table class="table table-bordered table-stripped">
                     <thead>
                         <tr align="center">
