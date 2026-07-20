@@ -79,7 +79,7 @@
 							<a class="nav-link bg-white text-dark shadow-sm border" href="{{route('kadiv.peraturan')}}">
 								<i class="fas fa-file-alt mr-1"></i> Published
 							</a>
-						@elseif(auth()->user()->roles == 'PATUH')
+						@elseif(auth()->user()->roles == 'PATUH' || auth()->user()->roles == 'ADMIN')
 							<a class="nav-link bg-white text-dark shadow-sm border" href="{{route('peraturan.index')}}">
 								<i class="fas fa-file-alt mr-1"></i> Published
 							</a>
@@ -157,7 +157,7 @@
 												<i class="fas fa-eye"></i>
 											</a>
 
-											@if(auth()->user()->roles == 'PATUH')
+											@if(auth()->user()->roles == 'PATUH' || auth()->user()->roles == 'ADMIN')
 												<a href="{{route('peraturan.restore', [$atur->id])}}" class="btn btn-success btn-sm"
 													data-toggle="tooltip" title="Restore">
 													<i class="fas fa-undo"></i>

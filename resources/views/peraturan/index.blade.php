@@ -301,14 +301,14 @@
             </div>
 
             <div class="d-flex gap-2">
-                @can('ADMIN')
+                @canany(['ADMIN', 'PATUH'])
                 <a href="{{ route('peraturan.trash') }}" class="btn btn-trash btn-modern">
                     <i class="fas fa-trash-alt mr-2"></i> Trash
                 </a>
                 <a href="{{ route('peraturan.create') }}" class="btn btn-primary-custom btn-modern">
                     <i class="fas fa-plus mr-2"></i> Tambah Baru
                 </a>
-                @endcan
+                @endcanany
             </div>
         </div>
 

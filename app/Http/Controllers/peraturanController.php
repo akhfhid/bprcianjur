@@ -21,7 +21,7 @@ class peraturanController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (gate::allows('PATUH')) {
+            if (gate::allows('PATUH') || gate::allows('ADMIN')) {
                 return $next($request);
             }
             abort(403, 'Anda tidak memiliki hak akses');
@@ -54,7 +54,7 @@ class peraturanController extends Controller
             return DataTables::of($query)
                 ->addColumn('action', function ($data) {
                     $button = '<a href="peraturan/' . $data->id . '" class="btn btn-success btn-sm">Detail</a>';
-                    if (\Gate::allows('ADMIN')) {
+                    if (\Gate::allows('ADMIN') || \Gate::allows('PATUH')) {
                         $button = '<a href="peraturan/' . $data->id . '/edit"> <button class="btn btn-primary btn-sm">Edit</button></a>' . $button;
                         $button .= '&nbsp;&nbsp;&nbsp;<button type="button" name="delete" data-id="' . $data->id . '" class="delete-btn btn btn-danger btn-sm">Delete</button>';
                     }
@@ -79,8 +79,8 @@ class peraturanController extends Controller
      */
     public function create()
     {
-        if (!\Gate::allows('ADMIN')) {
-            abort(403, 'Hanya Admin yang dapat menambahkan peraturan.');
+        if (!(\Gate::allows('ADMIN') || \Gate::allows('PATUH'))) {
+            abort(403, 'Hanya Admin atau Kepatuhan yang dapat menambahkan peraturan.');
         }
         return view('peraturan.create');
     }
@@ -93,8 +93,8 @@ class peraturanController extends Controller
      */
     public function store(Request $request)
     {
-        if (!\Gate::allows('ADMIN')) {
-            abort(403, 'Hanya Admin yang dapat menambahkan peraturan.');
+        if (!(\Gate::allows('ADMIN') || \Gate::allows('PATUH'))) {
+            abort(403, 'Hanya Admin atau Kepatuhan yang dapat menambahkan peraturan.');
         }
         // $description=$request->get('description');
         // $dom = new \DomDocument();
@@ -218,8 +218,8 @@ class peraturanController extends Controller
      */
     public function edit($id)
     {
-        if (!\Gate::allows('ADMIN')) {
-            abort(403, 'Hanya Admin yang dapat mengedit peraturan.');
+        if (!(\Gate::allows('ADMIN') || \Gate::allows('PATUH'))) {
+            abort(403, 'Hanya Admin atau Kepatuhan yang dapat mengedit peraturan.');
         }
         $edit_peraturan = \App\peraturan::findorFail($id);
         return view('peraturan.edit', ['peraturan' => $edit_peraturan]);
@@ -234,8 +234,8 @@ class peraturanController extends Controller
      */
     public function simpanedit(Request $request, $id)
     {
-        if (!\Gate::allows('ADMIN')) {
-            abort(403, 'Hanya Admin yang dapat mengubah peraturan.');
+        if (!(\Gate::allows('ADMIN') || \Gate::allows('PATUH'))) {
+            abort(403, 'Hanya Admin atau Kepatuhan yang dapat mengubah peraturan.');
         }
         $edit_peraturan = \App\peraturan::findorFail($id);
         $description = $request->get('description');
@@ -306,8 +306,8 @@ class peraturanController extends Controller
      */
     public function destroy($id)
     {
-        if (!\Gate::allows('ADMIN')) {
-            abort(403, 'Hanya Admin yang dapat menghapus peraturan.');
+        if (!(\Gate::allows('ADMIN') || \Gate::allows('PATUH'))) {
+            abort(403, 'Hanya Admin atau Kepatuhan yang dapat menghapus peraturan.');
         }
         $peraturan = \App\peraturan::findOrFail($id);
         $peraturan->deleted_by = \Auth::id();
@@ -346,8 +346,8 @@ class peraturanController extends Controller
 
     public function deletePermanent($id)
     {
-        if (!\Gate::allows('ADMIN')) {
-            abort(403, 'Hanya Admin yang dapat menghapus peraturan secara permanen.');
+        if (!(\Gate::allows('ADMIN') || \Gate::allows('PATUH'))) {
+            abort(403, 'Hanya Admin atau Kepatuhan yang dapat menghapus peraturan secara permanen.');
         }
         $peraturan = \App\peraturan::withTrashed()->findOrFail($id);
 
