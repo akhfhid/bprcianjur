@@ -126,7 +126,7 @@ header('Access-Control-Allow-Origin: localhost');
 		<tr align="center">
 					
 					<th>Gaji Pokok</b></th>
-					<th>Tunjangan Kemahalan</b></th>
+					<th>Klasifikasi Kantor</b></th>
 					<th>Tunjangan Jabatan</b></th>
 					<th>Tunjangan Istri</b></th>
 					<th>Tunjangan Anak</b></th>

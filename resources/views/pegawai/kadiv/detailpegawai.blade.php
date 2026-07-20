@@ -212,7 +212,7 @@
 		<tr align="center">
 					
 					<th><b>Gaji Pokok</b></th>
-					<th><b>Tunjangan Kemahalan</b></th>
+					<th><b>Klasifikasi Kantor</b></th>
 					<th><b>Tunjangan Jabatan</b></th>
 					<th><b>Tunjangan Istri</b></th>
 					<th><b>Tunjangan Anak</b></th>
