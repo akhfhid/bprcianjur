@@ -614,7 +614,7 @@ class SupervisorController extends Controller
         $jabatasan = $jabatan->atasan;
         $jabket = \App\jabatan::where('id', $jabatasan)->first();
         $jabketat = $jabatan->atasan;
-        $jmlcuti = $jumlahcuti + 1;
+        $jmlcuti = $jumlahcuti;
         if ($jeniscuti == 'Cuti Tahunan') {
             $new_cuti = new \App\ordercuti();
             $new_cuti->user_id = \Auth::user()->id;

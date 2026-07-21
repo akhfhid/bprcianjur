@@ -632,7 +632,7 @@ class PincabController extends Controller
         $jabatasan = $jabatan->atasan;
         $jabket = \App\jabatan::where('id', $jabatasan)->first();
         $jabketat = $jabket->atasan;
-        $jmlcuti = $jumlahcuti + 1;
+        $jmlcuti = $jumlahcuti;
 
         if ($jeniscuti == 'Cuti Wajib') {
             $new_cuti = new \App\ordercuti();
