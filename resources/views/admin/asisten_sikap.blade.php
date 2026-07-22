@@ -525,8 +525,8 @@
                                 <span class="chat-time">{{ isset($chat['timestamp']) ? \Carbon\Carbon::parse($chat['timestamp'])->format('H:i') : '' }}</span>
                             </div>
                             <!-- AI Message -->
-                            <div class="message-bubble message-assistant markdown-content">
-                                {!! $chat['assistant'] !!}
+                            <div class="message-bubble message-assistant">
+                                <div class="markdown-text">{!! $chat['assistant'] !!}</div>
                                 <span class="chat-time-assistant">{{ isset($chat['timestamp']) ? \Carbon\Carbon::parse($chat['timestamp'])->format('H:i') : '' }}</span>
                             </div>
                         @endforeach
@@ -573,12 +573,15 @@
             });
 
             // Parse existing assistant messages using marked.js
-            $('.markdown-content').each(function() {
+            $('.markdown-text').each(function() {
                 const rawMarkdown = $(this).html();
                 // Replace decoded entities if any, or just parse directly
                 const parsedHtml = marked.parse(rawMarkdown.replace(/&gt;/g, '>').replace(/&lt;/g, '<'));
                 $(this).html(parsedHtml);
             });
+            
+            // Ensure all links open in a new tab
+            $chatContainer.find('.message-assistant a').attr('target', '_blank');
 
             // Scroll to the bottom of chat history initially
             scrollToBottom();
@@ -619,17 +622,30 @@
                 $chatContainer.append(userBubbleHtml);
                 scrollToBottom();
 
-                // Append typing indicator
+                // Append thinking status indicator
                 const typingIndicatorId = 'typing-' + Date.now();
                 const typingHtml = `
-                    <div class="typing-indicator" id="${typingIndicatorId}">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
+                    <div class="typing-indicator" id="${typingIndicatorId}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; align-self: flex-start; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);">
+                        <div class="spinner-border spinner-border-sm text-indigo" role="status" style="width: 1rem; height: 1rem; color: #4f46e5;"></div>
+                        <span class="loading-status-text" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">🔍 Menganalisis kata kunci pertanyaan...</span>
                     </div>
                 `;
                 $chatContainer.append(typingHtml);
                 scrollToBottom();
+
+                // Set dynamic status cycle
+                const loadingStatuses = [
+                    "🔍 Menganalisis kata kunci pertanyaan...",
+                    "🗄️ Menghubungkan ke database peraturan BPR Cianjur...",
+                    "📄 Membuka dan mengekstraksi dokumen PDF terkait...",
+                    "🧠 Membaca isi peraturan resmi & menganalisis pasal...",
+                    "✍️ Memformulasikan jawaban resmi berdasarkan dokumen..."
+                ];
+                let statusIndex = 0;
+                const statusInterval = setInterval(function() {
+                    statusIndex = (statusIndex + 1) % loadingStatuses.length;
+                    $('#' + typingIndicatorId + ' .loading-status-text').text(loadingStatuses[statusIndex]);
+                }, 1500);
 
                 // AJAX Request to send message to controller
                 $.ajax({
@@ -639,7 +655,8 @@
                         message: userText
                     },
                     success: function(response) {
-                        // Remove typing indicator
+                        // Clear status interval and remove loader
+                        clearInterval(statusInterval);
                         $('#' + typingIndicatorId).remove();
 
                         if (response.success) {
@@ -647,16 +664,19 @@
                             const aiHtml = marked.parse(response.message);
                             const assistantBubbleHtml = `
                                 <div class="message-bubble message-assistant">
-                                    ${aiHtml}
+                                    <div class="markdown-text">${aiHtml}</div>
                                     <span class="chat-time-assistant">${timeString}</span>
                                 </div>
                             `;
                             $chatContainer.append(assistantBubbleHtml);
+                            // Open all links in a new tab
+                            $chatContainer.find('.message-assistant a').attr('target', '_blank');
                         } else {
                             appendErrorBubble('Gagal mendapatkan respon. Silakan coba kembali.');
                         }
                     },
                     error: function(xhr) {
+                        clearInterval(statusInterval);
                         $('#' + typingIndicatorId).remove();
                         const errorMsg = xhr.responseJSON && xhr.responseJSON.message 
                             ? xhr.responseJSON.message 
