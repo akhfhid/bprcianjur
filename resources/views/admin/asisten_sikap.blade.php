@@ -205,7 +205,7 @@
         }
 
         .message-bubble {
-            max-width: 75%;
+            max-width: 85%;
             padding: 14px 18px;
             border-radius: 16px;
             font-size: 0.925rem;
@@ -245,24 +245,42 @@
         }
 
         /* Markdown styles inside Assistant bubble */
-        .message-assistant p {
-            margin-bottom: 8px;
+        .markdown-text {
+            color: #334155;
+            font-size: 0.95rem;
         }
-        .message-assistant p:last-child {
+        .markdown-text p {
+            margin: 0 0 10px 0;
+            line-height: 1.6;
+        }
+        .markdown-text p:last-child {
             margin-bottom: 0;
+        }
+        .markdown-text ul, .markdown-text ol {
+            margin: 6px 0 10px 0;
+            padding-left: 20px;
+        }
+        .markdown-text li {
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        .markdown-text strong {
+            color: #0f172a;
+            font-weight: 600;
         }
 
         /* Link badges */
         .message-assistant a {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             background: #eff6ff;
             color: #2563eb;
             border: 1px solid #bfdbfe;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.85rem;
-            margin: 2px 0;
+            margin: 4px 2px;
             text-decoration: none;
             transition: all 0.2s;
         }
@@ -271,6 +289,25 @@
             background: #2563eb;
             color: #ffffff;
             border-color: #2563eb;
+        }
+
+        .chat-meta-assistant {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 8px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 6px;
+        }
+        
+        .chat-thinking-time {
+            font-style: italic;
+        }
+        
+        .chat-time-assistant {
+            margin-left: auto;
         }
 
         /* Input Panel */
@@ -527,7 +564,12 @@
                             <!-- AI Message -->
                             <div class="message-bubble message-assistant">
                                 <div class="markdown-text">{!! $chat['assistant'] !!}</div>
-                                <span class="chat-time-assistant">{{ isset($chat['timestamp']) ? \Carbon\Carbon::parse($chat['timestamp'])->format('H:i') : '' }}</span>
+                                <div class="chat-meta-assistant">
+                                    @if(isset($chat['thinking_time']) && $chat['thinking_time'] > 0)
+                                        <span class="chat-thinking-time">Waktu berpikir: {{ number_format($chat['thinking_time'], 1) }} detik</span>
+                                    @endif
+                                    <span class="chat-time-assistant">{{ isset($chat['timestamp']) ? \Carbon\Carbon::parse($chat['timestamp'])->format('H:i') : '' }}</span>
+                                </div>
                             </div>
                         @endforeach
                     @endif
@@ -622,75 +664,137 @@
                 $chatContainer.append(userBubbleHtml);
                 scrollToBottom();
 
-                // Append thinking status indicator
+                // Append thinking status indicator (No emojis)
                 const typingIndicatorId = 'typing-' + Date.now();
                 const typingHtml = `
                     <div class="typing-indicator" id="${typingIndicatorId}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; align-self: flex-start; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);">
                         <div class="spinner-border spinner-border-sm text-indigo" role="status" style="width: 1rem; height: 1rem; color: #4f46e5;"></div>
-                        <span class="loading-status-text" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">🔍 Menganalisis kata kunci pertanyaan...</span>
+                        <span class="loading-status-text" style="font-size: 0.85rem; color: #64748b; font-weight: 500;">Menganalisis kata kunci pertanyaan...</span>
                     </div>
                 `;
                 $chatContainer.append(typingHtml);
                 scrollToBottom();
 
-                // Set dynamic status cycle
-                const loadingStatuses = [
-                    "🔍 Menganalisis kata kunci pertanyaan...",
-                    "🗄️ Menghubungkan ke database peraturan BPR Cianjur...",
-                    "📄 Membuka dan mengekstraksi dokumen PDF terkait...",
-                    "🧠 Membaca isi peraturan resmi & menganalisis pasal...",
-                    "✍️ Memformulasikan jawaban resmi berdasarkan dokumen..."
-                ];
-                let statusIndex = 0;
-                const statusInterval = setInterval(function() {
-                    statusIndex = (statusIndex + 1) % loadingStatuses.length;
-                    $('#' + typingIndicatorId + ' .loading-status-text').text(loadingStatuses[statusIndex]);
-                }, 1500);
+                const startTime = performance.now();
 
-                // AJAX Request to send message to controller
+                function updateStatusText(text) {
+                    $('#' + typingIndicatorId + ' .loading-status-text').text(text);
+                }
+
+                // STEP 1: Analyze user request and query DB for matching documents
                 $.ajax({
-                    url: "{{ route('admin.asisten-sikap.chat') }}",
+                    url: "{{ route('admin.asisten-sikap.analyze') }}",
                     type: "POST",
-                    data: {
-                        message: userText
-                    },
-                    success: function(response) {
-                        // Clear status interval and remove loader
-                        clearInterval(statusInterval);
-                        $('#' + typingIndicatorId).remove();
-
-                        if (response.success) {
-                            // Parse markdown response using marked
-                            const aiHtml = marked.parse(response.message);
-                            const assistantBubbleHtml = `
-                                <div class="message-bubble message-assistant">
-                                    <div class="markdown-text">${aiHtml}</div>
-                                    <span class="chat-time-assistant">${timeString}</span>
-                                </div>
-                            `;
-                            $chatContainer.append(assistantBubbleHtml);
-                            // Open all links in a new tab
-                            $chatContainer.find('.message-assistant a').attr('target', '_blank');
-                        } else {
-                            appendErrorBubble('Gagal mendapatkan respon. Silakan coba kembali.');
+                    data: { message: userText },
+                    success: function(analyzeRes) {
+                        if (!analyzeRes.success) {
+                            cleanupAndShowError('Gagal menganalisis pertanyaan.');
+                            return;
                         }
+
+                        // If greeting, handle instantly
+                        if (analyzeRes.is_greeting) {
+                            const duration = ((performance.now() - startTime) / 1000).toFixed(1);
+                            callChatApi(userText, '', duration);
+                            return;
+                        }
+
+                        // If no regulations found, go straight to chat completion (fast out-of-context response)
+                        if (!analyzeRes.regulations || analyzeRes.regulations.length === 0) {
+                            updateStatusText('Memformulasikan jawaban...');
+                            const duration = ((performance.now() - startTime) / 1000).toFixed(1);
+                            callChatApi(userText, '', duration);
+                            return;
+                        }
+
+                        // If there are matched regulations, display real-time extraction names
+                        const docNames = analyzeRes.regulations.map(r => r.name).join(', ');
+                        updateStatusText(`Mengekstraksi dokumen: ${docNames}...`);
+
+                        // STEP 2: Extract content from matching files (PDF/Images OCR)
+                        $.ajax({
+                            url: "{{ route('admin.asisten-sikap.extract') }}",
+                            type: "POST",
+                            data: {
+                                regulation_ids: analyzeRes.regulations.map(r => r.id),
+                                keywords: analyzeRes.keywords
+                            },
+                            success: function(extractRes) {
+                                if (!extractRes.success) {
+                                    cleanupAndShowError('Gagal membaca isi dokumen peraturan.');
+                                    return;
+                                }
+
+                                // STEP 3: Complete response via Mistral API
+                                updateStatusText('Memformulasikan jawaban...');
+                                const duration = ((performance.now() - startTime) / 1000).toFixed(1);
+                                callChatApi(userText, extractRes.context, duration);
+                            },
+                            error: function() {
+                                cleanupAndShowError('Gagal mengekstraksi data peraturan.');
+                            }
+                        });
                     },
-                    error: function(xhr) {
-                        clearInterval(statusInterval);
-                        $('#' + typingIndicatorId).remove();
-                        const errorMsg = xhr.responseJSON && xhr.responseJSON.message 
-                            ? xhr.responseJSON.message 
-                            : 'Terjadi kesalahan sistem. Silakan coba beberapa saat lagi.';
-                        appendErrorBubble(errorMsg);
-                    },
-                    complete: function() {
-                        // Re-enable inputs
-                        $messageInput.prop('disabled', false);
-                        $btnSend.prop('disabled', false);
-                        $messageInput.focus();
-                        scrollToBottom();
+                    error: function() {
+                        cleanupAndShowError('Gagal memulai pemrosesan pertanyaan.');
                     }
                 });
+
+                function callChatApi(message, context, initialDuration) {
+                    $.ajax({
+                        url: "{{ route('admin.asisten-sikap.chat') }}",
+                        type: "POST",
+                        data: {
+                            message: message,
+                            context: context,
+                            thinking_time: initialDuration
+                        },
+                        success: function(chatRes) {
+                            $('#' + typingIndicatorId).remove();
+
+                            if (chatRes.success) {
+                                // Calculate total thinking time
+                                const totalDuration = ((performance.now() - startTime) / 1000).toFixed(1);
+                                const aiHtml = marked.parse(chatRes.message);
+                                const assistantBubbleHtml = `
+                                    <div class="message-bubble message-assistant">
+                                        <div class="markdown-text">${aiHtml}</div>
+                                        <div class="chat-meta-assistant">
+                                            <span class="chat-thinking-time">Waktu berpikir: ${totalDuration} detik</span>
+                                            <span class="chat-time-assistant">${timeString}</span>
+                                        </div>
+                                    </div>
+                                `;
+                                $chatContainer.append(assistantBubbleHtml);
+                                $chatContainer.find('.message-assistant a').attr('target', '_blank');
+                            } else {
+                                appendErrorBubble('Gagal mendapatkan jawaban dari asisten.');
+                            }
+                        },
+                        error: function(xhr) {
+                            $('#' + typingIndicatorId).remove();
+                            const errorMsg = xhr.responseJSON && xhr.responseJSON.message 
+                                ? xhr.responseJSON.message 
+                                : 'Terjadi kesalahan sistem saat memproses jawaban.';
+                            appendErrorBubble(errorMsg);
+                        },
+                        complete: function() {
+                            $messageInput.prop('disabled', false);
+                            $btnSend.prop('disabled', false);
+                            $messageInput.focus();
+                            scrollToBottom();
+                        }
+                    });
+                }
+
+                function cleanupAndShowError(msg) {
+                    $('#' + typingIndicatorId).remove();
+                    appendErrorBubble(msg);
+                    $messageInput.prop('disabled', false);
+                    $btnSend.prop('disabled', false);
+                    $messageInput.focus();
+                    scrollToBottom();
+                }
             });
 
             // Reset Chat Action

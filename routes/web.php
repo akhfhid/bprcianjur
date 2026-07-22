@@ -157,6 +157,8 @@ route::get('Kepatuhan/Peraturan/Log/Export', 'KepatuhanController@exportLoguser'
 route::middleware(['auth'])->group(function () {
     // Asisten Sikap AI Routes
     Route::get('/admin/asisten-sikap', 'AsistenSikapController@index')->name('admin.asisten-sikap.index');
+    Route::post('/admin/asisten-sikap/analyze', 'AsistenSikapController@analyze')->name('admin.asisten-sikap.analyze');
+    Route::post('/admin/asisten-sikap/extract', 'AsistenSikapController@extract')->name('admin.asisten-sikap.extract');
     Route::post('/admin/asisten-sikap/chat', 'AsistenSikapController@chat')->name('admin.asisten-sikap.chat');
     Route::post('/admin/asisten-sikap/reset', 'AsistenSikapController@reset')->name('admin.asisten-sikap.reset');
 

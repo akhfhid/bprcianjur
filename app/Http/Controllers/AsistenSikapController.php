@@ -36,21 +36,32 @@ class AsistenSikapController extends Controller
     }
 
     /**
-     * Handle the chat request.
+     * STEP 1: Analyze user query and match database regulations
      */
-    public function chat(Request $request)
+    public function analyze(Request $request)
     {
         $request->validate([
             'message' => 'required|string|max:1000',
         ]);
 
         $userMessage = $request->get('message');
-        $apiKey = env('MISTRAL_API_KEY', 'GysR79wNoYf9i763EAlv8Q58VcrPwhCq');
+        $cleanMessage = trim(strtolower($userMessage));
 
-        // 1. Extract keywords for RAG
+        // Quick check for standard greetings
+        $greetings = ['hi', 'halo', 'hello', 'hey', 'p', 'test', 'tes', 'pagi', 'siang', 'sore', 'malam', 'assalamualaikum', 'kum'];
+        if (in_array($cleanMessage, $greetings)) {
+            return response()->json([
+                'success' => true,
+                'is_greeting' => true,
+                'message' => 'Halo! Saya adalah Asisten Sikap AI BPR Cianjur. Ada yang bisa saya bantu mengenai peraturan perusahaan?',
+                'regulations' => [],
+                'keywords' => []
+            ]);
+        }
+
+        // Extract search keywords
         $keywords = $this->getKeywords($userMessage);
 
-        // 2. Query regulations based on keywords
         $matchedPeraturans = collect();
         if (!empty($keywords)) {
             $queryBuilder = peraturan::query();
@@ -61,90 +72,131 @@ class AsistenSikapController extends Controller
                       ->orWhere('nosk', 'LIKE', "%$keyword%");
                 }
             });
-            $matchedPeraturans = $queryBuilder->limit(3)->get(['id', 'name', 'nosk', 'tglsk', 'kategori', 'jenis_surat', 'pdf', 'uraian']);
+            // Fetch relevant document meta
+            $matchedPeraturans = $queryBuilder->limit(3)->get(['id', 'name', 'nosk', 'tglsk', 'kategori', 'pdf']);
         }
 
-        // 3. Build context by reading actual document content
-        $context = "";
-        $docContextList = [];
-
-        if ($matchedPeraturans->isNotEmpty()) {
-            foreach ($matchedPeraturans as $p) {
-                $docInfo = [
-                    'id' => $p->id,
-                    'name' => $p->name,
-                    'nosk' => $p->nosk,
-                    'tglsk' => $p->tglsk,
-                    'kategori' => $p->kategori,
-                    'content' => null,
-                    'content_type' => 'none',
-                ];
-
-                $isPdf = !empty($p->pdf) && preg_match('/\.pdf$/i', trim($p->pdf));
-                $isImageHtml = !empty($p->pdf) && preg_match('/<img/i', $p->pdf);
-
-                if ($isPdf) {
-                    // PDF file - try to extract text with Python
-                    $pdfPath = storage_path('app/public/pdfs/' . basename($p->pdf));
-                    if (file_exists($pdfPath)) {
-                        $pythonScript = app_path('Helpers/extract_pdf_pages.py');
-                        $pythonCmd = DIRECTORY_SEPARATOR === '/' ? 'python3' : 'python';
-                        $command = "$pythonCmd " . escapeshellarg($pythonScript)
-                            . " " . escapeshellarg($pdfPath)
-                            . " " . escapeshellarg(implode(' ', $keywords))
-                            . " 2>&1";
-                        $output = shell_exec($command);
-                        if ($output && stripos($output, 'Error') === false && strlen(trim($output)) > 30) {
-                            $docInfo['content'] = substr(trim($output), 0, 5000);
-                            $docInfo['content_type'] = 'pdf_text';
-                        }
-                    }
-                    if ($docInfo['content'] === null) {
-                        $docInfo['content'] = "Dokumen ini tersimpan sebagai file PDF (" . basename($p->pdf) . "). File belum dapat diekstrak pada server ini. Admin bisa melihat dokumen resminya pada tautan yang disediakan.";
-                        $docInfo['content_type'] = 'pdf_not_found';
-                    }
-
-                } elseif ($isImageHtml) {
-                    // Scanned image-based document - extract image URLs and use Mistral Vision
-                    $imageUrls = $this->extractImageUrls($p->pdf);
-
-                    if (!empty($imageUrls)) {
-                        $visionText = $this->readImagesWithMistralVision($imageUrls, $apiKey, $userMessage);
-                        if ($visionText) {
-                            $docInfo['content'] = $visionText;
-                            $docInfo['content_type'] = 'vision_ocr';
-                        } else {
-                            $docInfo['content'] = "Dokumen ini tersimpan sebagai gambar scan (" . count($imageUrls) . " halaman). Pembacaan gambar tidak berhasil. Silakan buka tautan untuk melihat dokumen aslinya.";
-                            $docInfo['content_type'] = 'image_failed';
-                        }
-                    } else {
-                        $docInfo['content'] = "Dokumen tidak memiliki konten teks yang dapat dibaca.";
-                        $docInfo['content_type'] = 'empty';
-                    }
-
-                } else {
-                    // Plain text or empty uraian
-                    $rawText = !empty($p->pdf) ? strip_tags($p->pdf) : strip_tags($p->uraian ?? '');
-                    $rawText = trim($rawText);
-                    if (strlen($rawText) > 20) {
-                        $docInfo['content'] = substr($rawText, 0, 5000);
-                        $docInfo['content_type'] = 'plain_text';
-                    } else {
-                        $docInfo['content'] = "Tidak ada isi teks yang tersedia untuk dokumen ini. Silakan buka tautan untuk melihat dokumen.";
-                        $docInfo['content_type'] = 'empty';
-                    }
-                }
-
-                $docContextList[] = $docInfo;
+        $regulationsList = [];
+        foreach ($matchedPeraturans as $p) {
+            $isPdf = !empty($p->pdf) && preg_match('/\.pdf$/i', trim($p->pdf));
+            $isImageHtml = !empty($p->pdf) && preg_match('/<img/i', $p->pdf);
+            
+            $type = 'text';
+            if ($isPdf) {
+                $type = 'pdf';
+            } elseif ($isImageHtml) {
+                $type = 'image';
             }
 
-            // Build the final context string
+            $regulationsList[] = [
+                'id' => $p->id,
+                'name' => $p->name,
+                'nosk' => $p->nosk,
+                'type' => $type
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'is_greeting' => false,
+            'keywords' => $keywords,
+            'regulations' => $regulationsList
+        ]);
+    }
+
+    /**
+     * STEP 2: Extract text from matched regulations (Python PDF or Vision OCR)
+     */
+    public function extract(Request $request)
+    {
+        $request->validate([
+            'regulation_ids' => 'required|array',
+            'keywords' => 'nullable|array'
+        ]);
+
+        $regulationIds = $request->get('regulation_ids');
+        $keywords = $request->get('keywords', []);
+        $apiKey = env('MISTRAL_API_KEY', 'GysR79wNoYf9i763EAlv8Q58VcrPwhCq');
+
+        $docContextList = [];
+        $matchedPeraturans = peraturan::whereIn('id', $regulationIds)->get(['id', 'name', 'nosk', 'tglsk', 'kategori', 'pdf', 'uraian']);
+
+        foreach ($matchedPeraturans as $p) {
+            $docInfo = [
+                'id' => $p->id,
+                'name' => $p->name,
+                'nosk' => $p->nosk,
+                'tglsk' => $p->tglsk,
+                'kategori' => $p->kategori,
+                'content' => null,
+                'content_type' => 'none',
+            ];
+
+            $isPdf = !empty($p->pdf) && preg_match('/\.pdf$/i', trim($p->pdf));
+            $isImageHtml = !empty($p->pdf) && preg_match('/<img/i', $p->pdf);
+
+            if ($isPdf) {
+                $pdfPath = storage_path('app/public/pdfs/' . basename($p->pdf));
+                if (file_exists($pdfPath)) {
+                    $pythonScript = app_path('Helpers/extract_pdf_pages.py');
+                    $pythonCmd = DIRECTORY_SEPARATOR === '/' ? 'python3' : 'python';
+                    $command = "$pythonCmd " . escapeshellarg($pythonScript)
+                        . " " . escapeshellarg($pdfPath)
+                        . " " . escapeshellarg(implode(' ', $keywords))
+                        . " 2>&1";
+                    $output = shell_exec($command);
+                    if ($output && stripos($output, 'Error') === false && strlen(trim($output)) > 30) {
+                        $docInfo['content'] = substr(trim($output), 0, 5000);
+                        $docInfo['content_type'] = 'pdf_text';
+                    }
+                }
+                if ($docInfo['content'] === null) {
+                    $docInfo['content'] = "Dokumen ini tersimpan sebagai file PDF (" . basename($p->pdf) . "). File belum dapat diekstrak pada server ini. Admin bisa melihat dokumen resminya pada tautan yang disediakan.";
+                    $docInfo['content_type'] = 'pdf_not_found';
+                }
+
+            } elseif ($isImageHtml) {
+                $imageUrls = $this->extractImageUrls($p->pdf);
+                if (!empty($imageUrls)) {
+                    // Vision model call
+                    $visionText = $this->readImagesWithMistralVision($imageUrls, $apiKey);
+                    if ($visionText) {
+                        $docInfo['content'] = $visionText;
+                        $docInfo['content_type'] = 'vision_ocr';
+                    } else {
+                        $docInfo['content'] = "Dokumen ini tersimpan sebagai gambar scan (" . count($imageUrls) . " halaman). Pembacaan gambar tidak berhasil. Silakan buka tautan untuk melihat dokumen aslinya.";
+                        $docInfo['content_type'] = 'image_failed';
+                    }
+                } else {
+                    $docInfo['content'] = "Dokumen tidak memiliki konten teks yang dapat dibaca.";
+                    $docInfo['content_type'] = 'empty';
+                }
+
+            } else {
+                $rawText = !empty($p->pdf) ? strip_tags($p->pdf) : strip_tags($p->uraian ?? '');
+                $rawText = trim($rawText);
+                if (strlen($rawText) > 20) {
+                    $docInfo['content'] = substr($rawText, 0, 5000);
+                    $docInfo['content_type'] = 'plain_text';
+                } else {
+                    $docInfo['content'] = "Tidak ada isi teks yang tersedia untuk dokumen ini. Silakan buka tautan untuk melihat dokumen.";
+                    $docInfo['content_type'] = 'empty';
+                }
+            }
+
+            $docContextList[] = $docInfo;
+        }
+
+        // Build context string
+        $context = "";
+        if (!empty($docContextList)) {
             $context .= "Berikut adalah isi resmi dokumen peraturan BPR Cianjur yang paling relevan.\n";
-            $context .= "PERINTAH KETAT: Jawab HANYA berdasarkan isi dokumen di bawah ini. JANGAN mengarang, mengira-ngira, atau menambah informasi dari luar dokumen ini.\n";
+            $context .= "PERINTAH KETAT: Jawab HANYA berdasarkan isi dokumen di bawah ini. JANGAN mengarang atau menambah informasi dari luar dokumen ini.\n";
+            $context .= "JANGAN menggunakan emoji di dalam jawaban Anda.\n";
             $context .= "Jika informasi spesifik tidak ada dalam dokumen, katakan dengan jujur bahwa detailnya tidak tersedia pada dokumen yang berhasil dibaca.\n\n";
 
             foreach ($docContextList as $doc) {
-                $context .= "═══════════════════════════════════════════\n";
+                $context .= "===========================================\n";
                 $context .= "DOKUMEN ID: {$doc['id']}\n";
                 $context .= "Judul: \"{$doc['name']}\"\n";
                 $context .= "NoSK: {$doc['nosk']} | Tanggal: {$doc['tglsk']} | Kategori: {$doc['kategori']}\n";
@@ -157,22 +209,46 @@ class AsistenSikapController extends Controller
             $context .= "1. Kutip langsung dari isi dokumen di atas. Sebutkan pasal/ayat/poin jika ada.\n";
             $context .= "2. Setiap peraturan yang disebutkan WAJIB disertai tautan Markdown: [Judul (NoSK: xxx)](/peraturan/{id})\n";
             $context .= "3. Gunakan format yang rapi dengan bullet points untuk detail.\n";
-
-        } else {
-            $context = "Tidak ditemukan dokumen peraturan yang cocok untuk kata kunci ini di database BPR Cianjur.\n";
-            $context .= "Informasikan kepada user bahwa dokumen tidak ditemukan dan minta kata kunci yang lebih spesifik.\n";
         }
 
-        // 4. Construct System Prompt
+        return response()->json([
+            'success' => true,
+            'context' => $context
+        ]);
+    }
+
+    /**
+     * STEP 3: Handle final completion chat request with Mistral AI
+     */
+    public function chat(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+            'context' => 'nullable|string',
+            'thinking_time' => 'nullable|numeric'
+        ]);
+
+        $userMessage = $request->get('message');
+        $context = $request->get('context', '');
+        $thinkingTime = $request->get('thinking_time', 0.0);
+        $apiKey = env('MISTRAL_API_KEY', 'GysR79wNoYf9i763EAlv8Q58VcrPwhCq');
+
+        // Construct System Prompt
         $systemPrompt  = "Anda adalah 'Asisten Sikap AI', asisten resmi PT BPR Cianjur yang membantu Admin memahami peraturan dan kebijakan perusahaan.\n";
-        $systemPrompt .= "Gunakan Bahasa Indonesia yang formal namun mudah dipahami.\n\n";
+        $systemPrompt .= "Gunakan Bahasa Indonesia yang formal namun mudah dipahami. JANGAN menggunakan emoji di dalam jawaban Anda.\n\n";
         $systemPrompt .= "ATURAN MUTLAK:\n";
         $systemPrompt .= "1. Jawaban HARUS berdasarkan dokumen resmi yang disediakan dalam Data Context.\n";
         $systemPrompt .= "2. Jika data tidak ada dalam dokumen, katakan dengan jelas: 'Informasi ini tidak ditemukan dalam dokumen resmi yang tersedia.'\n";
-        $systemPrompt .= "3. Jangan menjawab pertanyaan di luar topik peraturan/kebijakan BPR Cianjur.\n\n";
-        $systemPrompt .= "Data Context Dokumen Resmi:\n" . $context;
+        $systemPrompt .= "3. Jangan menjawab pertanyaan di luar topik peraturan/kebijakan BPR Cianjur.\n";
+        $systemPrompt .= "4. JANGAN gunakan emoji apapun.\n\n";
+        
+        if (!empty($context)) {
+            $systemPrompt .= "Data Context Dokumen Resmi:\n" . $context;
+        } else {
+            $systemPrompt .= "Data Context Dokumen Resmi:\nTidak ditemukan dokumen peraturan yang cocok di database BPR Cianjur.\nInformasikan kepada user bahwa dokumen tidak ditemukan dan minta kata kunci yang lebih spesifik.\n";
+        }
 
-        // 5. Manage conversation history (per user ID)
+        // Manage conversation history (per user ID)
         $sessionKey = 'asisten_sikap_chat_history_' . \Auth::id();
         $history = session()->get($sessionKey, []);
 
@@ -185,7 +261,7 @@ class AsistenSikapController extends Controller
         }
         $messages[] = ['role' => 'user', 'content' => $userMessage];
 
-        // 6. Call Mistral Chat API
+        // Call Mistral Chat API
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
@@ -205,14 +281,23 @@ class AsistenSikapController extends Controller
                 $aiResponse = $result['choices'][0]['message']['content']
                     ?? 'Maaf, saya tidak menerima respon yang valid dari server AI.';
 
+                // Remove any accidental emojis from response if any
+                $aiResponse = $this->removeEmojis($aiResponse);
+
+                // Add to history with thinking time
                 $history[] = [
                     'user' => $userMessage,
                     'assistant' => $aiResponse,
                     'timestamp' => date('c'),
+                    'thinking_time' => $thinkingTime
                 ];
                 session()->put($sessionKey, $history);
 
-                return response()->json(['success' => true, 'message' => $aiResponse]);
+                return response()->json([
+                    'success' => true, 
+                    'message' => $aiResponse,
+                    'thinking_time' => $thinkingTime
+                ]);
             } else {
                 Log::error('Mistral API Chat Error', [
                     'status' => $response->status(),
@@ -244,7 +329,6 @@ class AsistenSikapController extends Controller
         
         $path = $parsedUrl['path'];
         
-        // In Laravel, /storage/ maps to storage/app/public/
         if (strpos($path, '/storage/') === 0) {
             $relativePath = substr($path, 9);
             
@@ -266,16 +350,14 @@ class AsistenSikapController extends Controller
      * Use Mistral Vision (pixtral) to read scanned document images.
      * Sends up to 4 images (pages) and gets the OCR text.
      */
-    private function readImagesWithMistralVision(array $imageUrls, string $apiKey, string $userQuestion): ?string
+    private function readImagesWithMistralVision(array $imageUrls, string $apiKey): ?string
     {
-        // Limit to first 4 pages to stay within token limits
         $imageUrls = array_slice($imageUrls, 0, 4);
         
-        // Build multimodal message content
         $content = [];
         $content[] = [
             'type' => 'text',
-            'text' => "Baca dan ekstrak SEMUA teks dari gambar-gambar dokumen resmi peraturan perusahaan berikut ini dengan akurat dan lengkap. Sertakan semua pasal, ayat, poin, angka, dan ketentuan yang tertulis. Pertanyaan yang akan dijawab berdasarkan dokumen ini: \"{$userQuestion}\""
+            'text' => "Baca dan ekstrak SEMUA teks dari gambar-gambar dokumen resmi peraturan perusahaan berikut ini dengan akurat dan lengkap. Sertakan semua pasal, ayat, poin, angka, dan ketentuan yang tertulis."
         ];
         
         foreach ($imageUrls as $url) {
@@ -299,7 +381,6 @@ class AsistenSikapController extends Controller
                     'image_url' => ['url' => $dataUrl],
                 ];
             } else {
-                // Fallback to URL if file doesn't exist locally
                 $content[] = [
                     'type' => 'image_url',
                     'image_url' => ['url' => $url],
@@ -342,7 +423,6 @@ class AsistenSikapController extends Controller
 
     /**
      * Extract all image URLs from stored HTML content.
-     * Returns absolute URLs using APP_URL config.
      */
     private function extractImageUrls(string $html): array
     {
@@ -352,7 +432,6 @@ class AsistenSikapController extends Controller
         $appUrl = rtrim(config('app.url', 'http://localhost'), '/');
         
         foreach ($matches[1] as $src) {
-            // Normalize to absolute URL
             if (strpos($src, 'http') === 0) {
                 $urls[] = $src;
             } else {
@@ -394,7 +473,9 @@ class AsistenSikapController extends Controller
             'bahwa', 'secara', 'akan', 'telah', 'sudah', 'karena', 'jika', 'maka', 'namun', 'tetapi', 'saja',
             'juga', 'peraturan', 'mengenai', 'terkait', 'tolong', 'jelaskan', 'coba', 'sebutkan', 'tampilkan',
             'mencari', 'butuh', 'info', 'berapa', 'hari', 'tahun', 'durasi', 'lama', 'waktu', 'dalam', 'setahun',
-            'ada', 'berapakah', 'berikan', 'detail', 'rincian',
+            'ada', 'berapakah', 'berikan', 'detail', 'rincian', 'cara', 'membuat', 'buat', 'aplikasi', 'sistem',
+            'penggunaan', 'tata', 'tentang', 'bagaimana', 'adalah', 'seperti', 'yaitu', 'yakni', 'sebuah', 'suatu',
+            'oleh', 'kepada', 'pada'
         ];
 
         $cleanQuery = preg_replace('/[^\w\s]/u', '', strtolower($query));
@@ -408,5 +489,45 @@ class AsistenSikapController extends Controller
             }
         }
         return array_unique($keywords);
+    }
+
+    /**
+     * Helper function to strip emojis from text.
+     */
+    private function removeEmojis(string $string): string
+    {
+        // Match Emoticons
+        $regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
+        $string = preg_replace($regexEmoticons, '', $string);
+
+        // Match Miscellaneous Symbols and Pictographs
+        $regexSymbols = '/[\x{1F300}-\x{1F5FF}]/u';
+        $string = preg_replace($regexSymbols, '', $string);
+
+        // Match Transport and Map Symbols
+        $regexTransport = '/[\x{1F680}-\x{1F6FF}]/u';
+        $string = preg_replace($regexTransport, '', $string);
+
+        // Match Miscellaneous Symbols
+        $regexMisc = '/[\x{2600}-\x{26FF}]/u';
+        $string = preg_replace($regexMisc, '', $string);
+
+        // Match Dingbats
+        $regexDingbats = '/[\x{2700}-\x{27BF}]/u';
+        $string = preg_replace($regexDingbats, '', $string);
+
+        // Match Enclosed Alphanumeric Supplement
+        $regexEnclosed = '/[\x{1F100}-\x{1F1FF}]/u';
+        $string = preg_replace($regexEnclosed, '', $string);
+
+        // Match Additional emoticons/symbols
+        $regexAdd = '/[\x{1F900}-\x{1F9FF}]/u';
+        $string = preg_replace($regexAdd, '', $string);
+
+        // Match Supplemental Symbols and Pictographs
+        $regexSupp = '/[\x{1FA00}-\x{1FA6F}]/u';
+        $string = preg_replace($regexSupp, '', $string);
+
+        return $string;
     }
 }
