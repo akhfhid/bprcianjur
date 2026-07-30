@@ -78,18 +78,16 @@ header('Access-Control-Allow-Origin: localhost');
                     {{ Auth::user()->name }}
                 </button>
 
-                <div class="dropdown-menu dropdown-menu-right" id="navbar-dropdown">
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbar-dropdown">
                     <a href="#" class="dropdown-item">Profile</a>
                     <a href="{{ route('reset') }}" class="dropdown-item">Setting</a>
+                    <div class="dropdown-divider"></div>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button class="dropdown-item" style="cursor:pointer">Sign Out</button>
+                    </form>
+                </div>
             @endif
-            <div class="dropdown-divider"></div>
-            <li>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button class="dropdown-item" style="cursor:ponter">Sign Out</button>
-                </form>
-            </li>
-        </div>
         </div>
     </nav>
 

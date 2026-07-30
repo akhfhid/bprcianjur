@@ -55,18 +55,17 @@
           <button class="btn btn-link btn-link-primary dropdown-toggle" id="navbar-dropdown" data-toggle="dropdown">
             {{Auth::user()->name}}
           </button>
-          @endif
-          <div class="dropdown-menu dropdown-menu-right" id="navbar-dropdown">
+
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbar-dropdown">
             <a href="#" class="dropdown-item">Profile</a>
             <a href="#" class="dropdown-item">Setting</a>
             <div class="dropdown-divider"></div>
-            <li>
-              <form action="{{route('logout')}}" method="POST">
-                @csrf
-                <button class="dropdown-item" style="cursor:ponter">Sign Out</button>
-              </form>
-            </li>
+            <form action="{{route('logout')}}" method="POST">
+              @csrf
+              <button class="dropdown-item" style="cursor:pointer">Sign Out</button>
+            </form>
           </div>
+          @endif
         </div>
       </nav>
 
