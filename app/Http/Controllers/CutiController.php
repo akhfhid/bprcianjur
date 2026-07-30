@@ -95,6 +95,8 @@ class CutiController extends Controller
             'alasan' => 'required|string',
             'otoatasan' => 'required',
             'diketatasan' => 'required',
+            'statasan' => 'required',
+            'statdiket' => 'required',
         ]);
 
         $cuti = ordercuti::findOrFail($id);
@@ -118,6 +120,8 @@ class CutiController extends Controller
             'alasan' => $request->alasan,
             'otoatasan' => $request->otoatasan, // ID JABATAN
             'diketatasan' => $request->diketatasan, // ID JABATAN
+            'statasan' => $request->statasan,
+            'statdiket' => $request->statdiket,
         ]);
 
         return redirect()->route('cuti.pegawai', $cuti->pegawai_id)->with('status', 'Data cuti berhasil diperbarui');

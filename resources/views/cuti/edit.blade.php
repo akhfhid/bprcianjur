@@ -10,7 +10,7 @@
         @method('PUT')
 
         <div class="form-group">
-            <label>Atasan Langsung</label>
+            <label>Atasan 1 (Atasan Langsung)</label>
             <select name="otoatasan" class="form-control" required>
                 <option value="">-- Pilih Jabatan Atasan --</option>
                 @foreach ($jabatanList as $jab)
@@ -22,7 +22,16 @@
         </div>
 
         <div class="form-group">
-            <label>Diketahui Atasan</label>
+            <label>Status Atasan 1</label>
+            <select name="statasan" class="form-control" required>
+                <option value="SUBMIT" {{ $cuti->statasan == 'SUBMIT' ? 'selected' : '' }}>SUBMIT</option>
+                <option value="DISETUJUI" {{ $cuti->statasan == 'DISETUJUI' ? 'selected' : '' }}>DISETUJUI</option>
+                <option value="DITOLAK" {{ $cuti->statasan == 'DITOLAK' ? 'selected' : '' }}>DITOLAK</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Atasan 2 (Diketahui Atasan)</label>
             <select name="diketatasan" class="form-control" required>
                 <option value="">-- Pilih Jabatan Atasan --</option>
                 @foreach ($jabatanList as $jab)
@@ -30,6 +39,15 @@
                         {{ $jab->name }}
                     </option>
                 @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Status Atasan 2</label>
+            <select name="statdiket" class="form-control" required>
+                <option value="SUBMIT" {{ $cuti->statdiket == 'SUBMIT' ? 'selected' : '' }}>SUBMIT</option>
+                <option value="DISETUJUI" {{ $cuti->statdiket == 'DISETUJUI' ? 'selected' : '' }}>DISETUJUI</option>
+                <option value="DITOLAK" {{ $cuti->statdiket == 'DITOLAK' ? 'selected' : '' }}>DITOLAK</option>
             </select>
         </div>
 
