@@ -172,8 +172,8 @@ route::middleware(['auth'])->group(function () {
     Route::post('/pegawai/toggle-active/{id}', 'PegawaiController@toggleActive')->name('pegawai.toggle-active');
 
     route::get('users/{id}/active', 'UserController@active')->name('users.active');
-    route::post('users/{id}/update', 'UserController@updateuser')->name('users.update');
-    route::get('users/{id}/edit' . 'UserController@edit')->name('users.edit');
+    route::post('users/{id}/update_profile', 'UserController@updateuser')->name('users.update_profile');
+    route::get('users/{id}/edit', 'UserController@edit')->name('users.edit');
     Route::resource('users', 'UserController');
     Route::get('/home', 'HomeController@index');
     Route::get('/categories/trash', 'CategoriesController@trash')->name('categories.trash');
