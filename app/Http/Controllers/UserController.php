@@ -112,8 +112,15 @@ class UserController extends Controller
         $user = \App\User::findOrFail($id);
         $pegawai = \App\Pegawai::where('name', $user['name'])->first();
         $roles = \App\roles::pluck('name', 'ket');
-        return view('users.edit', ['user' => $user, 'roles' => $roles, 'pegawai' => $pegawai]);
-        //return view('users.edit',['user'=>$user, 'roles'=>$roles]);
+        $cabangs = \App\Cabang::orderBy('name')->pluck('name', 'id');
+        $currentCabang = $pegawai ? \App\Cabang::find($pegawai->cabang) : null;
+        return view('users.edit', [
+            'user'          => $user,
+            'roles'         => $roles,
+            'pegawai'       => $pegawai,
+            'cabangs'       => $cabangs,
+            'currentCabang' => $currentCabang,
+        ]);
     }
 
     /**
@@ -207,8 +214,18 @@ class UserController extends Controller
         }
         $user->save();
 
+        // Sync cabang ke tabel pegawais jika ada pegawai terhubung
+        $cabangId = $request->get('cabang_id');
+        if ($user->pegawai_id && $cabangId !== null) {
+            $pegawai = \App\Pegawai::find($user->pegawai_id);
+            if ($pegawai) {
+                $pegawai->cabang = $cabangId ?: null;
+                $pegawai->save();
+            }
+        }
+
         return redirect()
-            ->route('users.index', [$id])
-            ->with('status', 'User Succesfully Updated');
+            ->route('users.index')
+            ->with('status', 'User berhasil diperbarui');
     }
 }
