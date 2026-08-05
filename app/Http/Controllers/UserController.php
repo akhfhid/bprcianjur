@@ -113,13 +113,16 @@ class UserController extends Controller
         $pegawai = \App\Pegawai::where('name', $user['name'])->first();
         $roles = \App\roles::pluck('name', 'ket');
         $cabangs = \App\Cabang::orderBy('name')->pluck('name', 'id');
-        $currentCabang = $pegawai ? \App\Cabang::find($pegawai->cabang) : null;
+        // Prioritaskan nilai cabang dari users.cabang, fallback ke pegawais.cabang
+        $activeCabangId = $user->cabang ?? ($pegawai ? $pegawai->cabang : null);
+        $currentCabang = $activeCabangId ? \App\Cabang::find($activeCabangId) : null;
         return view('users.edit', [
             'user'          => $user,
             'roles'         => $roles,
             'pegawai'       => $pegawai,
             'cabangs'       => $cabangs,
             'currentCabang' => $currentCabang,
+            'activeCabangId'=> $activeCabangId,
         ]);
     }
 
@@ -205,6 +208,12 @@ class UserController extends Controller
         $user->loguser = $request->get('log');
         $user->pegawai_id = $request->get('pegawai_id');
 
+        // Simpan cabang ke tabel users
+        $cabangId = $request->get('cabang_id');
+        if ($cabangId !== null) {
+            $user->cabang = $cabangId ?: null;
+        }
+
         if ($request->file('avatar')) {
             if ($user->avatar && file_exists(storage_path('app/public/' . $user->avatar))) {
                 \Storage::delete('public/' . $user->avatar);
@@ -214,8 +223,7 @@ class UserController extends Controller
         }
         $user->save();
 
-        // Sync cabang ke tabel pegawais jika ada pegawai terhubung
-        $cabangId = $request->get('cabang_id');
+        // Sync cabang ke tabel pegawais juga (sinkronisasi dua arah)
         if ($user->pegawai_id && $cabangId !== null) {
             $pegawai = \App\Pegawai::find($user->pegawai_id);
             if ($pegawai) {

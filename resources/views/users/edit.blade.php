@@ -549,7 +549,7 @@
                             <option value="">— Pilih Cabang —</option>
                             @foreach($cabangs as $cabId => $cabName)
                                 <option value="{{ $cabId }}"
-                                    {{ ($pegawai && $pegawai->cabang == $cabId) ? 'selected' : '' }}>
+                                    {{ $activeCabangId == $cabId ? 'selected' : '' }}>
                                     {{ $cabName }}
                                 </option>
                             @endforeach
