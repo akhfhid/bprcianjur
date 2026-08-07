@@ -26,6 +26,13 @@ processResults: function(data){ return {results: data.map(function(item){return 
 				}
 			}
 		});
+		$('#cabang').on('change', function() {
+			var data = $(this).select2('data')[0];
+			if (data) {
+				var option = new Option(data.text, data.id, true, true);
+				$('#tuncab').append(option).trigger('change');
+			}
+		});
 	</script>
 	<script>
 			$('#tuncab').select2({ajax: { url: '/ajax/cabang/search',

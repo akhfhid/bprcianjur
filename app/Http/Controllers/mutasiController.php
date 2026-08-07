@@ -154,6 +154,7 @@ class mutasiController extends Controller
         $mutasi->status = 'DISETUJUI';
         $pegawai->jabatan =$mutasi->jabatan;
         $pegawai->cabang = $mutasi->cabang;
+        $pegawai->tuncab = $mutasi->cabang;
         $riwayatkerja->name = $jabatan->name;
         $riwayatkerja->kantorcabang = $cabang->name;
         $riwayatkerja->pegawai_id = $mutasi->pegawai_id;

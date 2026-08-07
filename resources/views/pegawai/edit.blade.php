@@ -124,6 +124,18 @@
 	</div>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var kantorSelect = document.querySelector('select[name="kantor"]');
+    var tuncabSelect = document.querySelector('select[name="tuncab"]');
+    if (kantorSelect && tuncabSelect) {
+        kantorSelect.addEventListener('change', function() {
+            tuncabSelect.value = this.value;
+        });
+    }
+});
+</script>
+
 
 @endsection
 

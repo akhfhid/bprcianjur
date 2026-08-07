@@ -149,7 +149,7 @@ class PegawaiController extends Controller
         $new_pegawai->mkpang = $request->get('mkpang');
         $new_pegawai->scuti = '12';
         $new_pegawai->tglangkat = $request->get('tmt');
-        $new_pegawai->tuncab = $request->get('tuncab');
+        $new_pegawai->tuncab = $request->get('tuncab') ?: $request->get('cabang');
         $new_user->name = $request->get('name');
         $new_user->username = $request->get('name');
         $new_user->nikpegawai = $request->get('nikpegawai');
@@ -506,7 +506,7 @@ class PegawaiController extends Controller
         $pegawai->goldar = $request->get('goldar');
         $pegawai->npwp = $request->get('npwp');
         $pegawai->nohp = $request->get('nohp');
-        $pegawai->tuncab = $request->get('tuncab');
+        $pegawai->tuncab = $request->get('tuncab') ?: $request->get('kantor');
         $pegawai->tglangkat = $request->get('tmt');
         $pegawai->atasan1 = $atasan;
         $pegawai->atasan2 = $atasan2;
