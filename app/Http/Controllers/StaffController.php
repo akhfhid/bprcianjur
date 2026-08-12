@@ -157,7 +157,7 @@ class StaffController extends Controller
         $tunak = $jabatan['tunak'] ?? 0;
         $tunjab = $gaji['jabatan'] ?? 0;
         if ($statpegawai == 3) {
-            $tuncab = $tunkin['tunjangan'] ?? 0;
+            $tuncab = $pegawai->tuncab_rate;
         } else {
             $tuncab = 0;
         }

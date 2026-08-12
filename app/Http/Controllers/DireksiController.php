@@ -335,8 +335,8 @@ class DireksiController extends Controller
         $tunak = $jabatan["tunak"];
         $tunjab = $gaji["jabatan"];
         if ($statpegawai == 3){
-            $tuncab = $tunkin["tunjangan"];}
-        else{
+            $tuncab = $pegawai->tuncab_rate;
+        } else {
             $tuncab = 0;
         }
 

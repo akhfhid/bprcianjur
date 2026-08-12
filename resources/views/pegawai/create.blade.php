@@ -159,9 +159,47 @@ processResults: function(data){ return {results: data.map(function(item){return 
 			<label>Masa Kerja Pangkat</label>
 			<input type="text" class="form-control" name="mkpang" id="mkpang">
 			<br>
-			<label>Tunjangan Kinerja</label>
-			<select class="form-control select2" name="tuncab" id="tuncab">
-			</select><br><br>
+			<label>Tipe Tunjangan Kinerja</label>
+			<select class="form-control" name="tuncab_type" id="create_tuncab_type">
+				<option value="cabang" selected>Standard (Sesuai Cabang)</option>
+				<option value="custom">Custom (Input Persen Manual)</option>
+			</select><br>
+
+			<div id="create_tuncab_std_wrap">
+				<label>Tunjangan Kinerja (Cabang)</label>
+				<select class="form-control select2" name="tuncab" id="tuncab">
+				</select><br><br>
+			</div>
+
+			<div id="create_tuncab_custom_wrap" style="display:none;">
+				<label>Persentase Manual (%)</label>
+				<div class="input-group">
+					<input type="number" step="0.01" min="0" max="100" class="form-control" name="custom_tuncab_val" placeholder="Contoh: 10 untuk 10%">
+					<div class="input-group-append">
+						<span class="input-group-text">%</span>
+					</div>
+				</div>
+				<small class="text-muted">Persentase khusus yang bersifat tetap (tidak berubah saat mutasi/pindah cabang).</small><br><br>
+			</div>
+
+			<script>
+				document.addEventListener('DOMContentLoaded', function() {
+					var typeSelect = document.getElementById('create_tuncab_type');
+					var stdWrap = document.getElementById('create_tuncab_std_wrap');
+					var customWrap = document.getElementById('create_tuncab_custom_wrap');
+					if (typeSelect && stdWrap && customWrap) {
+						typeSelect.addEventListener('change', function() {
+							if (this.value === 'custom') {
+								stdWrap.style.display = 'none';
+								customWrap.style.display = 'block';
+							} else {
+								stdWrap.style.display = 'block';
+								customWrap.style.display = 'none';
+							}
+						});
+					}
+				});
+			</script>
 				<label>Alamat Email</label><br>
 			<input value="{{old('email')}}" type="text" class="form-control {{$errors->first('email')  ? "is-invalid" :""}}" name="email" placeholder="Alamat Email">
 			<div class="invalid-feedback">

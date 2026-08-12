@@ -504,6 +504,49 @@
             </div>
         </div>
 
+        {{-- ── Ganti Password ── --}}
+        <div class="eu-card">
+            <div class="eu-card-header">
+                <i class="fas fa-lock"></i>
+                <span>Ganti Password</span>
+            </div>
+            <div class="eu-card-body">
+                <p style="margin:0 0 16px;font-size:.85rem;color:#6b7280;">
+                    <i class="fas fa-info-circle" style="color:#7c3aed;margin-right:6px;"></i>
+                    Kosongkan jika tidak ingin mengubah password.
+                </p>
+                <div class="eu-row">
+                    <div class="eu-field">
+                        <label class="eu-label" for="eu_password_new">Password Baru</label>
+                        <div style="position:relative;">
+                            <input class="eu-input" type="password" id="eu_password_new" name="password"
+                                   placeholder="Masukkan password baru" autocomplete="new-password"
+                                   style="padding-right:42px;">
+                            <button type="button" onclick="togglePwd('eu_password_new','eyeNew')"
+                                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:14px;">
+                                <i class="fas fa-eye" id="eyeNew"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="eu-field">
+                        <label class="eu-label" for="eu_password_confirm">Konfirmasi Password Baru</label>
+                        <div style="position:relative;">
+                            <input class="eu-input" type="password" id="eu_password_confirm"
+                                   placeholder="Ulangi password baru" autocomplete="new-password"
+                                   style="padding-right:42px;">
+                            <button type="button" onclick="togglePwd('eu_password_confirm','eyeConfirm')"
+                                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:14px;">
+                                <i class="fas fa-eye" id="eyeConfirm"></i>
+                            </button>
+                        </div>
+                        <div class="eu-hint" id="pwdMatchHint" style="display:none;color:#ef4444;margin-top:5px;">
+                            <i class="fas fa-exclamation-circle"></i> Password tidak cocok
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- ── Data Pegawai & Cabang ── --}}
         <div class="eu-card">
             <div class="eu-card-header">
@@ -568,6 +611,54 @@
                     @endif
                 </div>
 
+                {{-- Pengaturan Tunjangan Kinerja --}}
+                @if($pegawai)
+                <div style="margin-top: 18px; padding-top: 18px; border-top: 1.5px dashed #e5e7eb;">
+                    <div class="eu-label" style="font-size:.85rem; color:#4f46e5; margin-bottom:12px;">
+                        <i class="fas fa-coins" style="margin-right:6px;"></i> Pengaturan Tunjangan Kinerja
+                    </div>
+
+                    <div class="eu-row">
+                        <div class="eu-field">
+                            <label class="eu-label">Tipe Tunjangan Kinerja</label>
+                            <select class="eu-select" name="tuncab_type" id="user_tuncab_type">
+                                <option value="cabang" {{ empty($pegawai->is_custom_tuncab) ? 'selected' : '' }}>
+                                    Standard (Sesuai Cabang)
+                                </option>
+                                <option value="custom" {{ !empty($pegawai->is_custom_tuncab) ? 'selected' : '' }}>
+                                    Custom (Input Persen Manual)
+                                </option>
+                            </select>
+                            <div class="eu-hint">Persen manual tidak berubah saat pindah cabang (*mutasi*).</div>
+                        </div>
+
+                        <div class="eu-field" id="user_tuncab_standard_wrap" style="{{ !empty($pegawai->is_custom_tuncab) ? 'display:none;' : '' }}">
+                            <label class="eu-label">Tunjangan Cabang</label>
+                            <select class="eu-select" name="tuncab" id="user_tuncab_select">
+                                <option value="">— Mengikuti Cabang Pegawai —</option>
+                                @foreach($kantor as $cabId => $cabName)
+                                    <option value="{{ $cabId }}" {{ $pegawai->tuncab == $cabId ? 'selected' : '' }}>
+                                        {{ $cabName }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="eu-hint">Menggunakan persentase default dari cabang terpisah.</div>
+                        </div>
+
+                        <div class="eu-field" id="user_tuncab_custom_wrap" style="{{ empty($pegawai->is_custom_tuncab) ? 'display:none;' : '' }}">
+                            <label class="eu-label">Persentase Manual (%)</label>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <input class="eu-input" type="number" step="0.01" min="0" max="100" name="custom_tuncab_val"
+                                       value="{{ !empty($pegawai->is_custom_tuncab) ? (($pegawai->custom_tuncab_val ?? 0) * 100) : '' }}"
+                                       placeholder="Contoh: 10 untuk 10%">
+                                <span style="font-weight:700; color:#4f46e5;">%</span>
+                            </div>
+                            <div class="eu-hint">Persentase khusus yang bersifat tetap.</div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
             </div>
         </div>
 
@@ -602,6 +693,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    /* ── Tunjangan Kinerja toggle ── */
+    var tuncabType = document.getElementById('user_tuncab_type');
+    var stdWrap = document.getElementById('user_tuncab_standard_wrap');
+    var customWrap = document.getElementById('user_tuncab_custom_wrap');
+    if (tuncabType && stdWrap && customWrap) {
+        tuncabType.addEventListener('change', function () {
+            if (this.value === 'custom') {
+                stdWrap.style.display = 'none';
+                customWrap.style.display = 'block';
+            } else {
+                stdWrap.style.display = 'block';
+                customWrap.style.display = 'none';
+            }
+        });
+    }
+
     /* ── Avatar preview ── */
     var avatarInput = document.getElementById('avatarInput');
     var avatarPreview = document.getElementById('avatarPreview');
@@ -624,6 +731,44 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 };
                 reader.readAsDataURL(file);
+            }
+        });
+    }
+    /* ── Password toggle & confirm ── */
+    function togglePwd(inputId, iconId) {
+        var inp = document.getElementById(inputId);
+        var icon = document.getElementById(iconId);
+        if (!inp) return;
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+        } else {
+            inp.type = 'password';
+            if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        }
+    }
+
+    var pwdNew     = document.getElementById('eu_password_new');
+    var pwdConfirm = document.getElementById('eu_password_confirm');
+    var pwdHint    = document.getElementById('pwdMatchHint');
+
+    function checkPwdMatch() {
+        if (!pwdNew || !pwdConfirm || !pwdHint) return;
+        if (pwdConfirm.value.length === 0) { pwdHint.style.display = 'none'; return; }
+        pwdHint.style.display = pwdNew.value !== pwdConfirm.value ? 'block' : 'none';
+    }
+
+    if (pwdNew)     pwdNew.addEventListener('input', checkPwdMatch);
+    if (pwdConfirm) pwdConfirm.addEventListener('input', checkPwdMatch);
+
+    // Cegah submit jika password tidak cocok
+    var mainForm = document.querySelector('form[enctype]');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            if (pwdNew && pwdConfirm && pwdNew.value.length > 0 && pwdNew.value !== pwdConfirm.value) {
+                e.preventDefault();
+                if (pwdHint) pwdHint.style.display = 'block';
+                pwdConfirm.focus();
             }
         });
     }

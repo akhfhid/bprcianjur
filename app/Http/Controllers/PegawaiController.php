@@ -149,7 +149,22 @@ class PegawaiController extends Controller
         $new_pegawai->mkpang = $request->get('mkpang');
         $new_pegawai->scuti = '12';
         $new_pegawai->tglangkat = $request->get('tmt');
-        $new_pegawai->tuncab = $request->get('tuncab') ?: $request->get('cabang');
+        
+        $tuncabType = $request->get('tuncab_type');
+        if ($tuncabType === 'custom') {
+            $new_pegawai->is_custom_tuncab = 1;
+            $rawVal = floatval($request->get('custom_tuncab_val'));
+            if ($rawVal > 1) {
+                $new_pegawai->custom_tuncab_val = $rawVal / 100;
+            } else {
+                $new_pegawai->custom_tuncab_val = $rawVal;
+            }
+            $new_pegawai->tuncab = null;
+        } else {
+            $new_pegawai->is_custom_tuncab = 0;
+            $new_pegawai->custom_tuncab_val = null;
+            $new_pegawai->tuncab = $request->get('tuncab') ?: $request->get('cabang');
+        }
         $new_user->name = $request->get('name');
         $new_user->username = $request->get('name');
         $new_user->nikpegawai = $request->get('nikpegawai');
@@ -285,7 +300,7 @@ class PegawaiController extends Controller
         $tunak = $jabatan['tunak'];
         $tunjab = $gaji['jabatan'];
         if ($statpegawai == 3) {
-            $tuncab = $tunkin['tunjangan'];
+            $tuncab = $pegawai->tuncab_rate;
         } else {
             $tuncab = 0;
         }
@@ -503,10 +518,24 @@ class PegawaiController extends Controller
         $pegawai->jabatan = $request->get('jabatan');
         $pegawai->pangkat = $request->get('pangkat');
         $pegawai->mkpang = $request->get('mkpang');
-        $pegawai->goldar = $request->get('goldar');
         $pegawai->npwp = $request->get('npwp');
         $pegawai->nohp = $request->get('nohp');
-        $pegawai->tuncab = $request->get('tuncab') ?: $request->get('kantor');
+        
+        $tuncabType = $request->get('tuncab_type');
+        if ($tuncabType === 'custom') {
+            $pegawai->is_custom_tuncab = 1;
+            $rawVal = floatval($request->get('custom_tuncab_val'));
+            if ($rawVal > 1) {
+                $pegawai->custom_tuncab_val = $rawVal / 100;
+            } else {
+                $pegawai->custom_tuncab_val = $rawVal;
+            }
+        } else {
+            $pegawai->is_custom_tuncab = 0;
+            $pegawai->custom_tuncab_val = null;
+            $pegawai->tuncab = $request->get('tuncab') ?: $request->get('kantor');
+        }
+        
         $pegawai->tglangkat = $request->get('tmt');
         $pegawai->atasan1 = $atasan;
         $pegawai->atasan2 = $atasan2;
@@ -530,9 +559,14 @@ class PegawaiController extends Controller
 
         //$pegawai->updated_by = \Auth::user()->id;
         $pegawai->save();
-        //$pegawai->pangkat()->attach($request->get("pangkat"));
-        // $user->updated_by = \Auth::user()->id;
-        //$iduser->save();
+
+        // Sync tunjangan kinerja ke tabel users (sinkronisasi dua arah)
+        // $iduser adalah collection — loop setiap user yang terhubung
+        $linkedUsers = \App\user::where('pegawai_id', $pegawai->id)->get();
+        foreach ($linkedUsers as $u) {
+            $u->cabang = $request->get('kantor');
+            $u->save();
+        }
 
         return redirect()->route('pegawai.index')->with('status', 'Data Pegawai Successfully Updated');
     }

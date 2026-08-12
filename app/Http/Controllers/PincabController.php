@@ -245,7 +245,7 @@ class PincabController extends Controller
         $tunak = $jabatan['tunak'];
         $tunjab = $gaji['jabatan'];
         if ($statpegawai == 3) {
-            $tuncab = $tunkin['tunjangan'];
+            $tuncab = $pegawai->tuncab_rate;
         } else {
             $tuncab = 0;
         }
@@ -437,7 +437,7 @@ class PincabController extends Controller
         $tunak = $jabatan['tunak'];
         $tunjab = $gaji['jabatan'];
         if ($statpegawai == 3) {
-            $tuncab = $tunkin['tunjangan'];
+            $tuncab = $pegawai->tuncab_rate;
         } else {
             $tuncab = 0;
         }
@@ -1090,6 +1090,9 @@ class PincabController extends Controller
         $mutasi->status = 'DISETUJUI';
         $pegawai->jabatan = $mutasi->jabatan;
         $pegawai->cabang = $mutasi->cabang;
+        if (empty($pegawai->is_custom_tuncab)) {
+            $pegawai->tuncab = $mutasi->cabang;
+        }
         $pegawai->atasan1 = $atasan1;
         $pegawai->atasan2 = $atasan2;
         $riwayatkerja->name = $jabatan->name;

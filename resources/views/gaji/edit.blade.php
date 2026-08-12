@@ -166,7 +166,7 @@
         const tunak = {{ $jabatan['tunak'] ?? 0 }};
         const tunpang = {{ $jabatan['tunpang'] ?? 0 }};
         const pensiun = {{ $jabatan['pensiun'] ?? 0 }};
-        const tuncab = {{ ($spegawai && $spegawai->id == 3) ? ($tunkin['tunjangan'] ?? 0) : 0 }};
+        const tuncab = {{ ($spegawai && $spegawai->id == 3) ? ($pegawai->tuncab_rate ?? ($tunkin['tunjangan'] ?? 0)) : 0 }};
         const statpegawai = {{ $pegawai['spegawai'] ?? 0 }};
         const jumlahanak = {{ $jumlahanak ?? 0 }};
         const jumlahnikah = {{ $jumlahnikah ?? 0 }};

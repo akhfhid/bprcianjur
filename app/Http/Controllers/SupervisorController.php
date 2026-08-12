@@ -249,7 +249,7 @@ class SupervisorController extends Controller
         $tunak = $jabatan['tunak'];
         $tunjab = $gaji['jabatan'];
         if ($statpegawai == 3) {
-            $tuncab = $tunkin['tunjangan'];
+            $tuncab = $pegawai->tuncab_rate;
         } else {
             $tuncab = 0;
         }
@@ -1222,7 +1222,7 @@ try {
         $tunak = $jabatan['tunak'];
         $tunjab = $gaji['jabatan'];
         if ($statpegawai == 3) {
-            $tuncab = $tunkin['tunjangan'];
+            $tuncab = $pegawai->tuncab_rate;
         } else {
             $tuncab = 0;
         }

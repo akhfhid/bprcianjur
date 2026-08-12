@@ -102,7 +102,11 @@ class gajiController extends Controller
         
         $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
         $jabatan = \App\Jabatan::where('id', $pegawai['jabatan'])->first();
-        $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
+        if (!empty($pegawai->is_custom_tuncab)) {
+            $tunkin = ['tunjangan' => (float)$pegawai->custom_tuncab_val];
+        } else {
+            $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
+        }
         $spegawai = \App\statuspeg::where('id', $pegawai['spegawai'])->first();
         
         $anak = \App\keluarga::where('pegawai_id', $pegawai['id'])->where('hubungan', 'Anak')->get();
@@ -185,7 +189,11 @@ class gajiController extends Controller
         
         $cabang = \App\Cabang::where('id', $pegawai['cabang'])->first();
         $jabatan = \App\Jabatan::where('id', $pegawai['jabatan'])->first();
-        $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
+        if (!empty($pegawai->is_custom_tuncab)) {
+            $tunkin = ['tunjangan' => (float)$pegawai->custom_tuncab_val];
+        } else {
+            $tunkin = \App\Cabang::where('id', $pegawai['tuncab'])->first();
+        }
         $spegawai = \App\statuspeg::where('id', $pegawai['spegawai'])->first();
         
         $anak = \App\keluarga::where('pegawai_id', $pegawai['id'])->where('hubungan', 'Anak')->get();

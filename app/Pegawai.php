@@ -111,4 +111,38 @@ class pegawai extends Model
     {
         return Carbon::parse($this->attributes[$umur])->umur;
     }
+
+    /**
+     * Get effective Tunjangan Kinerja rate (decimal multiplier).
+     * If custom percentage is enabled, returns custom_tuncab_val.
+     * Otherwise resolves rate from Cabang table using tuncab ID.
+     */
+    public function getTuncabRateAttribute()
+    {
+        if (!empty($this->is_custom_tuncab)) {
+            return (float) ($this->custom_tuncab_val ?? 0);
+        }
+        if ($this->tuncab) {
+            $cabang = \App\Cabang::find($this->tuncab);
+            return $cabang ? (float) $cabang->tunjangan : 0.0;
+        }
+        return 0.0;
+    }
+
+    /**
+     * Get label for Tunjangan Kinerja setting.
+     */
+    public function getTunjanganKinerjaLabelAttribute()
+    {
+        if (!empty($this->is_custom_tuncab)) {
+            $pct = (float)($this->custom_tuncab_val ?? 0) * 100;
+            return "Custom (" . $pct . "%)";
+        }
+        if ($this->tuncab) {
+            $cabang = \App\Cabang::find($this->tuncab);
+            return $cabang ? $cabang->name : '-';
+        }
+        return '-';
+    }
 }
+

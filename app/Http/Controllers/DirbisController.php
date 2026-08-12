@@ -335,20 +335,19 @@ class DirbisController extends Controller
         $tunak = $jabatan["tunak"];
         $tunjab = $gaji["jabatan"];
         if ($statpegawai == 3){
-            $tuncab = $tunkin["tunjangan"];}
-        else{
+            $tuncab = $pegawai->tuncab_rate;
+        } else {
             $tuncab = 0;
         }
-
 
         $fungsi = $gaji["fungsi"];
         $gapokpeg = $gapok["gapok"];
         $bpjsks = $gaji["bpjsks"];
         $bpjstk = $gaji["bpjstk"];
         $pensiun = $jabatan['pensiun'];
-        if ($statpegawai ==3){
-            $tunpen = $pensiun * $gapokpeg;}
-        else{
+        if ($statpegawai == 3){
+            $tunpen = $pensiun * $gapokpeg;
+        } else {
             $tunpen = 0;
         }
         $pph = $gaji['pph'];

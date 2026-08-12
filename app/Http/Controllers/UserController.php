@@ -111,8 +111,12 @@ class UserController extends Controller
     {
         $user = \App\User::findOrFail($id);
         $pegawai = \App\Pegawai::where('name', $user['name'])->first();
+        if (!$pegawai && $user->pegawai_id) {
+            $pegawai = \App\Pegawai::find($user->pegawai_id);
+        }
         $roles = \App\roles::pluck('name', 'ket');
         $cabangs = \App\Cabang::orderBy('name')->pluck('name', 'id');
+        $kantor = \App\Cabang::orderBy('name')->pluck('name', 'id');
         // Prioritaskan nilai cabang dari users.cabang, fallback ke pegawais.cabang
         $activeCabangId = $user->cabang ?? ($pegawai ? $pegawai->cabang : null);
         $currentCabang = $activeCabangId ? \App\Cabang::find($activeCabangId) : null;
@@ -121,6 +125,7 @@ class UserController extends Controller
             'roles'         => $roles,
             'pegawai'       => $pegawai,
             'cabangs'       => $cabangs,
+            'kantor'        => $kantor,
             'currentCabang' => $currentCabang,
             'activeCabangId'=> $activeCabangId,
         ]);
@@ -155,13 +160,18 @@ class UserController extends Controller
 
         //return redirect()->route('users.index',[$id])->with('status','User Succesfully Updated');
         $user = \App\User::findOrFail($id);
-        $user->name = $user->username;
-        $user->password = \Hash::make($request->get('password'));
         $user->roles = $request->get('roles');
         $user->pegawai_id = $request->get('pegawai_id');
         $user->status = $request->get('status');
+
+        // Hanya update password jika field diisi
+        $newPassword = $request->get('password');
+        if (!empty($newPassword)) {
+            $user->password = \Hash::make($newPassword);
+        }
+
         $user->save();
-        return redirect()->route('users.index')->with('status', 'User Berhasil Diaktifkan');
+        return redirect()->route('users.index')->with('status', 'User Berhasil Diperbarui');
     }
 
     /**
@@ -223,13 +233,39 @@ class UserController extends Controller
         }
         $user->save();
 
-        // Sync cabang ke tabel pegawais juga (sinkronisasi dua arah)
-        if ($user->pegawai_id && $cabangId !== null) {
-            $pegawai = \App\Pegawai::find($user->pegawai_id);
-            if ($pegawai) {
-                $pegawai->cabang = $cabangId ?: null;
-                $pegawai->save();
+        // Sync cabang & tunjangan kinerja ke tabel pegawais (sinkronisasi dua arah)
+        $targetPegawai = null;
+        if ($user->pegawai_id) {
+            $targetPegawai = \App\Pegawai::find($user->pegawai_id);
+        }
+        if (!$targetPegawai) {
+            $targetPegawai = \App\Pegawai::where('name', $user->name)->first();
+        }
+
+        if ($targetPegawai) {
+            if ($cabangId !== null) {
+                $targetPegawai->cabang = $cabangId ?: null;
             }
+
+            $tuncabType = $request->get('tuncab_type');
+            if ($tuncabType === 'custom') {
+                $targetPegawai->is_custom_tuncab = 1;
+                $rawVal = floatval($request->get('custom_tuncab_val'));
+                if ($rawVal > 1) {
+                    $targetPegawai->custom_tuncab_val = $rawVal / 100;
+                } else {
+                    $targetPegawai->custom_tuncab_val = $rawVal;
+                }
+            } elseif ($tuncabType === 'cabang') {
+                $targetPegawai->is_custom_tuncab = 0;
+                $targetPegawai->custom_tuncab_val = null;
+                if ($request->has('tuncab')) {
+                    $targetPegawai->tuncab = $request->get('tuncab') ?: null;
+                } elseif ($cabangId !== null) {
+                    $targetPegawai->tuncab = $cabangId ?: null;
+                }
+            }
+            $targetPegawai->save();
         }
 
         return redirect()
