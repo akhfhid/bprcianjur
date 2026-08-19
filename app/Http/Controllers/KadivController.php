@@ -585,7 +585,17 @@ public function cutikadiv(Request $request)
             $current->addDay();
         }
         $user_id = \Auth::user()->pegawai_id;
-        $peg = \App\Pegawai::where('id', $user_id)->first();
+        $peg = \App\Pegawai::findOrFail($user_id);
+
+        // Validasi dan kurangi sisa cuti untuk selain Cuti Wajib
+        if ($jeniscuti != 'Cuti Wajib') {
+            if ($peg->scuti < $jmlcuti) {
+                return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
+            }
+            $peg->scuti = $peg->scuti - $jmlcuti;
+            $peg->save();
+        }
+
         $jabpeg = $peg->jabatan;
         $jabatan = \App\Jabatan::where('id', $jabpeg)->first();
         $jabatasan = $jabatan->atasan;
@@ -620,7 +630,7 @@ public function cutikadiv(Request $request)
             $new_cuti->user_id = \Auth::user()->id;
             $new_cuti->cabang = \Auth::user()->cabang;
             $new_cuti->pegawai_id = $request->get('idpeg');
-            $new_cuti->jmlcuti = $jmlcuti + 1;
+            $new_cuti->jmlcuti = $jmlcuti;
             $new_cuti->tglawal = $awal;
             $new_cuti->tglakhir = $akhir;
             $new_cuti->jeniscuti = $jeniscuti;
@@ -639,7 +649,7 @@ public function cutikadiv(Request $request)
             $new_cuti->user_id = \Auth::user()->id;
             $new_cuti->cabang = \Auth::user()->cabang;
             $new_cuti->pegawai_id = $request->get('idpeg');
-            $new_cuti->jmlcuti = $jmlcuti + 1;
+            $new_cuti->jmlcuti = $jmlcuti;
             $new_cuti->tglawal = $awal;
             $new_cuti->tglakhir = $akhir;
             $new_cuti->jeniscuti = $jeniscuti;
@@ -836,49 +846,35 @@ public function cutiindex(Request $request)
         $pegawai = \App\Pegawai::where('id', $ordercuti['pegawai_id'])->first();
         $statasan = $ordercuti->statasan;
         $stadiket = $ordercuti->statdiket;
-        $ambilcuti = $ordercuti->jmlcuti;
         $jeniscuti = $ordercuti->jeniscuti;
-        $scuti = $pegawai->scuti;
-        $sisacuti = $scuti - $ambilcuti;
         if ($statasan == 'SUBMIT') {
             if ($jeniscuti == 'Cuti Wajib') {
                 $ordercuti->statasan = 'DISETUJUI';
                 $ordercuti->statsdm = 'DISETUJUI';
-                $ordercuti->save();
             } elseif ($jeniscuti == 'Cuti Tahunan') {
                 $ordercuti->status = 'DISETUJUI';
                 $ordercuti->statasan = 'DISETUJUI';
                 $ordercuti->statdiket = 'DISETUJUI';
-                $pegawai->scuti = $sisacuti;
-                $ordercuti->save();
-                $pegawai->save();
             } else {
                 $ordercuti->status = 'DISETUJUI';
                 $ordercuti->statasan = 'DISETUJUI';
                 $ordercuti->statdiket = 'DISETUJUI';
-                $ordercuti->save();
             }
         } else {
             if ($jeniscuti == 'Cuti Wajib') {
                 $ordercuti->statdiket = 'DISETUJUI';
                 $ordercuti->statsdm = 'DISETUJUI';
                 $ordercuti->status = 'DISETUJUI';
-                $ordercuti->save();
             } elseif ($jeniscuti == 'Cuti Tahunan') {
                 $ordercuti->status = 'DISETUJUI';
                 $ordercuti->statdiket = 'DISETUJUI';
-                $pegawai->scuti = $sisacuti;
-                $ordercuti->save();
-                $pegawai->save();
             } else {
                 $ordercuti->status = 'DISETUJUI';
                 $ordercuti->statdiket = 'DISETUJUI';
-                $ordercuti->save();
             }
         }
 
         $ordercuti->save();
-        $pegawai->save();
 
       try {
     $approver = \App\Pegawai::find(\Auth::user()->pegawai_id);
