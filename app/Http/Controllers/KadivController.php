@@ -587,8 +587,8 @@ public function cutikadiv(Request $request)
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::findOrFail($user_id);
 
-        // Validasi dan kurangi sisa cuti untuk selain Cuti Wajib
-        if ($jeniscuti != 'Cuti Wajib') {
+        // Validasi dan kurangi sisa cuti hanya untuk Cuti Tahunan
+        if ($jeniscuti == 'Cuti Tahunan') {
             if ($peg->scuti < $jmlcuti) {
                 return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
             }

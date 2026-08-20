@@ -325,7 +325,7 @@ class StaffController extends Controller
 
         $saldoBaru = $peg->scuti; 
 
-        if ($jeniscuti != 'Cuti Wajib') {
+        if ($jeniscuti == 'Cuti Tahunan') {
             if ($peg->scuti < $jmlcuti) {
                 return back()->withErrors('Permohonan Gagal: Sisa cuti Anda tidak mencukupi. Sisa: ' . $peg->scuti);
             }
