@@ -174,6 +174,8 @@ route::middleware(['auth'])->group(function () {
     route::get('users/{id}/active', 'UserController@active')->name('users.active');
     route::post('users/{id}/update_profile', 'UserController@updateuser')->name('users.update_profile');
     route::get('users/{id}/edit', 'UserController@edit')->name('users.edit');
+    route::get('users/{id}/hak-akses', 'UserController@editHakAkses')->name('users.hak-akses');
+    route::post('users/{id}/hak-akses/update', 'UserController@updateHakAkses')->name('users.hak-akses.update');
     Route::resource('users', 'UserController');
     Route::get('/home', 'HomeController@index');
     Route::get('/categories/trash', 'CategoriesController@trash')->name('categories.trash');

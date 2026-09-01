@@ -98,7 +98,10 @@ header('Access-Control-Allow-Origin: localhost');
                     <input class="border-dark form-control d-block d-md-none mb-4" type="text" placeholder="Search"
                         aria-label="Search" />
                     @if (Auth::check())
-                        @if (auth()->user()->roles == 'ADMIN')
+                        @if (auth()->user()->hasCustomMenuPermissions())
+                            {{-- User memiliki hak akses menu custom dari administrator --}}
+                            <x-sidebar-custom />
+                        @elseif (auth()->user()->roles == 'ADMIN')
                             <x-sidebar />
                         @elseif (auth()->user()->roles == 'SUPERVISOR')
                             <x-sidebar-supervisor />

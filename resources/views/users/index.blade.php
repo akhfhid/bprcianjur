@@ -112,6 +112,13 @@
                                             <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-outline-info"
                                                 title="Edit"><i class="fas fa-edit"></i></a>
 
+                                            {{-- Tombol Edit Hak Akses --}}
+                                            <a href="{{ route('users.hak-akses', $user->id) }}"
+                                                class="btn btn-sm {{ $user->menu_permissions !== null ? 'btn-warning' : 'btn-outline-secondary' }}"
+                                                title="{{ $user->menu_permissions !== null ? 'Hak akses telah dikustomisasi' : 'Edit Hak Akses Menu' }}">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </a>
+
                                             <form class="d-inline" method="POST"
                                                 action="{{ route('users.destroy', $user->id) }}"
                                                 onsubmit="return confirm('Hapus user ini secara permanen?')">

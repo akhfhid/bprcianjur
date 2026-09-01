@@ -272,4 +272,100 @@ class UserController extends Controller
             ->route('users.index')
             ->with('status', 'User berhasil diperbarui');
     }
+
+    /**
+     * Tampilkan form edit hak akses menu untuk user tertentu.
+     * Hanya bisa diakses oleh ADMIN.
+     */
+    public function editHakAkses($id)
+    {
+        if (!Gate::allows('ADMIN')) {
+            abort(403, 'Anda tidak memiliki hak akses');
+        }
+
+        $user = \App\User::findOrFail($id);
+
+        // Daftar semua menu yang tersedia beserta labelnya
+        $availableMenus = $this->getAvailableMenus();
+
+        return view('users.hak-akses', compact('user', 'availableMenus'));
+    }
+
+    /**
+     * Simpan hak akses menu untuk user tertentu.
+     * Hanya bisa diakses oleh ADMIN.
+     */
+    public function updateHakAkses(Request $request, $id)
+    {
+        if (!Gate::allows('ADMIN')) {
+            abort(403, 'Anda tidak memiliki hak akses');
+        }
+
+        $user = \App\User::findOrFail($id);
+
+        // Jika reset (gunakan default roles), set null
+        if ($request->get('use_default') == '1') {
+            $user->menu_permissions = null;
+        } else {
+            // Simpan array menu yang dicentang (bisa kosong array)
+            $user->menu_permissions = $request->get('menus', []);
+        }
+
+        $user->save();
+
+        return redirect()
+            ->route('users.index')
+            ->with('status', 'Hak akses menu untuk user "' . $user->username . '" berhasil diperbarui');
+    }
+
+    /**
+     * Kembalikan daftar menu yang tersedia beserta grupnya.
+     *
+     * @return array
+     */
+    private function getAvailableMenus(): array
+    {
+        return [
+            'Master Data' => [
+                'jabatan'    => 'Jabatan',
+                'pangkat'    => 'Pangkat',
+                'cabang'     => 'Kantor Cabang',
+            ],
+            'Manajemen User' => [
+                'users'      => 'Manajemen User',
+                'loguser'    => 'Log User Aktivitas',
+                'setuser'    => 'Set User',
+            ],
+            'Kepegawaian' => [
+                'pegawai'    => 'Data Pegawai',
+                'riwayat'    => 'Riwayat Pegawai',
+                'berkala'    => 'Berkala / Kenaikan Gaji',
+                'pelatihan'  => 'Pelatihan',
+                'keluarga'   => 'Data Keluarga',
+            ],
+            'Keuangan & Penghasilan' => [
+                'penghasilan' => 'Penghasilan',
+                'gaji'        => 'Gaji',
+            ],
+            'Cuti' => [
+                'ordercuti'  => 'Manajemen Cuti (SDM)',
+                'cuti'       => 'Cuti',
+            ],
+            'Mutasi' => [
+                'mutasi'         => 'Mutasi Jabatan',
+                'mutasipangkat'  => 'Mutasi Pangkat',
+            ],
+            'Peraturan & Kepatuhan' => [
+                'peraturan'  => 'Peraturan',
+                'kepatuhan'  => 'Kepatuhan',
+                'categories' => 'Kategori Peraturan',
+            ],
+            'Administrasi' => [
+                'asisten_sikap' => 'Asisten SIKAP AI',
+                'wa_setting'    => 'Setting WhatsApp',
+                'resetpassword' => 'Reset Password User',
+            ],
+        ];
+    }
 }
+
