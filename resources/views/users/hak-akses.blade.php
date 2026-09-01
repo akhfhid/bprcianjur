@@ -98,10 +98,12 @@
                             class="custom-control-input" onchange="toggleMenuForm(this)"
                             {{ $user->menu_permissions !== null ? 'checked' : '' }}>
                         <label class="custom-control-label" for="mode_custom">
-                            <strong>Gunakan Hak Akses Custom</strong>
+                            <strong>Tambahkan Akses Menu Extra</strong>
                             <br>
                             <small class="text-muted">
-                                Tentukan sendiri menu apa saja yang bisa diakses user ini (whitelist)
+                                Centang menu tambahan di luar hak default role
+                                <span class="badge badge-primary">{{ $user->roles }}</span>.
+                                Menu dari roles tetap dapat diakses.
                             </small>
                         </label>
                     </div>
@@ -127,43 +129,68 @@
         </div>
 
         <div class="row">
-            @foreach ($availableMenus as $group => $menus)
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header py-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <h6 class="mb-0 text-white font-weight-bold">
-                                <i class="fas fa-folder-open mr-2"></i>{{ $group }}
-                            </h6>
-                        </div>
-                        <div class="card-body py-3">
-                            @foreach ($menus as $key => $label)
-                                <div class="custom-control custom-checkbox mb-2">
-                                    <input
-                                        type="checkbox"
-                                        class="custom-control-input menu-checkbox"
-                                        id="menu_{{ $key }}"
-                                        name="menus[]"
-                                        value="{{ $key }}"
-                                        onchange="updateCount()"
-                                        {{ is_array($user->menu_permissions) && in_array($key, $user->menu_permissions) ? 'checked' : '' }}>
-                                    <label class="custom-control-label" for="menu_{{ $key }}">
-                                        {{ $label }}
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
+    @php
+    // Pre-check: menu yang sudah dimiliki oleh roles default user
+    $roleDefaultMenus = [
+        'ADMIN'      => ['users','loguser','setuser','pegawai','jabatan','pangkat','cabang','riwayat','keluarga','pelatihan','berkala','penghasilan','gaji','cuti','ordercuti','mutasi','mutasipangkat','peraturan','categories','asisten_sikap','wa_setting','resetpassword'],
+        'ADMIN_SDM'  => ['pegawai','cabang','riwayat','keluarga','pelatihan','berkala','penghasilan','gaji','cuti','ordercuti','setuser'],
+        'STAFF_SDM'  => ['pegawai','riwayat','keluarga','pelatihan','berkala','penghasilan','gaji','cuti'],
+        'SUPERVISOR' => ['cuti','pegawai'],
+        'PINCAB'     => ['cuti','pegawai','peraturan'],
+        'KADIV'      => ['cuti','pegawai','peraturan','mutasipangkat'],
+        'DIRUT'      => ['cuti','pegawai','peraturan','mutasipangkat'],
+        'DIRBIS'     => ['cuti','pegawai','peraturan','mutasipangkat'],
+        'PATUH'      => ['peraturan','kepatuhan','pegawai'],
+        'USER'       => [],
+    ];
+    $roleMenusDefault = $roleDefaultMenus[$user->roles] ?? [];
+@endphp
+        @foreach ($availableMenus as $group => $menus)
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header py-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <h6 class="mb-0 text-white font-weight-bold">
+                            <i class="fas fa-folder-open mr-2"></i>{{ $group }}
+                        </h6>
+                    </div>
+                    <div class="card-body py-3">
+                        @foreach ($menus as $key => $label)
+                            @php
+                                $isRoleDefault  = in_array($key, $roleMenusDefault);
+                                $isCustomChecked = is_array($user->menu_permissions) && in_array($key, $user->menu_permissions);
+                                $isChecked = $isRoleDefault || $isCustomChecked;
+                            @endphp
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input
+                                    type="checkbox"
+                                    class="custom-control-input menu-checkbox {{ $isRoleDefault ? 'is-role-default' : '' }}"
+                                    id="menu_{{ $key }}"
+                                    name="menus[]"
+                                    value="{{ $key }}"
+                                    onchange="updateCount()"
+                                    {{ $isChecked ? 'checked' : '' }}>
+                                <label class="custom-control-label" for="menu_{{ $key }}">
+                                    {{ $label }}
+                                    @if ($isRoleDefault)
+                                        <span class="badge badge-secondary" style="font-size:9px;" title="Sudah termasuk dalam role {{ $user->roles }}">dari roles</span>
+                                    @endif
+                                </label>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
-            @endforeach
+            </div>
+        @endforeach
         </div>
 
         {{-- Info --}}
         <div class="alert alert-info d-flex align-items-start">
             <i class="fas fa-info-circle mr-2 mt-1"></i>
             <div>
-                <strong>Catatan:</strong> Hak akses ini hanya mengontrol <strong>menu yang tampil di sidebar</strong>.
-                Akses ke route/URL masih dikontrol oleh middleware dan Gate yang sudah ada.
-                Jika tidak ada menu yang dicentang, user tidak akan melihat menu apapun di sidebar.
+                <strong>Catatan:</strong>
+                Menu berlabel <span class="badge badge-secondary">dari roles</span> sudah otomatis dimiliki user berdasarkan role <strong>{{ $user->roles }}</strong>.
+                Centang menu tambahan yang ingin diberikan di luar hak default roles-nya.
+                Menu hasil custom bersifat <strong>TAMBAHAN</strong> — menu dari roles tetap dapat diakses.
             </div>
         </div>
     </div>
