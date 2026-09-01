@@ -121,7 +121,9 @@
     ];
 
     $roleMenus = $roleDefaultMenus[$role] ?? [];
-    $perms = array_unique(array_merge($roleMenus, $customPerms));
+    // Jika user memiliki custom menu_permissions (array), gunakan persis array custom tsb.
+    // Jika null, gunakan menu default dari role user.
+    $perms = is_array($authUser->menu_permissions) ? $authUser->menu_permissions : $roleMenus;
 
     $getRoute = function($menuKey) use ($role) {
         switch ($menuKey) {

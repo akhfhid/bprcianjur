@@ -98,12 +98,11 @@
                             class="custom-control-input" onchange="toggleMenuForm(this)"
                             {{ $user->menu_permissions !== null ? 'checked' : '' }}>
                         <label class="custom-control-label" for="mode_custom">
-                            <strong>Tambahkan Akses Menu Extra</strong>
+                            <strong>Custom Akses Menu (Override)</strong>
                             <br>
                             <small class="text-muted">
-                                Centang menu tambahan di luar hak default role
-                                <span class="badge badge-primary">{{ $user->roles }}</span>.
-                                Menu dari roles tetap dapat diakses.
+                                Bebas tentukan menu yang aktif untuk user ini.
+                                Anda dapat mengaktifkan atau <strong>menonaktifkan</strong> menu default dari role <span class="badge badge-primary">{{ $user->roles }}</span>.
                             </small>
                         </label>
                     </div>
@@ -157,8 +156,13 @@
                         @foreach ($menus as $key => $label)
                             @php
                                 $isRoleDefault  = in_array($key, $roleMenusDefault);
-                                $isCustomChecked = is_array($user->menu_permissions) && in_array($key, $user->menu_permissions);
-                                $isChecked = $isRoleDefault || $isCustomChecked;
+                                if (is_array($user->menu_permissions)) {
+                                    // Jika user punya custom permissions, centang persis yang ada di custom array
+                                    $isChecked = in_array($key, $user->menu_permissions);
+                                } else {
+                                    // Jika belum pernah diset custom (null), gunakan default roles
+                                    $isChecked = $isRoleDefault;
+                                }
                             @endphp
                             <div class="custom-control custom-checkbox mb-2">
                                 <input
@@ -172,7 +176,7 @@
                                 <label class="custom-control-label" for="menu_{{ $key }}">
                                     {{ $label }}
                                     @if ($isRoleDefault)
-                                        <span class="badge badge-secondary" style="font-size:9px;" title="Sudah termasuk dalam role {{ $user->roles }}">dari roles</span>
+                                        <span class="badge badge-light border text-muted" style="font-size:9px;" title="Menu default dari role {{ $user->roles }}">default role</span>
                                     @endif
                                 </label>
                             </div>
@@ -187,10 +191,9 @@
         <div class="alert alert-info d-flex align-items-start">
             <i class="fas fa-info-circle mr-2 mt-1"></i>
             <div>
-                <strong>Catatan:</strong>
-                Menu berlabel <span class="badge badge-secondary">dari roles</span> sudah otomatis dimiliki user berdasarkan role <strong>{{ $user->roles }}</strong>.
-                Centang menu tambahan yang ingin diberikan di luar hak default roles-nya.
-                Menu hasil custom bersifat <strong>TAMBAHAN</strong> — menu dari roles tetap dapat diakses.
+                <strong>Bebas Mengatur Hak Akses Menu:</strong>
+                Anda dapat memilih menu apa saja yang aktif untuk user ini.
+                Menu default dari role ditandai dengan badge <span class="badge badge-light border text-muted">default role</span>. Anda bisa membiarkan centang untuk mengaktifkan atau menghapus centang untuk <strong>menonaktifkan</strong> menu tersebut.
             </div>
         </div>
     </div>
