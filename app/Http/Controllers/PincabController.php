@@ -627,11 +627,17 @@ class PincabController extends Controller
         }
         $user_id = \Auth::user()->pegawai_id;
         $peg = \App\Pegawai::where('id', $user_id)->first();
-        $jabpeg = $peg->jabatan;
+        $jabpeg = $peg ? $peg->jabatan : null;
         $jabatan = \App\Jabatan::where('id', $jabpeg)->first();
-        $jabatasan = $jabatan->atasan;
-        $jabket = \App\jabatan::where('id', $jabatasan)->first();
-        $jabketat = $jabket->atasan;
+
+        $jabatasan = ($peg && !empty($peg->atasan1)) ? $peg->atasan1 : ($jabatan->atasan ?? null);
+
+        if ($peg && !empty($peg->atasan2)) {
+            $jabketat = $peg->atasan2;
+        } else {
+            $jabket = \App\Jabatan::where('id', $jabatasan)->first();
+            $jabketat = $jabket->atasan ?? null;
+        }
         $jmlcuti = $jumlahcuti;
 
         if ($jeniscuti == 'Cuti Wajib') {
@@ -683,88 +689,49 @@ class PincabController extends Controller
             $new_cuti->statdiket = 'SUBMIT';
         }
         $new_cuti->save();
-    try {
-    $pegawai = \App\Pegawai::find($new_cuti->pegawai_id);
 
-    if ($pegawai) {
-        $jabatanPemohon = \App\Jabatan::find($pegawai->jabatan);
+        try {
+            $pegawai = \App\Pegawai::find($new_cuti->pegawai_id);
 
-        if ($jabatanPemohon && $jabatanPemohon->atasan) {
-            $isPimpinanCabang = ((int) $jabatanPemohon->id === 78)
-                || (stripos((string) $jabatanPemohon->name, 'pimpinan cabang') !== false);
+            if ($pegawai && $new_cuti->otoatasan) {
+                $targetJabatanAtasan1 = $new_cuti->otoatasan;
+                $isPimpinanCabang = ((int) $targetJabatanAtasan1 === 78);
 
-            if ($isPimpinanCabang) {
-                $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
-                    ->where('status_active', 1)
-                    ->orderBy('id')
-                    ->first();
-            } else {
-                $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
-                    ->where('cabang', $pegawai->cabang)
-                    ->where('status_active', 1)
-                    ->first();
-
-                if (!$atasan1) {
-                    $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
+                if ($isPimpinanCabang) {
+                    $atasan1 = \App\Pegawai::where('jabatan', $targetJabatanAtasan1)
                         ->where('status_active', 1)
                         ->orderBy('id')
                         ->first();
+                } else {
+                    $atasan1 = \App\Pegawai::where('jabatan', $targetJabatanAtasan1)
+                        ->where('cabang', $pegawai->cabang)
+                        ->where('status_active', 1)
+                        ->first();
+
+                    if (!$atasan1) {
+                        $atasan1 = \App\Pegawai::where('jabatan', $targetJabatanAtasan1)
+                            ->where('status_active', 1)
+                            ->orderBy('id')
+                            ->first();
+                    }
+                }
+
+                if ($atasan1) {
+                    \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan1(
+                        $pegawai,
+                        $new_cuti,
+                        $atasan1
+                    );
                 }
             }
-
-            if ($atasan1) {
-                \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan1(
-                    $pegawai,
-                    $new_cuti,
-                    $atasan1
-                );
-            }
+        } catch (\Exception $e) {
+            \Log::error('Gagal Notif Submit Cuti', [
+                'order_id' => $new_cuti->id,
+                'error' => $e->getMessage(),
+            ]);
         }
-    }
-} catch (\Exception $e) {
-    \Log::error('Gagal Notif Submit Cuti', array(
-        'order_id' => $new_cuti->id,
-        'error' => $e->getMessage(),
-    ));
-}
+
         return redirect()->route('pincab.cutipincab')->with('status', 'Permohonan Berhasil Diinput');
-    }
-    public function tolakcuti()
-    {
-        $user = \Auth::user()->pegawai_id;
-        $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
-            ->wherehas('pegawai', function ($query) use ($user) {
-                $query->where('id', $user);
-            })
-            ->where('status', 'like', 'DITOLAK')
-            ->get();
-        $data = [];
-        foreach ($ordercuti as $cuti) {
-            //$order=\App\ordercuti::where('status','SUBMIT');
-            $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
-            $namapeg = $pegawai['name'];
-
-            $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
-            $namacab = $cabang['name'];
-
-            //$jmlcuti = $pegawai->scuti;
-            //$pcuti = $cuti->jmlcuti;
-            //$sisacuti = $jmlcuti-$pcuti;
-
-            $data[] = [
-                'id' => $cuti['id'],
-                'namapeg' => $namapeg,
-                'tglmohon' => $cuti['created_at'],
-                'jmlcuti' => $cuti['jmlcuti'],
-                'tglawal' => $cuti['tglawal'],
-                'tglakhir' => $cuti['tglakhir'],
-                'alasan' => $cuti['alasan'],
-                'namacab' => $namacab,
-                'status' => $cuti['status'],
-            ];
-        }
-
-        return view('pincab.tolakcuti', ['orderc' => $data]);
     }
     public function setujucuti()
     {

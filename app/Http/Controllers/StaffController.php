@@ -336,9 +336,16 @@ class StaffController extends Controller
         }
 
         $jabatan = \App\Jabatan::where('id', $peg->jabatan)->first();
-        $jabatasan = $jabatan->atasan ?? null;
-        $jabket = \App\jabatan::where('id', $jabatasan)->first();
-        $jabketat = $jabket->atasan ?? null;
+        // Utamakan atasan1 dari Setup Otorisasi Cuti (pegawais), fallback ke hirarki jabatan
+        $jabatasan = !empty($peg->atasan1) ? $peg->atasan1 : ($jabatan->atasan ?? null);
+
+        // Utamakan atasan2 dari Setup Otorisasi Cuti (pegawais), fallback ke hirarki jabatan dari atasan1
+        if (!empty($peg->atasan2)) {
+            $jabketat = $peg->atasan2;
+        } else {
+            $jabket = \App\Jabatan::where('id', $jabatasan)->first();
+            $jabketat = $jabket->atasan ?? null;
+        }
 
         $new_cuti = new \App\ordercuti();
         $new_cuti->user_id = \Auth::user()->id;
@@ -370,39 +377,35 @@ class StaffController extends Controller
         try {
     $pegawai = \App\Pegawai::find($new_cuti->pegawai_id);
 
-    if ($pegawai) {
-        $jabatanPemohon = \App\Jabatan::find($pegawai->jabatan);
+    if ($pegawai && $new_cuti->otoatasan) {
+        $targetJabatanAtasan1 = $new_cuti->otoatasan;
+        $isPimpinanCabang = ((int) $targetJabatanAtasan1 === 78);
 
-        if ($jabatanPemohon && $jabatanPemohon->atasan) {
-            $isPimpinanCabang = ((int) $jabatanPemohon->id === 78)
-                || (stripos((string) $jabatanPemohon->name, 'pimpinan cabang') !== false);
+        if ($isPimpinanCabang) {
+            $atasan1 = \App\Pegawai::where('jabatan', $targetJabatanAtasan1)
+                ->where('status_active', 1)
+                ->orderBy('id')
+                ->first();
+        } else {
+            $atasan1 = \App\Pegawai::where('jabatan', $targetJabatanAtasan1)
+                ->where('cabang', $pegawai->cabang)
+                ->where('status_active', 1)
+                ->first();
 
-            if ($isPimpinanCabang) {
-                $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
+            if (!$atasan1) {
+                $atasan1 = \App\Pegawai::where('jabatan', $targetJabatanAtasan1)
                     ->where('status_active', 1)
                     ->orderBy('id')
                     ->first();
-            } else {
-                $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
-                    ->where('cabang', $pegawai->cabang)
-                    ->where('status_active', 1)
-                    ->first();
-
-                if (!$atasan1) {
-                    $atasan1 = \App\Pegawai::where('jabatan', $jabatanPemohon->atasan)
-                        ->where('status_active', 1)
-                        ->orderBy('id')
-                        ->first();
-                }
             }
+        }
 
-            if ($atasan1) {
-                \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan1(
-                    $pegawai,
-                    $new_cuti,
-                    $atasan1
-                );
-            }
+        if ($atasan1) {
+            \App\Helpers\WhatsAppHelper::sendCutiNotificationAtasan1(
+                $pegawai,
+                $new_cuti,
+                $atasan1
+            );
         }
     }
 } catch (\Exception $e) {

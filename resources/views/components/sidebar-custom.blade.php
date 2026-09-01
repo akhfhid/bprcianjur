@@ -29,6 +29,7 @@
 
 @php
     $authUser     = auth()->user();
+    $role         = $authUser->roles;
     $customPerms  = $authUser->menu_permissions ?? [];
 
     /**
@@ -61,19 +62,99 @@
             'penghasilan', 'gaji',
             'cuti',
         ],
-        'SUPERVISOR' => ['cuti', 'pegawai'],
+        'SUPERVISOR' => ['cuti', 'pegawai', 'peraturan'],
         'PINCAB'     => ['cuti', 'pegawai', 'peraturan'],
         'KADIV'      => ['cuti', 'pegawai', 'peraturan', 'mutasipangkat'],
         'DIRUT'      => ['cuti', 'pegawai', 'peraturan', 'mutasipangkat'],
         'DIRBIS'     => ['cuti', 'pegawai', 'peraturan', 'mutasipangkat'],
         'PATUH'      => ['peraturan', 'kepatuhan', 'pegawai'],
-        'USER'       => [],
+        'USER'       => ['cuti', 'peraturan'],
     ];
 
-    $roleMenus = $roleDefaultMenus[$authUser->roles] ?? [];
+    $roleMenus = $roleDefaultMenus[$role] ?? [];
 
     // Gabungkan: role defaults + custom permissions (union, no duplicates)
     $perms = array_unique(array_merge($roleMenus, $customPerms));
+
+    /**
+     * Helper penentuan route link per menu berdasarkan role user yang login.
+     * Sehingga user tidak terhadang 403 Forbidden karena route disesuaikan Controller role-nya.
+     */
+    $getRoute = function($menuKey) use ($role) {
+        switch ($menuKey) {
+            case 'pegawai':
+                if ($role == 'PINCAB') return route('pincab.indexpegawai');
+                if ($role == 'KADIV') return route('kadiv.indexpegawai');
+                if ($role == 'SUPERVISOR') return route('supervisor.indexpegawai');
+                if ($role == 'DIRUT') return route('direksi.indexpegawai');
+                if ($role == 'DIRBIS') return route('dirbis.indexpegawai');
+                if ($role == 'PATUH') return route('kepatuhan.indexpegawai');
+                return route('pegawai.index');
+
+            case 'peraturan':
+                if ($role == 'USER') return route('staff.peraturan');
+                if ($role == 'SUPERVISOR') return route('supervisor.peraturan');
+                if ($role == 'PINCAB') return route('pincab.peraturan');
+                if ($role == 'KADIV') return route('kadiv.peraturan');
+                if ($role == 'DIRUT') return route('direksi.peraturan');
+                if ($role == 'DIRBIS') return route('dirbis.peraturan');
+                return route('peraturan.index');
+
+            case 'cuti':
+                if ($role == 'USER') return route('staff.cuti');
+                if ($role == 'SUPERVISOR') return route('supervisor.cutiindex');
+                if ($role == 'PINCAB') return route('pincab.cutiindex');
+                if ($role == 'KADIV') return route('kadiv.cutiindex');
+                if ($role == 'DIRUT') return route('direksi.cutiindex');
+                if ($role == 'DIRBIS') return route('dirbis.cutiindex');
+                if ($role == 'PATUH') return route('kepatuhan.cutiindex');
+                return route('cuti.index');
+
+            case 'ordercuti':
+                if ($role == 'USER') return route('staff.permohonancuti');
+                if ($role == 'SUPERVISOR') return route('supervisor.cutisupervisor');
+                if ($role == 'PINCAB') return route('pincab.cutipincab');
+                if ($role == 'KADIV') return route('kadiv.permohonancuti');
+                if ($role == 'DIRUT') return route('direksi.permohonancuti');
+                if ($role == 'DIRBIS') return route('dirbis.permohonancuti');
+                if ($role == 'PATUH') return route('kepatuhan.permohonancuti');
+                return route('ordercuti.indexcuti');
+
+            case 'loguser':
+                if ($role == 'PATUH') return route('kepatuhan.loguser');
+                return route('Loguser.index');
+
+            case 'mutasipangkat':
+                if ($role == 'DIRUT') return route('direksi.mutasipangkat');
+                if ($role == 'DIRBIS') return route('dirbis.mutasipangkat');
+                return route('mutasipangkat.index');
+
+            default:
+                $routesMap = [
+                    'users'         => 'users.index',
+                    'setuser'       => 'setuser.index',
+                    'cabang'        => 'cabang.index',
+                    'jabatan'       => 'jabatan.index',
+                    'pangkat'       => 'pangkat.index',
+                    'riwayat'       => 'riwayatkerja.index',
+                    'keluarga'      => 'keluarga.index',
+                    'pelatihan'     => 'pelatihan.index',
+                    'berkala'       => 'pegawai.listberkala',
+                    'penghasilan'   => 'penghasilan.index',
+                    'gaji'          => 'gaji.index',
+                    'mutasi'        => 'mutasi.index',
+                    'categories'    => 'categories.index',
+                    'kepatuhan'     => 'kepatuhan.statusatur',
+                    'asisten_sikap' => 'admin.asisten-sikap.index',
+                    'wa_setting'    => 'admin.wa-setting.index',
+                    'resetpassword' => 'resetpassword.index',
+                ];
+                if (isset($routesMap[$menuKey]) && \Route::has($routesMap[$menuKey])) {
+                    return route($routesMap[$menuKey]);
+                }
+                return '#';
+        }
+    };
 @endphp
 
 <div class="sidebar-menu">
@@ -93,7 +174,7 @@
 
         @if (in_array('users', $perms))
             <li>
-                <a href="{{ route('users.index') }}">
+                <a href="{{ $getRoute('users') }}">
                     <span class="oi oi-person"></span>
                     Users
                 </a>
@@ -102,7 +183,7 @@
 
         @if (in_array('setuser', $perms))
             <li>
-                <a href="{{ route('setuser.index') }}">
+                <a href="{{ $getRoute('setuser') }}">
                     <span class="oi oi-lock-locked"></span>
                     Setup Otorisasi Cuti
                 </a>
@@ -111,7 +192,7 @@
 
         @if (in_array('loguser', $perms))
             <li>
-                <a href="{{ route('Loguser.index') }}">
+                <a href="{{ $getRoute('loguser') }}">
                     <span class="oi oi-list"></span>
                     Log Akses User
                 </a>
@@ -125,7 +206,7 @@
 
         @if (in_array('pegawai', $perms))
             <li>
-                <a href="{{ route('pegawai.index') }}">
+                <a href="{{ $getRoute('pegawai') }}">
                     <span class="oi oi-people"></span>
                     Pegawai
                 </a>
@@ -134,7 +215,7 @@
 
         @if (in_array('cabang', $perms))
             <li>
-                <a href="{{ route('cabang.index') }}">
+                <a href="{{ $getRoute('cabang') }}">
                     <span class="oi oi-map-marker"></span>
                     Kantor
                 </a>
@@ -143,7 +224,7 @@
 
         @if (in_array('jabatan', $perms))
             <li>
-                <a href="{{ route('jabatan.index') }}">
+                <a href="{{ $getRoute('jabatan') }}">
                     <span class="oi oi-briefcase"></span>
                     Jabatan
                 </a>
@@ -152,7 +233,7 @@
 
         @if (in_array('pangkat', $perms))
             <li>
-                <a href="{{ route('pangkat.index') }}">
+                <a href="{{ $getRoute('pangkat') }}">
                     <span class="oi oi-chevron-top"></span>
                     Pangkat
                 </a>
@@ -187,7 +268,7 @@
 
         @if (in_array('keluarga', $perms))
             <li>
-                <a href="{{ route('keluarga.index') }}">
+                <a href="{{ $getRoute('keluarga') }}">
                     <span class="oi oi-heart"></span>
                     Data Keluarga
                 </a>
@@ -196,7 +277,7 @@
 
         @if (in_array('pelatihan', $perms))
             <li>
-                <a href="{{ route('pelatihan.index') }}">
+                <a href="{{ $getRoute('pelatihan') }}">
                     <span class="oi oi-star"></span>
                     Pelatihan
                 </a>
@@ -205,7 +286,7 @@
 
         @if (in_array('berkala', $perms))
             <li>
-                <a href="{{ route('pegawai.listberkala') }}">
+                <a href="{{ $getRoute('berkala') }}">
                     <span class="oi oi-timer"></span>
                     Jadwal Kepangkatan
                 </a>
@@ -219,7 +300,7 @@
 
         @if (in_array('penghasilan', $perms))
             <li>
-                <a href="{{ route('penghasilan.index') }}">
+                <a href="{{ $getRoute('penghasilan') }}">
                     <span class="oi oi-dollar"></span>
                     Penghasilan
                 </a>
@@ -228,7 +309,7 @@
 
         @if (in_array('gaji', $perms))
             <li>
-                <a href="{{ route('gaji.index') }}">
+                <a href="{{ $getRoute('gaji') }}">
                     <span class="oi oi-dollar"></span>
                     Gaji
                 </a>
@@ -242,16 +323,16 @@
 
         @if (in_array('cuti', $perms))
             <li>
-                <a href="{{ route('cuti.index') }}">
+                <a href="{{ $getRoute('cuti') }}">
                     <span class="oi oi-inbox"></span>
-                    Manajemen Cuti
+                    Manajemen / Otorisasi Cuti
                 </a>
             </li>
         @endif
 
         @if (in_array('ordercuti', $perms))
             <li>
-                <a href="{{ route('ordercuti.indexcuti') }}">
+                <a href="{{ $getRoute('ordercuti') }}">
                     <span class="oi oi-inbox"></span>
                     Permohonan Cuti
                 </a>
@@ -265,7 +346,7 @@
 
         @if (in_array('mutasi', $perms))
             <li>
-                <a href="{{ route('mutasi.index') }}">
+                <a href="{{ $getRoute('mutasi') }}">
                     <span class="oi oi-transfer"></span>
                     Mutasi Jabatan
                 </a>
@@ -274,7 +355,7 @@
 
         @if (in_array('mutasipangkat', $perms))
             <li>
-                <a href="{{ route('mutasipangkat.index') }}">
+                <a href="{{ $getRoute('mutasipangkat') }}">
                     <span class="oi oi-transfer"></span>
                     Mutasi Pangkat
                 </a>
@@ -288,7 +369,7 @@
 
         @if (in_array('peraturan', $perms))
             <li>
-                <a href="{{ route('peraturan.index') }}">
+                <a href="{{ $getRoute('peraturan') }}">
                     <span class="oi oi-book"></span>
                     Peraturan
                 </a>
@@ -297,7 +378,7 @@
 
         @if (in_array('categories', $perms))
             <li>
-                <a href="{{ route('categories.index') }}">
+                <a href="{{ $getRoute('categories') }}">
                     <span class="oi oi-tags"></span>
                     Kategori Peraturan
                 </a>
@@ -306,7 +387,7 @@
 
         @if (in_array('kepatuhan', $perms))
             <li>
-                <a href="{{ route('kepatuhan.statusatur') }}">
+                <a href="{{ $getRoute('kepatuhan') }}">
                     <span class="oi oi-shield"></span>
                     Kepatuhan
                 </a>
@@ -320,7 +401,7 @@
 
         @if (in_array('asisten_sikap', $perms))
             <li>
-                <a href="{{ route('admin.asisten-sikap.index') }}">
+                <a href="{{ $getRoute('asisten_sikap') }}">
                     <span class="oi oi-chat"></span>
                     Asisten Sikap (AI)
                 </a>
@@ -329,7 +410,7 @@
 
         @if (in_array('wa_setting', $perms))
             <li>
-                <a href="{{ route('admin.wa-setting.index') }}">
+                <a href="{{ $getRoute('wa_setting') }}">
                     <span class="oi oi-cog"></span>
                     Pengaturan WA
                 </a>
@@ -338,7 +419,7 @@
 
         @if (in_array('resetpassword', $perms))
             <li>
-                <a href="{{ route('resetpassword.index') }}">
+                <a href="{{ $getRoute('resetpassword') }}">
                     <span class="oi oi-key"></span>
                     Reset Password
                 </a>
@@ -347,3 +428,4 @@
     @endif
 
 </div>
+
