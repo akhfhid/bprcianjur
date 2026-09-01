@@ -27,6 +27,78 @@
     }
 </style>
 
+@php
+    $authUser     = auth()->user();
+    $customPerms  = $authUser->menu_permissions ?? [];
+
+    /**
+     * Menu default yang dimiliki tiap role.
+     * Custom permissions bersifat ADDITIVE:
+     * user tetap dapat semua menu dari roles-nya,
+     * ditambah menu ekstra yang diberikan administrator.
+     */
+    $roleDefaultMenus = [
+        'ADMIN' => [
+            'users', 'loguser', 'setuser',
+            'pegawai', 'jabatan', 'pangkat', 'cabang',
+            'riwayat', 'keluarga', 'pelatihan', 'berkala',
+            'penghasilan', 'gaji',
+            'cuti', 'ordercuti',
+            'mutasi', 'mutasipangkat',
+            'peraturan', 'categories',
+            'asisten_sikap', 'wa_setting', 'resetpassword',
+        ],
+        'ADMIN_SDM' => [
+            'pegawai', 'cabang',
+            'riwayat', 'keluarga', 'pelatihan', 'berkala',
+            'penghasilan', 'gaji',
+            'cuti', 'ordercuti',
+            'setuser',
+        ],
+        'STAFF_SDM' => [
+            'pegawai',
+            'riwayat', 'keluarga', 'pelatihan', 'berkala',
+            'penghasilan', 'gaji',
+            'cuti',
+        ],
+        'SUPERVISOR' => ['cuti', 'pegawai'],
+        'PINCAB'     => ['cuti', 'pegawai', 'peraturan'],
+        'KADIV'      => ['cuti', 'pegawai', 'peraturan', 'mutasipangkat'],
+        'DIRUT'      => ['cuti', 'pegawai', 'peraturan', 'mutasipangkat'],
+        'DIRBIS'     => ['cuti', 'pegawai', 'peraturan', 'mutasipangkat'],
+        'PATUH'      => ['peraturan', 'kepatuhan', 'pegawai'],
+        'USER'       => [],
+    ];
+
+    $roleMenus = $roleDefaultMenus[$authUser->roles] ?? [];
+
+    // Gabungkan: role defaults + custom permissions (union, no duplicates)
+    $perms = array_unique(array_merge($roleMenus, $customPerms));
+@endphp
+
+    .sidebar-menu .oi {
+        font-size: 12px;
+        margin-right: 6px;
+    }
+
+    .sidebar-section {
+        font-size: 10px;
+        margin: 10px 0 4px;
+        letter-spacing: .5px;
+    }
+
+    .sidebar-custom-badge {
+        font-size: 9px;
+        background: #f6c23e;
+        color: #333;
+        border-radius: 3px;
+        padding: 1px 4px;
+        margin-left: 4px;
+        font-weight: bold;
+        vertical-align: middle;
+    }
+</style>
+
 <div class="sidebar-menu">
 
     @php $perms = auth()->user()->menu_permissions ?? []; @endphp

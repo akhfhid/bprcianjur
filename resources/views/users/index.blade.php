@@ -114,7 +114,7 @@
 
                                             {{-- Tombol Edit Hak Akses --}}
                                             <a href="{{ route('users.hak-akses', $user->id) }}"
-                                                class="btn btn-sm {{ $user->menu_permissions !== null ? 'btn-warning' : 'btn-outline-secondary' }}"
+                                                class="btn btn-sm {{ $user->menu_permissions !== null ? 'btn-warning text-dark' : 'btn-outline-warning' }}"
                                                 title="{{ $user->menu_permissions !== null ? 'Hak akses telah dikustomisasi' : 'Edit Hak Akses Menu' }}">
                                                 <i class="fas fa-shield-alt"></i>
                                             </a>
