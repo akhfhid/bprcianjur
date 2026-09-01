@@ -76,32 +76,7 @@
     $perms = array_unique(array_merge($roleMenus, $customPerms));
 @endphp
 
-    .sidebar-menu .oi {
-        font-size: 12px;
-        margin-right: 6px;
-    }
-
-    .sidebar-section {
-        font-size: 10px;
-        margin: 10px 0 4px;
-        letter-spacing: .5px;
-    }
-
-    .sidebar-custom-badge {
-        font-size: 9px;
-        background: #f6c23e;
-        color: #333;
-        border-radius: 3px;
-        padding: 1px 4px;
-        margin-left: 4px;
-        font-weight: bold;
-        vertical-align: middle;
-    }
-</style>
-
 <div class="sidebar-menu">
-
-    @php $perms = auth()->user()->menu_permissions ?? []; @endphp
 
     {{-- Dashboard selalu tampil --}}
     <div class="sidebar-section">MAIN</div>
