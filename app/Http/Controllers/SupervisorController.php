@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -585,6 +585,129 @@ class SupervisorController extends Controller
 
         return view('supervisor.cutitolak', ['orderc' => $data]);
     }
+
+    public function cutisupervisor(Request $request)
+    {
+        $idcabang = \Auth::user()->cabang;
+        $idpeg = \Auth::user()->pegawai_id;
+        $peg = \App\Pegawai::where('id', $idpeg)->first();
+        $jabpeg = $peg->jabatan;
+        $name = $request->get('name');
+
+        $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
+            ->when($name, function ($query) use ($name) {
+                $query->whereHas('pegawai', function ($subQuery) use ($name) {
+                    $subQuery->where('name', 'LIKE', "%$name%");
+                });
+            })
+            ->where('otoatasan', $jabpeg)
+            ->where('cabang', $idcabang)
+            ->get();
+
+        $data = [];
+        foreach ($ordercuti as $cuti) {
+            $data[] = [
+                'id'       => $cuti['id'],
+                'namapeg'  => optional($cuti->pegawai)->name ?? '-',
+                'tglmohon' => $cuti['created_at'],
+                'jmlcuti'  => $cuti['jmlcuti'],
+                'tglawal'  => $cuti['tglawal'],
+                'tglakhir' => $cuti['tglakhir'],
+                'alasan'   => $cuti['alasan'],
+                'namacab'  => optional($cuti->cabang)->name ?? '-',
+                'status'   => $cuti['status'],
+            ];
+        }
+
+        return view('supervisor.cutisupervisor', ['orderc' => $data]);
+    }
+
+    public function tolakcuti(Request $request)
+    {
+        $idcabang = \Auth::user()->cabang;
+        $idpeg = \Auth::user()->pegawai_id;
+        $peg = \App\Pegawai::where('id', $idpeg)->first();
+        $jabpeg = $peg->jabatan;
+        $name = $request->get('name');
+
+        $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
+            ->when($name, function ($query) use ($name) {
+                $query->whereHas('pegawai', function ($subQuery) use ($name) {
+                    $subQuery->where('name', 'LIKE', "%$name%");
+                });
+            })
+            ->where('statasan', 'like', 'DITOLAK')
+            ->where('otoatasan', $jabpeg)
+            ->where('cabang', $idcabang)
+            ->get();
+
+        $data = [];
+        foreach ($ordercuti as $cuti) {
+            $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
+            $namapeg = $pegawai ? $pegawai['name'] : '-';
+
+            $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
+            $namacab = $cabang ? $cabang['name'] : '-';
+
+            $data[] = [
+                'id'       => $cuti['id'],
+                'namapeg'  => $namapeg,
+                'tglmohon' => $cuti['created_at'],
+                'jmlcuti'  => $cuti['jmlcuti'],
+                'tglawal'  => $cuti['tglawal'],
+                'tglakhir' => $cuti['tglakhir'],
+                'alasan'   => $cuti['alasan'],
+                'namacab'  => $namacab,
+                'status'   => $cuti['status'],
+            ];
+        }
+
+        return view('supervisor.tolakcuti', ['orderc' => $data]);
+    }
+
+    public function setujucuti(Request $request)
+    {
+        $idcabang = \Auth::user()->cabang;
+        $idpeg = \Auth::user()->pegawai_id;
+        $peg = \App\Pegawai::where('id', $idpeg)->first();
+        $jabpeg = $peg->jabatan;
+        $name = $request->get('name');
+
+        $ordercuti = \App\ordercuti::with('pegawai', 'cabang')
+            ->when($name, function ($query) use ($name) {
+                $query->whereHas('pegawai', function ($subQuery) use ($name) {
+                    $subQuery->where('name', 'LIKE', "%$name%");
+                });
+            })
+            ->where('statasan', 'like', 'DISETUJUI')
+            ->where('otoatasan', $jabpeg)
+            ->where('cabang', $idcabang)
+            ->get();
+
+        $data = [];
+        foreach ($ordercuti as $cuti) {
+            $pegawai = \App\Pegawai::where('id', $cuti['pegawai_id'])->first();
+            $namapeg = $pegawai ? $pegawai['name'] : '-';
+
+            $cabang = \App\Cabang::where('id', $cuti['cabang'])->first();
+            $namacab = $cabang ? $cabang['name'] : '-';
+
+            $data[] = [
+                'id'       => $cuti['id'],
+                'namapeg'  => $namapeg,
+                'tglmohon' => $cuti['created_at'],
+                'jmlcuti'  => $cuti['jmlcuti'],
+                'tglawal'  => $cuti['tglawal'],
+                'tglakhir' => $cuti['tglakhir'],
+                'alasan'   => $cuti['alasan'],
+                'namacab'  => $namacab,
+                'status'   => $cuti['status'],
+            ];
+        }
+
+        return view('supervisor.setujucuti', ['orderc' => $data]);
+    }
+
     public function permohonancuti()
     {
         $user = \Auth::user()->pegawai_id;
