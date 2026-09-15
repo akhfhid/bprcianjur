@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class WhatsAppHelper
 {
-    const DEFAULT_API_URL = 'https://wa.bprcianjur.co.id/api/send-message';
+    const DEFAULT_API_URL = 'https://wa.bprcianjur.co.id/api/dispatacher';
 
     public static function convertPhoneNumber($nohp)
     {
