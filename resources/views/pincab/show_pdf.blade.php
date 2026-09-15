@@ -54,6 +54,8 @@
         {!! $peraturan->pdf !!}
     </div>
 @endif
+                {{-- Hidden container untuk canvas watermark (dipakai saat print, tidak tampil ke user) --}}
+                <div id="canvas-container" style="display:none;"></div>
             </div>
         </div>
     </div>
@@ -116,16 +118,14 @@
     </div>
     <script>
         const printedBy = "{{ Auth::user()->name }}";
-        const copyright = "© COPYRIGHT BPR CIANJUR JABAR";
-        const now = new Date();
+        const copyright  = "© COPYRIGHT BPR CIANJUR JABAR";
+        const now        = new Date();
+        const printDate  = now.toLocaleDateString('id-ID') + ' ' + now.toTimeString().slice(0, 8);
 
-        const printDate =
-            now.toLocaleDateString('id-ID') + ' ' +
-            now.toTimeString().slice(0, 8);
-
-        console.log(printDate);
-
-        const container = document.getElementById('pdf-container');
+        // FIX: pdfContainer hanya ada kalau file-nya PDF (bisa null).
+        //      canvasWrapper selalu ada (hidden div), dipakai sebagai tempat canvas untuk print.
+        const pdfContainer   = document.getElementById('pdf-container');
+        const canvasWrapper  = document.getElementById('canvas-container');
         const pdfData = `{!! $peraturan->pdf !!}`;
         let imageList = [];
         let isPdfFile = false;
@@ -134,81 +134,93 @@
         function addDiagonalWatermark(canvas, ctx) {
             const patternCanvas = document.createElement('canvas');
             const pCtx = patternCanvas.getContext('2d');
-            patternCanvas.width = 180;
+            patternCanvas.width  = 180;
             patternCanvas.height = 240;
             pCtx.translate(patternCanvas.width / 2, patternCanvas.height / 2);
             pCtx.rotate(-30 * Math.PI / 180);
-            pCtx.textAlign = "center";
+            pCtx.textAlign    = "center";
             pCtx.textBaseline = "middle";
-            pCtx.fillStyle = "rgba(0, 102, 204, 0.4)"; //30%
-            pCtx.font = "bold 16px sans-serif";
+            pCtx.fillStyle    = "rgba(0, 102, 204, 0.4)";
+            pCtx.font         = "bold 16px sans-serif";
             pCtx.fillText(printedBy, 0, -10);
-            pCtx.font = "bold 14px sans-serif";
+            pCtx.font         = "bold 14px sans-serif";
             pCtx.fillText(printDate, 0, 12);
             ctx.save();
             const pattern = ctx.createPattern(patternCanvas, 'repeat');
             ctx.fillStyle = pattern;
-            ctx.fillRect(0, 0, canvas.width, canvas.height); // Isi seluruh dokumen dengan pola
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.restore();
         }
 
         if (pdfData.includes("<img")) {
+            // Konten berupa gambar embedded
             const temp = document.createElement("div");
             temp.innerHTML = pdfData;
-
-            const imgs = temp.querySelectorAll("img");
-            imgs.forEach(img => {
-                let src = img.getAttribute("src");
-                imageList.push(src);
+            temp.querySelectorAll("img").forEach(img => {
+                imageList.push(img.getAttribute("src"));
             });
         } else if (pdfData.toLowerCase().endsWith(".pdf")) {
             isPdfFile = true;
         }
 
-        if (isPdfFile) {
+        if (isPdfFile && pdfContainer) {
+            // Render PDF: tampilan ke #pdf-container, canvas watermark ke #canvas-container (hidden)
             const url = `/storage/pdfs/${pdfData}`;
             pdfjsLib.getDocument(url).promise.then(async (pdf) => {
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const viewport = page.getViewport({
-                        scale: 1.5
-                    });
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
+                    const page     = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.5 });
 
-                    await page.render({
-                        canvasContext: ctx,
-                        viewport
-                    }).promise;
-                    addDiagonalWatermark(canvas, ctx);
-                    container.appendChild(canvas);
+                    // Canvas tampilan (tanpa watermark, tampil ke user)
+                    const displayCanvas = document.createElement('canvas');
+                    const dCtx          = displayCanvas.getContext('2d');
+                    displayCanvas.height = viewport.height;
+                    displayCanvas.width  = viewport.width;
+                    await page.render({ canvasContext: dCtx, viewport }).promise;
+                    pdfContainer.appendChild(displayCanvas);
+
+                    // Canvas untuk print (dengan watermark, disimpan hidden)
+                    const printCanvas = document.createElement('canvas');
+                    const pCtx2       = printCanvas.getContext('2d');
+                    printCanvas.height = viewport.height;
+                    printCanvas.width  = viewport.width;
+                    await page.render({ canvasContext: pCtx2, viewport }).promise;
+                    addDiagonalWatermark(printCanvas, pCtx2);
+                    canvasWrapper.appendChild(printCanvas);
                 }
+            }).catch(err => {
+                if (pdfContainer) pdfContainer.innerHTML = `<p class="text-danger">Gagal memuat PDF: ${err.message}</p>`;
             });
+
         } else if (imageList.length > 0) {
+            // Konten gambar: render canvas watermark ke #canvas-container (hidden)
             imageList.forEach(src => {
-                const img = new Image();
+                const img       = new Image();
                 img.crossOrigin = "anonymous";
-                img.src = src;
+                img.src         = src;
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
+                    const canvas  = document.createElement('canvas');
+                    canvas.width  = img.width;
                     canvas.height = img.height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
                     addDiagonalWatermark(canvas, ctx);
-                    container.appendChild(canvas);
+                    canvasWrapper.appendChild(canvas);   // FIX: pakai canvasWrapper bukan container
                 };
             });
-        } else {
-            container.innerHTML = `<p class="text-danger">File tidak dikenali atau tidak ditemukan.</p>`;
+
+        } else if (!isPdfFile) {
+            // HTML murni: tandai, akan print langsung pakai window.print()
+            canvasWrapper.dataset.htmlOnly = "true";
         }
 
+        // ─── Tombol Print PDF ─────────────────────────────────────────────────────
         document.getElementById('btnPrintCanvas').addEventListener('click', () => {
-            const canvases = container.querySelectorAll('canvas');
-            if (!canvases.length) {
-                alert("Dokumen masih memuat atau tidak ada konten untuk dicetak.");
+            const canvases   = canvasWrapper.querySelectorAll('canvas');   // FIX: pakai canvasWrapper
+            const isHtmlOnly = canvasWrapper.dataset.htmlOnly === "true";
+
+            if (!canvases.length && !isHtmlOnly) {
+                alert("Dokumen masih memuat. Tunggu sebentar lalu coba lagi.");
                 return;
             }
 
@@ -216,79 +228,87 @@
             $('#printModal').modal('show');
         });
 
+        // ─── Konfirmasi Cetak ─────────────────────────────────────────────────────
         document.getElementById('btnKonfirmasiCetak').addEventListener('click', () => {
             const btn = document.getElementById('btnKonfirmasiCetak');
-            btn.disabled = true;
+            btn.disabled  = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+
             fetch('{{ route('pincab.update_print') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
-                    },
-                    body: JSON.stringify({
-                        order_id: {{ $order->id }} // Mengambil ID order dari controller
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // 3. Jika berhasil di-update, barulah jalankan proses Print
-                        $('#printModal').modal('hide');
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ order_id: {{ $order->id }} })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#printModal').modal('hide');
 
-                        const canvases = container.querySelectorAll('canvas');
+                    const canvases   = canvasWrapper.querySelectorAll('canvas');   // FIX
+                    const isHtmlOnly = canvasWrapper.dataset.htmlOnly === "true";
 
-                        const w = window.open('', '_blank');
-                        w.document.title = "Print Dokumen - BPR Cianjur";
-                        const style = w.document.createElement('style');
-                        style.innerHTML = `
-                    @page { margin: 10mm; }
-                    body { margin: 0; padding: 0; background: #fff; text-align: center; }
-                    canvas { page-break-after: always; max-width: 100%; display: block; margin: 0 auto; }
-                    canvas:last-child { page-break-after: avoid; }
-                `;
-                        w.document.head.appendChild(style);
-
-                        canvases.forEach(c => {
-                            const clone = document.createElement('canvas');
-                            clone.width = c.width;
-                            clone.height = c.height;
-                            const ctx = clone.getContext('2d');
-
-                            ctx.drawImage(c, 0, 0);
-
-                            ctx.font = "bold 14px sans-serif";
-                            ctx.fillStyle = "rgba(0,0,0,0.5)";
-                            ctx.textAlign = "center";
-
-                            ctx.fillText(copyright, clone.width / 2, 40);
-                            ctx.fillText("Printed By: " + printedBy + " - " + printDate, clone.width /
-                                2, 60);
-
-                            w.document.body.appendChild(clone);
-                        });
-
+                    if (isHtmlOnly) {
+                        // HTML murni: print halaman langsung
                         setTimeout(() => {
-                            w.print();
-                            w.close();
-
-                            // Setelah print selesai, otomatis redirect ke halaman status
+                            window.print();
                             window.location.href = "{{ route('pincab.peraturan') }}";
-                        }, 500);
-
-                    } else {
-                        alert("Terjadi kesalahan saat memproses data pencetakan.");
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-check mr-2"></i> Konfirmasi Cetak';
+                        }, 300);
+                        return;
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("Gagal terhubung ke server.");
-                    btn.disabled = false;
+
+                    // Canvas-based print (PDF / gambar)
+                    const w = window.open('', '_blank');
+                    if (!w) {
+                        alert("Pop-up diblokir browser. Izinkan pop-up lalu coba lagi.");
+                        btn.disabled  = false;
+                        btn.innerHTML = '<i class="fas fa-check mr-2"></i> Konfirmasi Cetak';
+                        return;
+                    }
+                    w.document.title = "Print Dokumen - BPR Cianjur";
+                    const style = w.document.createElement('style');
+                    style.innerHTML = `
+                        @page { margin: 10mm; }
+                        body { margin: 0; padding: 0; background: #fff; text-align: center; }
+                        canvas { page-break-after: always; max-width: 100%; display: block; margin: 0 auto; }
+                        canvas:last-child { page-break-after: avoid; }
+                    `;
+                    w.document.head.appendChild(style);
+
+                    canvases.forEach(c => {
+                        const clone  = document.createElement('canvas');
+                        clone.width  = c.width;
+                        clone.height = c.height;
+                        const ctx    = clone.getContext('2d');
+                        ctx.drawImage(c, 0, 0);
+                        ctx.font      = "bold 14px sans-serif";
+                        ctx.fillStyle = "rgba(0,0,0,0.5)";
+                        ctx.textAlign = "center";
+                        ctx.fillText(copyright, clone.width / 2, 40);
+                        ctx.fillText("Printed By: " + printedBy + " - " + printDate, clone.width / 2, 60);
+                        w.document.body.appendChild(clone);
+                    });
+
+                    setTimeout(() => {
+                        w.print();
+                        w.close();
+                        window.location.href = "{{ route('pincab.peraturan') }}";
+                    }, 500);
+
+                } else {
+                    alert("Terjadi kesalahan saat memproses data pencetakan.");
+                    btn.disabled  = false;
                     btn.innerHTML = '<i class="fas fa-check mr-2"></i> Konfirmasi Cetak';
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Gagal terhubung ke server.");
+                btn.disabled  = false;
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i> Konfirmasi Cetak';
+            });
         });
     </script>
 @endsection
