@@ -276,12 +276,18 @@
                                 @if($peraturan->pdf)
                                     <div class="current-file-info mb-2">
                                         <i class="fas fa-file-pdf"></i> File saat ini:
-                                        <a href="{{ asset('path_to_pdf/' . $peraturan->pdf) }}" target="_blank"
+                                        <a href="{{ route('peraturan.pdf_file', $peraturan->id) }}" target="_blank"
                                             class="font-weight-bold text-primary">{{ $peraturan->pdf }}</a>
                                         <small class="text-muted d-block mt-1">Upload file baru untuk mengganti file
                                             lama.</small>
                                     </div>
                                 @endif
+
+                                @error('pdf')
+                                    <div class="alert alert-danger py-2 px-3 mb-2" style="border-radius: 8px;">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i> {{ $message }}
+                                    </div>
+                                @enderror
 
                                 <label for="pdf" class="custom-file-upload" id="fileUploadLabel">
                                     <div class="d-flex flex-column align-items-center justify-content-center">

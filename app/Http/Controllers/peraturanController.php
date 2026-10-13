@@ -291,7 +291,26 @@ class peraturanController extends Controller
             $edit_peraturan->jenis_ojk = $request->get('sub_jenis');
         }
 
-        //$edit_peraturan->pdf = $description_save;
+        // Menangani penggantian file PDF jika user mengupload file baru
+        if ($request->hasFile('pdf')) {
+            $request->validate([
+                'pdf' => 'file|mimes:pdf|max:51200', // Maksimal 50MB, hanya PDF
+            ]);
+
+            $file = $request->file('pdf');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('pdfs', $filename, 'public');
+
+            // Hapus file lama agar tidak menumpuk di storage
+            if ($edit_peraturan->pdf) {
+                $oldPath = storage_path('app/public/pdfs/' . $edit_peraturan->pdf);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            $edit_peraturan->pdf = $filename;
+        }
 
         $edit_peraturan->updated_by = \Auth::user()->id;
         $edit_peraturan->save();
