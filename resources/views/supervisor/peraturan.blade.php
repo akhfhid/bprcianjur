@@ -322,6 +322,7 @@
                             <th class="text-center">Jenis</th>
                             <th class="text-center">Tanggal Peraturan</th>
                             <th class="text-center">Tanggal Berlaku</th>
+                            <th id="colSubJenis" class="text-center" style="display:none;font-weight:bold;">Sub Jenis</th>
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -361,10 +362,14 @@
 
             if (showSubJenis) {
                 $('#wrapperSubJenis').slideDown();
+                table.column(5).visible(true);
+                $('#colSubJenis').show();
             } else {
                 $('#wrapperSubJenis').slideUp();
                 subJenisDipilih = "all";
                 $('#filterSubJenis').val('all');
+                table.column(5).visible(false);
+                $('#colSubJenis').hide();
             }
 
             if (table) table.columns.adjust().draw();
@@ -418,7 +423,8 @@
                     { data: "nosk", className: "text-center" },
                     { data: "jenis_surat_label", className: "text-center" },
                     { data: "tglsk", className: "text-center" },
-                    { data: "tgllaku", className: "text-center" }, 
+                    { data: "tgllaku", className: "text-center" },
+                    { data: "jenis_ojk", className: "text-center", visible: false },
                     { data: "action", orderable: false, searchable: false, className: "text-center action-col" }
                 ],
                 order: [[3, 'desc']],

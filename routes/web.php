@@ -304,6 +304,8 @@ route::middleware(['auth'])->group(function () {
     route::Get('Supervisor/Cuti/Approve', 'SupervisorController@cutisetuju')->name('supervisor.cutisetuju');
     route::Get('Supervisor/Cuti/Tolak', 'SupervisorController@cutitolak')->name('supervisor.cutitolak');
     route::Get('Supervisor/Cuti/Supervisor', 'SupervisorController@cutisupervisor')->name('supervisor.cutisupervisor');
+ route::Get('Supervisor/Cuti/Saya', 'SupervisorController@cutisaya')->name('supervisor.cutisaya');
+ route::get('Supervisor/Cuti/Rekap', 'SupervisorController@rekapcuti')->name('supervisor.rekapcuti');
     route::Get('Supervisor/Cuti/SupervisorTolak', 'SupervisorController@tolakcuti')->name('supervisor.tolakcuti');
     route::Get('Supervisor/Cuti/SupervisorSetuju', 'SupervisorController@setujucuti')->name('supervisor.setujucuti');
     route::Get('Supervisor/PermohonanCuti', 'SupervisorController@permohonancuti')->name('supervisor.permohonancuti');
@@ -331,6 +333,7 @@ route::middleware(['auth'])->group(function () {
     route::get('Pincab/Profile', 'PincabController@profile')->name('pincab.profile');
     route::get('Pincab/ProfilePegawai/{id}', 'PincabController@detailpegawai')->name('pincab.detailpegawai');
     route::get('Pincab/Cuti/', 'PincabController@cutipincab')->name('pincab.cutipincab');
+ route::get('Pincab/Cuti/Rekap', 'PincabController@rekapcuti')->name('pincab.rekapcuti');
     route::get('Pincab/Cuti/Permohonan', 'PincabController@permohonancuti')->name('pincab.permohonancuti');
     route::post('Pincab/Cuti/Input', 'PincabController@mintacuti')->name('pincab.mintacuti');
     route::get('Pincab/Cuti/Setuju', 'PincabController@setujucuti')->name('pincab.setujucuti');
@@ -364,6 +367,7 @@ route::middleware(['auth'])->group(function () {
     route::get('Kadiv/Cuti/Setuju', 'KadivController@setujucuti')->name('kadiv.setujucuti');
     route::get('Kadiv/Cuti/Tolak', 'KadivController@tolakcuti')->name('kadiv.tolakcuti');
     route::get('Kadiv/Cuti/Pegawai/Index', 'KadivController@cutiindex')->name('kadiv.cutiindex');
+ route::get('Kadiv/Cuti/Rekap', 'KadivController@rekapcuti')->name('kadiv.rekapcuti');
     route::get('Kadiv/Cuti/Pegawai/Setuju', 'KadivController@cutisetuju')->name('kadiv.cutisetuju');
     route::get('Kadiv/Cuti/Pegawai/Tolak', 'KadivController@cutitolak')->name('kadiv.cutitolak');
     route::post('Kadiv/Cuti/Pegawai/Approve/{id}', 'KadivController@setuju')->name('kadiv.setuju');

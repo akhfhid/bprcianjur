@@ -1380,4 +1380,83 @@ public function cutiindex(Request $request)
         }
         return response()->json(['success' => false], 404);
     }
+
+
+ public function rekapcuti(Request $request)
+ {
+ $user = \Auth::user()->pegawai_id;
+ $peg = \App\Pegawai::where('id', $user)->first();
+ $jabpeg = $peg ? $peg->jabatan : null;
+ $tahun = $request->get('tahun', date('Y'));
+ $name = $request->get('name');
+ $status = $request->get('status', 'all');
+
+ // Semua pegawai aktif yang rantai otorisasi cutinya melewati jabatan user yang login
+ // (sebagai atasan 1 langsung, ATAU sebagai atasan 2 / penerima kabotan)
+ $bawahan = \App\Pegawai::where('status_active', 1)
+ ->where(function ($q) use ($jabpeg) {
+ $q->where('atasan1', $jabpeg)
+ ->orWhere('atasan2', $jabpeg)
+ ->orWhereIn('atasan1', \App\Jabatan::where('atasan', $jabpeg)->pluck('id'))
+ ->orWhereIn('atasan2', \App\Jabatan::where('atasan', $jabpeg)->pluck('id'));
+ })
+ ->when($name, function ($query) use ($name) {
+ $query->where('name', 'LIKE', "%{$name}%");
+ })
+ ->orderBy('name')
+ ->get();
+
+ $jabatanCache = [];
+ $data = [];
+ foreach ($bawahan as $b) {
+ $query = \App\ordercuti::where('pegawai_id', $b->id)
+ ->whereYear('tglawal', $tahun);
+ if ($status != 'all') {
+ $query->where('status', $status);
+ }
+ $cutiData = (clone $query)->selectRaw('jeniscuti, SUM(jmlcuti) as total')
+ ->groupBy('jeniscuti')
+ ->pluck('total', 'jeniscuti');
+
+ if (!isset($jabatanCache[$b->jabatan])) {
+ $jb = \App\Jabatan::where('id', $b->jabatan)->first();
+ $jabatanCache[$b->jabatan] = $jb ? $jb->name : '-';
+ }
+
+ $lainnya = isset($cutiData['Cuti Lainnya']) ? $cutiData['Cuti Lainnya'] : 0;
+ foreach ($cutiData as $jenis => $tot) {
+ if ($jenis != 'Cuti Tahunan' && $jenis != 'Cuti Wajib' && $jenis != 'Cuti Lainnya') {
+ $lainnya += $tot;
+ }
+ }
+
+ $data[] = [
+ 'id' => $b->id,
+ 'namapeg' => $b->name,
+ 'jabatan' => $jabatanCache[$b->jabatan],
+ 'scuti' => $b->scuti ?? 0,
+ 'cutiTahunan' => isset($cutiData['Cuti Tahunan']) ? $cutiData['Cuti Tahunan'] : 0,
+ 'cutiWajib' => isset($cutiData['Cuti Wajib']) ? $cutiData['Cuti Wajib'] : 0,
+ 'cutiLainnya' => $lainnya,
+ 'total' => $cutiData->sum(),
+ ];
+ }
+
+ $totalScuti = collect($data)->sum('scuti');
+ $totalPakai = collect($data)->sum('total');
+ $tahunList = \App\ordercuti::selectRaw('DISTINCT YEAR(tglawal) as th')
+ ->orderBy('th', 'desc')
+ ->pluck('th');
+ if (!$tahunList->contains(date('Y'))) $tahunList->push(date('Y'));
+
+ return view('kadiv.rekapcuti', [
+ 'data' => $data,
+ 'tahun' => $tahun,
+ 'tahunList' => $tahunList,
+ 'name' => $name,
+ 'status' => $status,
+ 'totalScuti' => $totalScuti,
+ 'totalPakai' => $totalPakai,
+ ]);
+ }
 }

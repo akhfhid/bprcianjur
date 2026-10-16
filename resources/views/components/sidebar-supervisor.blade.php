@@ -10,9 +10,11 @@
 	<a href="{{route('supervisor.indexpegawai')}}"><span class="oi oi-people"></span>Data Pegawai</a>
 	</li>
 	
-	<li><a href="{{route('supervisor.cutisupervisor')}}"><span class="oi oi-inbox"></span>Permohonan Cuti</a></li>
+	<li><a href="{{route('supervisor.cutisaya')}}"><span class="oi oi-inbox"></span>Cuti Saya</a></li>
+ <li><a href="{{route('supervisor.cutisupervisor')}}"><span class="oi oi-inbox"></span>Permohonan Cuti</a></li>
 	
 	<li><a href="{{route('supervisor.cutiindex')}}"><span class="oi oi-inbox"></span>Otorisasi Cuti Pegawai</a></li>
+ <li><a href="{{route('supervisor.rekapcuti')}}"><span class="oi oi-chart"></span>Rekap Cuti Pegawai</a></li>
 	<li><a href="{{route('supervisor.peraturan')}}"><span class="oi oi-book"></span>Peraturan</a></li>
 	@if(auth()->user()->loguser =='YA')
 	<li><a href="{{route('Loguser.index')}}"><span class="oi oi-inbox"></span>Log Akses</a></li>

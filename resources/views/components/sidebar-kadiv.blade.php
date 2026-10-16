@@ -11,6 +11,7 @@
 	
 	<li><a href="{{route('kadiv.cutikadiv')}}"><span class="oi oi-inbox"></span>Permohonan Cuti</a></li>
 	<li><a href="{{route('kadiv.cutiindex')}}"><span class="oi oi-inbox"></span>Otorisasi Cuti Pegawai</a></li>
+ <li><a href="{{route('kadiv.rekapcuti')}}"><span class="oi oi-chart"></span>Rekap Cuti Pegawai</a></li>
 	
 	<li><a href="{{route('kadiv.peraturan')}}"><span class="oi oi-book"></span>Peraturan</a></li>
 	@if(auth()->user()->loguser =='YA')

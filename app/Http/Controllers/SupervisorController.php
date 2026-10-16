@@ -586,7 +586,42 @@ class SupervisorController extends Controller
         return view('supervisor.cutitolak', ['orderc' => $data]);
     }
 
-    public function cutisupervisor(Request $request)
+    public function cutisaya()
+ {
+ $id_user = \Auth::user()->pegawai_id;
+ $ordercuti = \App\ordercuti::where("pegawai_id", $id_user)
+ ->orderBy("id", "desc")
+ ->get();
+ $sisacuti = 0;
+ $data = [];
+ foreach ($ordercuti as $cuti) {
+ $pegawai = \App\Pegawai::where("id", $cuti["pegawai_id"])->first();
+ $namapeg = $pegawai ? $pegawai["name"] : "-";
+
+ $cabang = \App\Cabang::where("id", $cuti["cabang"])->first();
+ $namacab = $cabang ? $cabang["name"] : "-";
+
+ $peg = \App\Pegawai::where("id", $id_user)->first();
+ $sisacuti = $peg ? $peg["scuti"] : 0;
+
+ $data[] = [
+ "id" => $cuti["id"],
+ "namapeg" => $namapeg,
+ "tglmohon" => $cuti["created_at"],
+ "jmlcuti" => $cuti["jmlcuti"],
+ "tglawal" => $cuti["tglawal"],
+ "tglakhir" => $cuti["tglakhir"],
+ "alasan" => $cuti["alasan"],
+ "jenis" => $cuti["jeniscuti"],
+ "namacab" => $namacab,
+ "status" => $cuti["status"],
+ ];
+ }
+
+ return view("supervisor.cutisaya", ["orderc" => $data, "sisacuti" => $sisacuti]);
+ }
+
+ public function cutisupervisor(Request $request)
     {
         $idcabang = \Auth::user()->cabang;
         $idpeg = \Auth::user()->pegawai_id;
@@ -839,7 +874,7 @@ class SupervisorController extends Controller
             ));
         }
 
-        return redirect()->route('supervisor.cutisupervisor')->with('status', 'Permohonan Berhasil Diinput');
+        return redirect()->route('supervisor.cutisaya')->with('status', 'Permohonan Berhasil Diinput');
     }
 
     public function setuju($id)
@@ -1344,7 +1379,7 @@ try {
             // 3. Logika Filter Sub Jenis (OJK)
             $sub_jenis = $request->get('sub_jenis');
             if ($sub_jenis && $sub_jenis != 'all') {
-                $query->where('sub_jenis', $sub_jenis); 
+                $query->where('jenis_ojk', $sub_jenis);
             }
 
             // Kembalikan data menggunakan DataTables
@@ -1356,7 +1391,10 @@ try {
                     $btn .= '</div>';
                     return $btn;
                 })
-                ->addColumn('jenis_surat_label', function ($data) {
+                ->addColumn('jenis_ojk', function ($data) {
+ return $data->jenis_ojk ?? '-';
+ })
+ ->addColumn('jenis_surat_label', function ($data) {
                     return $data->jenis_surat ?? '-';
                 })
                 ->editColumn('tglsk', function ($data) {
@@ -1469,4 +1507,84 @@ try {
 
         return view('supervisor.cutilainnya', ['pegawai' => $peg]);
     }
+
+
+ public function rekapcuti(Request $request)
+ {
+  $user = \Auth::user()->pegawai_id;
+  $peg = \App\Pegawai::where('id', $user)->first();
+  $jabpeg = $peg ? $peg->jabatan : null;
+  $tahun = $request->get('tahun', date('Y'));
+  $name = $request->get('name');
+  $status = $request->get('status', 'all');
+ 
+  // Pegawai aktif yang rantai otorisasi cutinya melewati jabatan user yang login
+  // (langsung sebagai atasan 1, ATAU sebagai atasan 2 / penerima kabotan,
+  // ATAU atasan1/atasan2-nya adalah anak jabatan dari jabatan user)
+  $bawahan = \App\Pegawai::where('status_active', 1)
+  ->where(function ($q) use ($jabpeg) {
+  $q->where('atasan1', $jabpeg)
+  ->orWhere('atasan2', $jabpeg)
+  ->orWhereIn('atasan1', \App\Jabatan::where('atasan', $jabpeg)->pluck('id'))
+  ->orWhereIn('atasan2', \App\Jabatan::where('atasan', $jabpeg)->pluck('id'));
+  })
+  ->when($name, function ($query) use ($name) {
+  $query->where('name', 'LIKE', "%{$name}%");
+  })
+  ->orderBy('name')
+  ->get();
+ 
+  $jabatanCache = [];
+  $data = [];
+  foreach ($bawahan as $b) {
+  $query = \App\ordercuti::where('pegawai_id', $b->id)
+  ->whereYear('tglawal', $tahun);
+  if ($status != 'all') {
+  $query->where('status', $status);
+  }
+  $cutiData = (clone $query)->selectRaw('jeniscuti, SUM(jmlcuti) as total')
+  ->groupBy('jeniscuti')
+  ->pluck('total', 'jeniscuti');
+ 
+  if (!isset($jabatanCache[$b->jabatan])) {
+  $jb = \App\Jabatan::where('id', $b->jabatan)->first();
+  $jabatanCache[$b->jabatan] = $jb ? $jb->name : '-';
+  }
+ 
+  $lainnya = isset($cutiData['Cuti Lainnya']) ? $cutiData['Cuti Lainnya'] : 0;
+  foreach ($cutiData as $jenis => $tot) {
+  if ($jenis != 'Cuti Tahunan' && $jenis != 'Cuti Wajib' && $jenis != 'Cuti Lainnya') {
+  $lainnya += $tot;
+  }
+  }
+ 
+  $data[] = [
+  'id' => $b->id,
+  'namapeg' => $b->name,
+  'jabatan' => $jabatanCache[$b->jabatan],
+  'scuti' => $b->scuti ?? 0,
+  'cutiTahunan' => isset($cutiData['Cuti Tahunan']) ? $cutiData['Cuti Tahunan'] : 0,
+  'cutiWajib' => isset($cutiData['Cuti Wajib']) ? $cutiData['Cuti Wajib'] : 0,
+  'cutiLainnya' => $lainnya,
+  'total' => $cutiData->sum(),
+  ];
+  }
+ 
+  $totalScuti = collect($data)->sum('scuti');
+  $totalPakai = collect($data)->sum('total');
+  $tahunList = \App\ordercuti::selectRaw('DISTINCT YEAR(tglawal) as th')
+  ->orderBy('th', 'desc')
+  ->pluck('th');
+  if (!$tahunList->contains(date('Y'))) $tahunList->push(date('Y'));
+ 
+  return view('supervisor.rekapcuti', [
+  'data' => $data,
+  'tahun' => $tahun,
+  'tahunList' => $tahunList,
+  'name' => $name,
+  'status' => $status,
+  'totalScuti' => $totalScuti,
+  'totalPakai' => $totalPakai,
+  ]);
+ }
 }

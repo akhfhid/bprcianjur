@@ -382,44 +382,39 @@
 		let table = null;
 
 		function setFilterJenis() {
-			let filter = $('#filterJenis');
-			filter.empty();
-			filter.append('<option value="all">Semua Jenis</option>');
+            let filter = $('#filterJenis');
+            filter.empty();
+            filter.append('<option value="all">Semua Jenis</option>');
 
-			if (kategoriDipilih === "internal") {
-				filter.append('<option value="SK">SK</option>');
-				filter.append('<option value="SE">SE</option>');
-			} else if (kategoriDipilih === "external") {
-				filter.append('<option value="OJK">OJK</option>');
-				filter.append('<option value="LPS">LPS</option>');
-				filter.append('<option value="Lainnya">Lainnya</option>');
-			}
-		}
+            if (kategoriDipilih === "internal") {
+                filter.append('<option value="SK">SK</option>');
+                filter.append('<option value="SE">SE</option>');
+            } else if (kategoriDipilih === "external") {
+                filter.append('<option value="OJK">OJK</option>');
+                filter.append('<option value="LPS">LPS</option>');
+                filter.append('<option value="Lainnya">Lainnya</option>');
+            }
+        }
 
-		// 2. Fungsi Untuk mengatur Visibilitas Sub Jenis & Kolom Tabel
-		function updateLayout() {
-			let showSubJenis = (kategoriDipilih === "external" && jenisDipilih === "OJK");
+        function updateLayout() {
+            let showSubJenis = (kategoriDipilih === "external" && jenisDipilih === "OJK");
 
-			if (showSubJenis) {
-				$('#wrapperSubJenis').slideDown();
-			} else {
-				$('#wrapperSubJenis').slideUp();
-				subJenisDipilih = "all";
-				$('#filterSubJenis').val('all');
-			}
+            if (showSubJenis) {
+                $('#wrapperSubJenis').slideDown();
+                table.column(5).visible(true);
+                $('#colSubJenis').show();
+            } else {
+                $('#wrapperSubJenis').slideUp();
+                subJenisDipilih = "all";
+                $('#filterSubJenis').val('all');
+                table.column(5).visible(false);
+                $('#colSubJenis').hide();
+            }
 
-			if (showSubJenis) {
-				table.column(5).visible(true);
-				$('#colSubJenis').show();
-			} else {
-				table.column(5).visible(false);
-				$('#colSubJenis').hide();
-			}
+            table.columns.adjust().draw();
+        }
 
-			table.columns.adjust().draw();
-		}
-
-		$('.toggle-btn').click(function () {
+        $('.toggle-btn').click(function () {
 			$('.toggle-btn').removeClass('active');
 			$(this).addClass('active');
 

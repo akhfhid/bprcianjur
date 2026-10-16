@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Pegawai;
+use DataTables;
 class DireksiController extends Controller
 {
     /**
@@ -837,19 +838,50 @@ class DireksiController extends Controller
         return view('direksi.cutitolak',['orderc'=>$data]);
     }
 
-     public function peraturan(Request $request){
-        $peraturan = \App\peraturan::paginate(10);
-        $filterkeyword = $request->get('name');
 
+ public function peraturan(Request $request){
+  if ($request->ajax()) {
+  $query = \App\peraturan::query()
+  ->when($request->kategori && $request->kategori != 'all', function ($q) use ($request) {
+  if ($request->kategori === 'internal') {
+  $q->whereIn('jenis_surat', ['SK', 'SE']);
+  } elseif ($request->kategori === 'external') {
+  $q->whereIn('jenis_surat', ['OJK', 'LPS', 'Lainnya']);
+  }
+  })
+  ->when($request->jenis_surat && $request->jenis_surat != 'all', function ($q) use ($request) {
+  $q->where('jenis_surat', $request->jenis_surat);
+  })
+  ->when($request->sub_jenis && $request->sub_jenis != 'all', function ($q) use ($request) {
+  $q->where('jenis_ojk', $request->sub_jenis);
+  })
+  ->latest();
+ 
+  return DataTables::of($query)
+  ->addColumn('action', function ($data) {
+  return '<a href="' . route('direksi.showatur', [$data->id]) . '" class="action-btn view" title="Detail"><i class="fas fa-eye"></i></a>';
+  })
+  ->addColumn('jenis_surat_label', function ($data) {
+  return $data->jenis_surat ?? '-';
+  })
+  ->addColumn('jenis_ojk', function ($data) {
+  return $data->jenis_ojk ?? '-';
+  })
+  ->editColumn('tglsk', function ($data) {
+  return $data->tglsk ? \Carbon\Carbon::parse($data->tglsk)->format('d/m/Y') : '-';
+  })
+  ->editColumn('tgllaku', function ($data) {
+  return $data->tgllaku ? \Carbon\Carbon::parse($data->tgllaku)->format('d/m/Y') : '-';
+  })
+  ->rawColumns(['action'])
+  ->make(true);
+  }
+ 
+  return view('direksi.peraturan');
+  }
+  
 
-        if($filterkeyword){
-            $peraturan = \App\peraturan::where("name", "LIKE", "%$filterkeyword%")->paginate(10);
-        }
-
-
-        return view('direksi.peraturan',['peraturan'=>$peraturan]);
-    }
-    public function permohonandownload($id){
+ public function permohonandownload($id){
         $peraturan = \App\peraturan::findorfail($id);
         $idpeg=\Auth::user()->pegawai_id;
         $uscab = \Auth::user()->cabang;
