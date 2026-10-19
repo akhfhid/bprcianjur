@@ -34,7 +34,15 @@
             <div class="alert alert-info">
                 <b><span class="oi oi-key"></span> Token Pairing:</b>
                 <div class="my-2" style="font-size:1.5em; letter-spacing:4px;"><b>{{ session('telegram_link_token') }}</b></div>
-                <small>
+
+                @if(session('telegram_link_url'))
+                    <a href="{{ session('telegram_link_url') }}" target="_blank" rel="noopener"
+                       class="btn btn-success btn-sm mb-2">
+                        <span class="oi oi-external-link"></span> Buka Telegram &amp; Hubungkan Otomatis
+                    </a>
+                @endif
+
+                <small class="d-block">
                     Token berlaku <b>15 menit</b>. Buka Telegram, cari bot
                     @if(session('telegram_bot_username'))
                         <a href="https://t.me/{{ session('telegram_bot_username') }}" target="_blank"><b>&#64;{{ session('telegram_bot_username') }}</b></a>

@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\TelegramLinkApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\OrderCutiNotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,4 +17,14 @@ use App\Http\Controllers\OrderCutiNotificationController;
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
   return $request->user();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Telegram — integrasi bot (Telegram Pulse)
+|--------------------------------------------------------------------------
+| Dipanggil server bot saat user mengirim /start <TOKEN> ke bot Telegram.
+*/
+Route::prefix('v1/telegram')->group(function () {
+  Route::post('/link-verify', [TelegramLinkApiController::class, 'verify']);
 });

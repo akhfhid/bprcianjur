@@ -56,17 +56,26 @@ class TelegramLinkController extends Controller
  return back()->with('error', 'Data pegawai tidak ditemukan');
  }
 
- $token = strtoupper(Str::random(8));
- Cache::put('tg_link_' . $token, [
+ $token = 'SIKAP_' . strtoupper(Str::random(8));
+ $tokenTtl = (int) config('telegram_pulse.token_ttl_minutes', 15);
+
+ $payload = [
  'pegawai_id' => $pegawai->id,
  'user_id' => \Auth::user()->id,
- ], now()->addMinutes(15));
+ ];
 
- $botUsername = env('TELEGRAM_BOT_USERNAME', '');
+ // Simpan dua kunci: token lengkap (SIKAP_XXXXXXXX) dan token tanpa prefix.
+ // Bot Telegram memotong prefix "sikap_" sebelum memverifikasi.
+ Cache::put('tg_link_' . $token, $payload, now()->addMinutes($tokenTtl));
+ Cache::put('tg_link_' . self::stripPrefix($token), $payload, now()->addMinutes($tokenTtl));
+
+ $botUsername = config('telegram_pulse.bot_username', env('TELEGRAM_BOT_USERNAME', ''));
+ $linkUrl = $botUsername ? 'https://t.me/' . $botUsername . '?start=' . $token : null;
 
  return back()->with('telegram_link_token', $token)
+ ->with('telegram_link_url', $linkUrl)
  ->with('telegram_bot_username', $botUsername)
- ->with('status', 'Token pairing dibuat. Kirim token berikut ke bot Telegram dalam 15 menit.');
+ ->with('status', 'Token pairing dibuat. Buka tautan Telegram berikut dalam ' . $tokenTtl . ' menit.');
  }
 
  /**
@@ -133,8 +142,8 @@ class TelegramLinkController extends Controller
  return response()->json(['ok' => true]);
  }
 
- // Format: /start ABCDEFGH atau langsung token
- if (preg_match('/^(?:\/start\s+)?([A-Z0-9]{8})$/i', $text, $m)) {
+ // Format: /start ABCDEFGH, /start SIKAP_ABCDEFGH, atau langsung token
+ if (preg_match('/^(?:\/start\s+)?([A-Za-z0-9_-]{8,40})$/i', $text, $m)) {
  $token = strtoupper($m[1]);
  $result = self::verifyToken($token, $chatId);
 
@@ -169,6 +178,17 @@ class TelegramLinkController extends Controller
  }
 
  /**
+ * Normalisasi token: hapus prefix aplikasi (SIKAP_/SEMATA_) dan spasi.
+ *
+ * @param string $token
+ * @return string
+ */
+ protected static function stripPrefix($token)
+ {
+ return strtoupper(preg_replace('/^(SIKAP|SEMATA)[_-]/i', '', trim((string) $token)));
+ }
+
+ /**
  * Verifikasi token pairing yang dikirim user ke bot.
  * Dipanggil oleh webhook/bot bridge, bukan oleh user langsung.
  *
@@ -178,11 +198,19 @@ class TelegramLinkController extends Controller
  */
  public static function verifyToken($token, $chatId)
  {
- $key = 'tg_link_' . strtoupper($token);
+ $normalized = self::stripPrefix($token);
+ $key = 'tg_link_' . $normalized;
  $data = Cache::get($key);
 
  if (!$data) {
- return ['success' => false, 'message' => 'Token tidak valid atau kedaluwarsa.'];
+ // Fallback: token asli (bila bot mengirim apa adanya)
+ $rawKey = 'tg_link_' . strtoupper(trim((string) $token));
+ $data = $rawKey !== $key ? Cache::get($rawKey) : null;
+ $key = $rawKey;
+ }
+
+ if (!$data) {
+ return ['success' => false, 'message' => 'Token tautan tidak valid atau sudah kedaluwarsa. Silakan buat tautan baru di profil SIKAP.'];
  }
 
  $pegawai = Pegawai::find($data['pegawai_id']);
@@ -193,13 +221,29 @@ class TelegramLinkController extends Controller
 
  $pegawai->tg_chat_id = (string) $chatId;
  $pegawai->save();
- Cache::forget($key);
+
+ // Hapus kedua varian kunci (dengan & tanpa prefix) agar token sekali pakai.
+ Cache::forget('tg_link_' . $normalized);
+ Cache::forget('tg_link_' . strtoupper(trim((string) $token)));
+
+ $user = !empty($data['user_id']) ? \App\User::find($data['user_id']) : null;
+
  Log::info('Telegram terhubung', [
  'pegawai_id' => $pegawai->id,
  'chat_id' => $chatId,
  ]);
 
- return ['success' => true, 'message' => 'Telegram berhasil terhubung.'];
+ return [
+ 'success' => true,
+ 'message' => 'Telegram berhasil terhubung.',
+ 'user' => [
+ 'id' => $pegawai->id,
+ 'name' => $pegawai->name,
+ 'username' => $user ? $user->name : null,
+ 'role' => $user ? $user->roles : null,
+ 'jabatan' => $pegawai->relJabatan ? $pegawai->relJabatan->name : null,
+ ],
+ ];
  }
 }
 
