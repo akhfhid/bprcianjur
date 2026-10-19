@@ -700,7 +700,16 @@ public function cutikadiv(Request $request)
     ));
 }
 
-        return redirect()->route('kadiv.cutikadiv')->with('status', 'Permohonan Berhasil Diinput');
+       
+ // Notifikasi telegram: cuti submit
+ try {
+ app(\App\Services\TelegramCutiNotificationService::class)->notify($new_cuti, 'SUBMIT');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (SUBMIT)', [
+ 'order_id' => $new_cuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+ } return redirect()->route('kadiv.cutikadiv')->with('status', 'Permohonan Berhasil Diinput');
     }
     public function tolakcuti()
     {
@@ -882,7 +891,17 @@ public function cutiindex(Request $request)
         'error' => $e->getMessage(),
     ));
 }
-        return redirect()->route('kadiv.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+        
+ // Notifikasi telegram: cuti disetujui
+ try {
+ app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DISETUJUI');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DISETUJUI)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+ }
+return redirect()->route('kadiv.cutiindex')->with('status', 'Data Cuti Successfully Updated');
     }
     public function tolak($id)
     {
@@ -911,6 +930,15 @@ public function cutiindex(Request $request)
             ]);
         }
         //$pegawai->save();
+ // Notifikasi telegram: cuti ditolak
+ try {
+ app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DITOLAK');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DITOLAK)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+ }
         return redirect()->route('kadiv.cutiindex')->with('status', 'Data Cuti Successfully Updated');
     }
     public function cutisetuju(Request $request)
@@ -1064,7 +1092,16 @@ public function cutiindex(Request $request)
         $log->keterangan = $peraturan->name;
         $log->save();
 
-        return redirect()->route('kadiv.peraturan')->with('status', 'Permintaan akan diproses');
+       
+ // Notifikasi telegram ke divisi Kepatuhan & Manajemen Resiko: submit
+ try {
+ app(\App\Services\TelegramPeraturanDownloadNotificationService::class)->notify($orderatur, 'SUBMIT');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM PERMINTAAN DOWNLOAD (SUBMIT)', [
+ 'orderatur_id' => $orderatur->id,
+ 'error' => $e->getMessage(),
+ ]);
+ } return redirect()->route('kadiv.peraturan')->with('status', 'Permintaan akan diproses');
     }
 
     public function statusatur()

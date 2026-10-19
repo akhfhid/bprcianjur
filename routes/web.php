@@ -10,6 +10,24 @@ use App\Http\Controllers\CutiController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderCutiNotificationController;
 use App\Http\Controllers\WaSettingController;
+use App\Http\Controllers\TelegramLinkController;
+
+/*
+|--------------------------------------------------------------------------
+| Telegram
+|--------------------------------------------------------------------------
+*/
+// Webhook bot Telegram — menerima update dari bot (pairing token & chat id).
+// Token pairing: user kirim /start <TOKEN> ke bot, bot bridge meneruskan ke sini
+// atau webhook memproses langsung pesan dari Telegram.
+Route::post('/telegram/webhook', [TelegramLinkController::class, 'webhook'])
+ ->name('telegram.webhook');
+
+Route::middleware('auth')->group(function () {
+ Route::get('/telegram/link', [TelegramLinkController::class, 'start'])->name('telegram.link.start');
+ Route::get('/telegram/test', [TelegramLinkController::class, 'test'])->name('telegram.link.test');
+ Route::get('/telegram/unlink', [TelegramLinkController::class, 'unlink'])->name('telegram.link.unlink');
+});
 
 Route::get('/', function () {
     return view('auth.login');

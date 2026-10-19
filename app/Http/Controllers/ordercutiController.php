@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 use App\Http\Controllers\OrderCutiNotificationController;
+use App\Services\TelegramCutiNotificationService;
+use App\Services\TelegramPeraturanDownloadNotificationService;
 class ordercutiController extends Controller
 {
     /**
@@ -171,7 +173,16 @@ class ordercutiController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
-        return redirect()->route('ordercuti.index')->with('status', 'Permohonan Berhasil Diinput');
+        // Notifikasi telegram: permintaan cuti baru
+try {
+ app(TelegramCutiNotificationService::class)->notify($new_cuti, 'SUBMIT');
+} catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (SUBMIT)', [
+ 'order_id' => $new_cuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+}
+return redirect()->route('ordercuti.index')->with('status', 'Permohonan Berhasil Diinput');
     }
 
     /**
@@ -260,7 +271,16 @@ public function setuju($id)
         $ordercuti->status = 'DISETUJUI';
         $ordercuti->save();
 
-        return back()->with('status', 'Cuti tahun depan disetujui (akan dipotong saat tahun berjalan)');
+        // Notifikasi telegram: cuti disetujui
+try {
+ app(TelegramCutiNotificationService::class)->notify($ordercuti, 'DISETUJUI');
+} catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DISETUJUI)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+}
+return back()->with('status', 'Cuti tahun depan disetujui (akan dipotong saat tahun berjalan)');
     }
 
     // Validasi sisa cuti
@@ -275,7 +295,16 @@ public function setuju($id)
     $ordercuti->status = 'DISETUJUI';
     $ordercuti->save();
 
-    return back()->with('status', 'Cuti disetujui & sisa cuti dikurangi');
+    // Notifikasi telegram: cuti disetujui
+try {
+ app(TelegramCutiNotificationService::class)->notify($ordercuti, 'DISETUJUI');
+} catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DISETUJUI)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+}
+return back()->with('status', 'Cuti disetujui & sisa cuti dikurangi');
 }
 
     public function tolak($id)
@@ -291,7 +320,16 @@ public function setuju($id)
 
         $ordercuti->save();
         //$pegawai->save();
-        return redirect()->route('ordercuti.index')->with('status', 'Data Cuti Successfully Updated');
+        // Notifikasi telegram: cuti ditolak
+try {
+ app(TelegramCutiNotificationService::class)->notify($ordercuti, 'DITOLAK');
+} catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DITOLAK)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+}
+return redirect()->route('ordercuti.index')->with('status', 'Data Cuti Successfully Updated');
     }
     public function disetujui(Request $request)
     {

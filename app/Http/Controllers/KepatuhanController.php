@@ -582,8 +582,17 @@ class KepatuhanController extends Controller
 
         $ordercuti->save();
         $pegawai->save();
-        return redirect()->route('kepatuhan.cutiindex')->with('status','Data Cuti Successfully Updated');
+ // Notifikasi telegram: cuti disetujui
+ try {
+ app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DISETUJUI');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DISETUJUI)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+ }
 
+        return redirect()->route('kepatuhan.cutiindex')->with('status','Data Cuti Successfully Updated');
     }
     public function tolak($id){
         $ordercuti = \App\ordercuti::findorFail($id);
@@ -599,7 +608,17 @@ class KepatuhanController extends Controller
 
         $ordercuti->save();
         //$pegawai->save();
-        return redirect()->route('kepatuhan.cutiindex')->with('status','Data Cuti Successfully Updated');
+        // Notifikasi telegram: cuti ditolak
+ try {
+ app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DITOLAK');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DITOLAK)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+ }
+
+ return redirect()->route('kepatuhan.cutiindex')->with('status','Data Cuti Successfully Updated');
     }
 
     public function rotasipegawai(Request $request){
@@ -1080,6 +1099,15 @@ class KepatuhanController extends Controller
 
         $order->status = 'SETUJU';
         $order->save();
+ // Notifikasi telegram: permintaan download setuju
+ try {
+ app(\App\Services\TelegramPeraturanDownloadNotificationService::class)->notify($order, 'SETUJU');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM PERMINTAAN DOWNLOAD (SETUJU)', [
+ 'orderatur_id' => $order->id,
+ 'error' => $e->getMessage(),
+ ]);
+ }
 
         return redirect()->route('kepatuhan.statusatur')->with('status','Permintaan Telah Disetujui');
    }
@@ -1089,6 +1117,15 @@ class KepatuhanController extends Controller
 
         $order->status = 'TOLAK';
         $order->save();
+ // Notifikasi telegram: permintaan download tolak
+ try {
+ app(\App\Services\TelegramPeraturanDownloadNotificationService::class)->notify($order, 'TOLAK');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM PERMINTAAN DOWNLOAD (TOLAK)', [
+ 'orderatur_id' => $order->id,
+ 'error' => $e->getMessage(),
+ ]);
+ }
         return redirect()->route('kepatuhan.statusatur')->with('status','Permintaan Telah Ditolak');
    }
    public function setujudata(){

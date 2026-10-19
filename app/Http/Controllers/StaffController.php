@@ -573,6 +573,16 @@ class StaffController extends Controller
         $orderatur->status = 'SUBMIT';
 
         $orderatur->save();
+
+ // Notifikasi telegram ke divisi Kepatuhan & Manajemen Resiko
+ try {
+ app(\App\Services\TelegramPeraturanDownloadNotificationService::class)->notify($orderatur, 'SUBMIT');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM PERMINTAAN DOWNLOAD PERATURAN', [
+ 'orderatur_id' => $orderatur->id,
+ 'error' => $e->getMessage(),
+ ]);
+ }
         return redirect()->route('staff.peraturan')->with('status', 'Permintaan akan diproses');
     }
 

@@ -874,7 +874,16 @@ class SupervisorController extends Controller
             ));
         }
 
-        return redirect()->route('supervisor.cutisaya')->with('status', 'Permohonan Berhasil Diinput');
+       
+ // Notifikasi telegram: cuti submit
+ try {
+ app(\App\Services\TelegramCutiNotificationService::class)->notify($new_cuti, 'SUBMIT');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (SUBMIT)', [
+ 'order_id' => $new_cuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+ } return redirect()->route('supervisor.cutisaya')->with('status', 'Permohonan Berhasil Diinput');
     }
 
     public function setuju($id)
@@ -924,7 +933,16 @@ try {
     ));
 }
 
-    return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
+   
+ // Notifikasi telegram: cuti disetujui
+ try {
+ app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DISETUJUI');
+ } catch (\Throwable $e) {
+ \Log::error('GAGAL NOTIF TELEGRAM CUTI (DISETUJUI)', [
+ 'order_id' => $ordercuti->id,
+ 'error' => $e->getMessage(),
+ ]);
+ } return redirect()->route('supervisor.cutiindex')->with('status', 'Data Cuti Successfully Updated');
 }
 
     // public function setuju($id)
