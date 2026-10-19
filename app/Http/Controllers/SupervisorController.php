@@ -1452,6 +1452,9 @@ try {
         $orderatur->status = 'SUBMIT';
 
         $orderatur->save();
+        // Notifikasi telegram: permintaan download peraturan ke divisi Kepatuhan & Manajemen Risiko
+        app(\App\Services\TelegramPeraturanDownloadNotificationService::class)->notify($orderatur, 'SUBMIT');
+
         return redirect()->route('supervisor.peraturan')->with('status', 'Permintaan akan diproses');
     }
     public function statusatur()

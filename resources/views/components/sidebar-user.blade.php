@@ -9,4 +9,5 @@
 	@if(auth()->user()->loguser =='YA')
 	<li><a href="{{route('Loguser.index')}}"><span class="oi oi-inbox"></span>Log Akses</a></li>
 	@endif					
+ <li><a href="{{route('telegram.link.index')}}"><span class="oi oi-chat"></span>Telegram</a></li>
 </div>

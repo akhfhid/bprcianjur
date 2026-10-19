@@ -562,6 +562,9 @@ class DirbisController extends Controller
             ]);
         }
 
+        // Notifikasi telegram: cuti submit
+        app(\App\Services\TelegramCutiNotificationService::class)->notify($new_cuti, 'SUBMIT');
+
         return redirect()->route('dirbis.permohonancuti')->with('status', 'Permohonan Berhasil Diinput');
     }
     public function cutiindex(Request $request){
@@ -691,6 +694,9 @@ class DirbisController extends Controller
         'error' => $e->getMessage(),
     ));
 }
+        // Notifikasi telegram: cuti disetujui
+        app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DISETUJUI');
+
         return redirect()->route('dirbis.cutiindex')->with('status','Data Cuti Successfully Updated');
 
     }
@@ -708,6 +714,9 @@ class DirbisController extends Controller
 
         $ordercuti->save();
         //$pegawai->save();
+        // Notifikasi telegram: cuti ditolak
+        app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DITOLAK');
+
         return redirect()->route('dirbis.cutiindex')->with('status','Data Cuti Successfully Updated');
     }
     public function cutisetuju(Request $request){
@@ -856,6 +865,9 @@ class DirbisController extends Controller
        $orderatur->status = "SUBMIT";
 
        $orderatur->save();
+        // Notifikasi telegram: permintaan download peraturan ke divisi Kepatuhan & Manajemen Risiko
+        app(\App\Services\TelegramPeraturanDownloadNotificationService::class)->notify($orderatur, 'SUBMIT');
+
        return redirect()->route('dirbis.peraturan')->with('status','Permintaan akan diproses');
    }
 

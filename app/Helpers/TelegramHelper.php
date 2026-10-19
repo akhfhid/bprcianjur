@@ -10,19 +10,26 @@ use Illuminate\Support\Facades\Cache;
 class TelegramHelper
 {
  /**
- * Batas aman pengiriman pesan (Telegram: 30 pesan/detik global,
- * 20 pesan/menit per grup/channel yang sama).
+ * Batas maksimum request pengiriman pesan per detik.
+ * Default 18 pesan/detik (bisa dioverride TELEGRAM_RATE_LIMIT_PER_SECOND).
  *
  * @var int
  */
- const RATE_LIMIT_PER_SECOND = 25;
+ const RATE_LIMIT_PER_SECOND = 18;
+
+ /**
+ * Lama jeda (detik) saat kuota per detik sudah habis sebelum lanjut kirim lagi.
+ *
+ * @var int
+ */
+ const RATE_LIMIT_WINDOW_DELAY = 1;
 
  /**
  * Jeda minimum antar pesan ke chat yang sama (detik).
  *
  * @var float
  */
- const MIN_DELAY_PER_CHAT = 1.1;
+ const MIN_DELAY_PER_CHAT = 1.0;
  /**
  * Base URL API Telegram Pulse.
  *
@@ -62,12 +69,25 @@ class TelegramHelper
  */
  protected static function throttleGlobal()
  {
+ $limit = (int) env('TELEGRAM_RATE_LIMIT_PER_SECOND', self::RATE_LIMIT_PER_SECOND);
+ $delay = (int) env('TELEGRAM_RATE_LIMIT_DELAY', self::RATE_LIMIT_WINDOW_DELAY);
+
+ if ($limit < 1) {
+ $limit = self::RATE_LIMIT_PER_SECOND;
+ }
+ if ($delay < 1) {
+ $delay = 1;
+ }
+
  $key = 'telegram_pulse_rate_' . floor(microtime(true));
  $count = (int) Cache::get($key, 0);
 
- if ($count >= self::RATE_LIMIT_PER_SECOND) {
- // Tunggu sampai detik berikutnya
- usleep((int) ((1 - (microtime(true) - floor(microtime(true)))) * 1000000) + 50000);
+ if ($count >= $limit) {
+ // Kuota detik ini habis: jeda 1 detik penuh, lalu lanjut di jendela detik berikutnya
+ sleep($delay);
+
+ $key = 'telegram_pulse_rate_' . floor(microtime(true));
+ $count = (int) Cache::get($key, 0);
  }
 
  Cache::put($key, $count + 1, 2);
@@ -85,8 +105,10 @@ class TelegramHelper
  $lastSent = (float) Cache::get($key, 0);
  $elapsed = microtime(true) - $lastSent;
 
- if ($elapsed < self::MIN_DELAY_PER_CHAT) {
- usleep((int) ((self::MIN_DELAY_PER_CHAT - $elapsed) * 1000000));
+ $minDelay = (float) env('TELEGRAM_MIN_DELAY_PER_CHAT', self::MIN_DELAY_PER_CHAT);
+
+ if ($elapsed < $minDelay) {
+ usleep((int) (($minDelay - $elapsed) * 1000000));
  }
 
  Cache::put($key, microtime(true), 120);
@@ -116,7 +138,7 @@ class TelegramHelper
  ->timeout((int) env('TELEGRAM_PULSE_TIMEOUT', 10))
  ->post(self::baseUrl() . '/api/v1/messages/send', [
  'chatId' => (string) $chatId,
- 'content' => $content,
+ 'message' => $content,
  'parseMode' => $parseMode,
  ]);
 
@@ -170,9 +192,9 @@ class TelegramHelper
  ->timeout((int) env('TELEGRAM_PULSE_TIMEOUT', 10))
  ->post(self::baseUrl() . '/api/v1/messages/bulk', [
  'title' => $title,
- 'content' => $content,
+ 'message' => $content,
  'parseMode' => $parseMode,
- 'recipients' => array_map('strval', $chatIds),
+ 'chatIds' => array_map('strval', $chatIds),
  ]);
 
  if ($response->successful()) {

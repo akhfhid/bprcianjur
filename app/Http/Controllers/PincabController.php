@@ -731,6 +731,9 @@ class PincabController extends Controller
             ]);
         }
 
+        // Notifikasi telegram: cuti submit
+        app(\App\Services\TelegramCutiNotificationService::class)->notify($new_cuti, 'SUBMIT');
+
         return redirect()->route('pincab.cutipincab')->with('status', 'Permohonan Berhasil Diinput');
     }
     public function setujucuti()
@@ -880,6 +883,9 @@ class PincabController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+        // Notifikasi telegram: cuti disetujui
+        app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DISETUJUI');
+
         return redirect()->route('pincab.cutiindex')->with('status', 'Data Cuti Successfully Updated');
     }
     public function tolak($id)
@@ -910,6 +916,9 @@ class PincabController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+        // Notifikasi telegram: cuti ditolak
+        app(\App\Services\TelegramCutiNotificationService::class)->notify($ordercuti, 'DITOLAK');
+
         return redirect()->route('pincab.cutiindex')->with('status', 'Data Cuti Successfully Updated');
     }
     public function cutisetuju(Request $request)
@@ -1235,6 +1244,9 @@ class PincabController extends Controller
         $new_loguser->keterangan = $peraturan->name;
         //$new_loguser->waktu = $time;
         $new_loguser->save();
+        // Notifikasi telegram: permintaan download peraturan ke divisi Kepatuhan & Manajemen Risiko
+        app(\App\Services\TelegramPeraturanDownloadNotificationService::class)->notify($orderatur, 'SUBMIT');
+
         return redirect()->route('pincab.peraturan')->with('status', 'Permintaan akan diproses');
     }
 

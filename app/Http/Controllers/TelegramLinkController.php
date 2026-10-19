@@ -13,6 +13,19 @@ use Illuminate\Support\Str;
 class TelegramLinkController extends Controller
 {
  /**
+ * Halaman mandiri koneksi Telegram (tersedia untuk semua role,
+ * termasuk role yang tidak memiliki halaman profile).
+ *
+ * @return \Illuminate\View\View
+ */
+ public function index()
+ {
+ $pegawai = Pegawai::find(\Auth::user()->pegawai_id);
+
+ return view('telegram.connect', ['pegawai' => $pegawai]);
+ }
+
+ /**
  * Tampilkan status koneksi telegram user yang login.
  *
  * @return \Illuminate\Http\RedirectResponse

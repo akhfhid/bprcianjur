@@ -6,6 +6,7 @@ use App\Cabang;
 use App\Jabatan;
 use App\Helpers\NotificationLogHelper;
 use App\Helpers\WhatsAppHelper;
+use App\Services\TelegramPeraturanBaruNotificationService;
 use App\Pegawai;
 use App\peraturan;
 use App\WaSetting;
@@ -224,6 +225,16 @@ class PeraturanNotificationBlastService
      */
     protected function sendToPegawai(peraturan $peraturan, Pegawai $pegawai, $cabangName = null)
     {
+        // Notifikasi telegram peraturan baru (kanal terpisah dari WA)
+        try {
+            app(TelegramPeraturanBaruNotificationService::class)->notify($peraturan, $pegawai, $cabangName);
+        } catch (\Throwable $e) {
+            Log::warning('Gagal kirim telegram peraturan baru', [
+                'peraturan_id' => $peraturan->id,
+                'pegawai_id' => $pegawai->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
         $jabatanId = $pegawai->getAttribute('jabatan');
         $cabangId = $pegawai->getAttribute('cabang');
         $jabatanName = optional($pegawai->getRelation('jabatan'))->name;

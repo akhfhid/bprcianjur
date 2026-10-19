@@ -13,4 +13,5 @@
 
 	<li><a href="{{route('dirbis.peraturan')}}"><span class="oi oi-book"></span>Peraturan</a></li>
 
+ <li><a href="{{route('telegram.link.index')}}"><span class="oi oi-chat"></span>Telegram</a></li>
 </div>

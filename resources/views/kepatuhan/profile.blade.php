@@ -375,43 +375,6 @@
 
  <hr class="my-3">
 
- {{-- Koneksi Telegram --}}
- <div class="card">
- <div class="card-body">
- <h5 class="mb-3"><b>Koneksi Telegram</b></h5>
-
- @if(session('telegram_link_token'))
- <div class="alert alert-info">
- <b>Token Pairing:</b>
- <span style="font-size: 1.4em; letter-spacing: 3px;"><b>{{ session('telegram_link_token') }}</b></span>
- <br><small>Berlaku 15 menit. Buka Telegram, cari bot
- @if(session('telegram_bot_username'))
- <a href="https://t.me/{{ session('telegram_bot_username') }}" target="_blank">@{{ session('telegram_bot_username') }}</a>,
- @endif
- lalu kirim pesan: <code>/start {{ session('telegram_link_token') }}</code>
- </small>
- </div>
- @endif
-
- @php
- $tgLinked = isset($pegawai->tg_chat_id) && !empty($pegawai->tg_chat_id);
- @endphp
-
- @if($tgLinked)
- <p>Status: <span class="badge badge-success">Terhubung</span> (Chat ID: {{ $pegawai->tg_chat_id }})</p>
- <div>
- <a href="{{ route('telegram.link.test') }}" class="btn btn-primary btn-sm mr-1">Test Koneksi</a>
- <a href="{{ route('telegram.link.unlink') }}" class="btn btn-outline-danger btn-sm"
- onclick="return confirm('Putuskan koneksi Telegram?')">Putuskan Koneksi</a>
- </div>
- @else
- <p>Status: <span class="badge badge-secondary">Belum terhubung</span></p>
- <a href="{{ route('telegram.link.start') }}" class="btn btn-success btn-sm">
- Hubungkan ke Telegram
- </a>
- @endif
- </div>
- </div>
- </div>
+ @include('partials.telegram_connect')
 
 @endsection

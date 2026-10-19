@@ -415,6 +415,9 @@ class StaffController extends Controller
     ));
 }
 
+        // Notifikasi telegram: cuti submit
+        app(\App\Services\TelegramCutiNotificationService::class)->notify($new_cuti, 'SUBMIT');
+
         return redirect()
             ->route('staff.cuti')
             ->with('status', 'Permohonan Berhasil Diinput. Sisa Cuti Anda: ' . $saldoBaru);

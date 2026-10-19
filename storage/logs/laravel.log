@@ -53460,3 +53460,25 @@ Mohon dapat dilakukan persetujuan pada Aplikasi SIKAP BPR Cianjur\\\"}, 200, 202
 [2026-10-15 10:51:32] local.WARNING: WhatsApp API Reject {"phone":"6281281055550","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
 [2026-10-15 10:51:32] local.WARNING: Gagal kirim notif peraturan tanpa queue worker {"peraturan_id":733,"pegawai_id":6,"pegawai_name":"Yuniar Agustiani, S.Akt.","cabang_id":1,"cabang_name":"Kantor Pusat Non Operasional","jabatan_id":75,"jabatan_name":"Kepala Divisi Kepatuhan & Manajemen Risiko","message":"Kode Aplikasi Salah"} 
 [2026-10-15 10:51:32] local.INFO: Blast notif peraturan selesai tanpa queue worker {"peraturan_id":733,"total":36,"delay_per_person":45,"delay_per_cabang":5} 
+[2026-10-16 13:28:41] local.INFO: WhatsApp API Response {"phone":"6289664041456","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-16 13:28:41] local.WARNING: WhatsApp API Reject {"phone":"6289664041456","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-16 15:01:21] local.INFO: WhatsApp API Response {"phone":"6283818280520","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-16 15:01:21] local.WARNING: WhatsApp API Reject {"phone":"6283818280520","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-16 15:01:24] local.INFO: WhatsApp API Response {"phone":"6283818280520","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-16 15:01:24] local.WARNING: WhatsApp API Reject {"phone":"6283818280520","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-16 15:02:12] local.INFO: WhatsApp API Response {"phone":"6285659558875","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-16 15:02:12] local.WARNING: WhatsApp API Reject {"phone":"6285659558875","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-16 16:05:42] local.INFO: WhatsApp API Response {"phone":"6285975256475","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-16 16:05:42] local.WARNING: WhatsApp API Reject {"phone":"6285975256475","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-16 17:02:46] local.INFO: WhatsApp API Response {"phone":"6282117442298","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-16 17:02:46] local.WARNING: WhatsApp API Reject {"phone":"6282117442298","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 07:42:09] local.INFO: WhatsApp API Response {"phone":"6281313020833","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 07:42:09] local.WARNING: WhatsApp API Reject {"phone":"6281313020833","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 07:44:34] local.INFO: WhatsApp API Response {"phone":"6281999119996","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 07:44:34] local.WARNING: WhatsApp API Reject {"phone":"6281999119996","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 07:48:39] local.INFO: WhatsApp API Response {"phone":"6281222967556","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 07:48:39] local.WARNING: WhatsApp API Reject {"phone":"6281222967556","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 08:11:44] local.INFO: WhatsApp API Response {"phone":"628170130851","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 08:11:44] local.WARNING: WhatsApp API Reject {"phone":"628170130851","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 09:59:44] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 09:59:44] local.WARNING: WhatsApp API Reject {"phone":"6287714714488","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 

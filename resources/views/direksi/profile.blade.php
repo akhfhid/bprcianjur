@@ -181,6 +181,8 @@
 </div>
 </div>
 </div>
+@include('partials.telegram_connect')
+
 @endsection
 
 @push('scripts')
