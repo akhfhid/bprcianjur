@@ -36,9 +36,19 @@ class TelegramLinkController extends Controller
 
  $linked = $pegawai && \Illuminate\Support\Facades\Schema::hasColumn('pegawais', 'tg_chat_id') && !empty($pegawai->tg_chat_id);
 
+ // HTML kartu dirender ulang agar front-end bisa mengganti tampilan
+ // tanpa perlu refresh halaman setelah akun terhubung.
+ $html = '';
+ try {
+ $html = view('partials.telegram_connect_body', ['pegawai' => $pegawai])->render();
+ } catch (\Throwable $e) {
+ Log::warning('Gagal render kartu telegram', ['message' => $e->getMessage()]);
+ }
+
  return response()->json([
  'linked' => $linked,
  'chat_id' => $linked ? $pegawai->tg_chat_id : null,
+ 'html' => $html,
  ]);
  }
 
@@ -48,7 +58,7 @@ class TelegramLinkController extends Controller
  *
  * @return \Illuminate\Http\RedirectResponse
  */
- public function start()
+ public function start(Request $request)
  {
  $pegawai = Pegawai::find(\Auth::user()->pegawai_id);
 
@@ -72,6 +82,25 @@ class TelegramLinkController extends Controller
  $botUsername = config('telegram_pulse.bot_username', env('TELEGRAM_BOT_USERNAME', ''));
  $linkUrl = $botUsername ? 'https://t.me/' . $botUsername . '?start=' . $token : null;
 
+ // Respons AJAX: kembalikan token + HTML kotak token agar bisa tampil tanpa refresh
+ if ($request->ajax() || $request->wantsJson()) {
+ $tokenHtml = view('partials.telegram_token_box', [
+ 'token' => $token,
+ 'linkUrl' => $linkUrl,
+ 'botUsername' => $botUsername,
+ ])->render();
+
+ return response()->json([
+ 'success' => true,
+ 'token' => $token,
+ 'link_url' => $linkUrl,
+ 'bot_username' => $botUsername,
+ 'token_html' => $tokenHtml,
+ 'ttl_minutes' => $tokenTtl,
+ 'message' => 'Token pairing dibuat. Buka tautan Telegram berikut dalam ' . $tokenTtl . ' menit.',
+ ]);
+ }
+
  return back()->with('telegram_link_token', $token)
  ->with('telegram_link_url', $linkUrl)
  ->with('telegram_bot_username', $botUsername)
@@ -83,11 +112,18 @@ class TelegramLinkController extends Controller
  *
  * @return \Illuminate\Http\RedirectResponse
  */
- public function test()
+ public function test(Request $request)
  {
  $pegawai = Pegawai::find(\Auth::user()->pegawai_id);
 
  if (!$pegawai || empty($pegawai->tg_chat_id)) {
+ if ($request->ajax() || $request->wantsJson()) {
+ return response()->json([
+ 'success' => false,
+ 'message' => 'Telegram belum terhubung. Hubungkan terlebih dahulu.',
+ ]);
+ }
+
  return back()->with('error', 'Telegram belum terhubung. Hubungkan terlebih dahulu.');
  }
 
@@ -96,6 +132,15 @@ class TelegramLinkController extends Controller
  . "Notifikasi cuti dan peraturan akan dikirim ke chat ini.";
 
  $result = TelegramHelper::sendMessage($pegawai->tg_chat_id, $content);
+
+ if ($request->ajax() || $request->wantsJson()) {
+ return response()->json([
+ 'success' => !empty($result['success']),
+ 'message' => !empty($result['success'])
+ ? 'Test koneksi berhasil. Cek Telegram kamu.'
+ : 'Test koneksi gagal: ' . ($result['message'] ?? 'tidak diketahui'),
+ ]);
+ }
 
  if ($result['success']) {
  return back()->with('status', 'Test koneksi berhasil. Cek Telegram kamu.');
@@ -109,13 +154,20 @@ class TelegramLinkController extends Controller
  *
  * @return \Illuminate\Http\RedirectResponse
  */
- public function unlink()
+ public function unlink(Request $request)
  {
  $pegawai = Pegawai::find(\Auth::user()->pegawai_id);
 
  if ($pegawai && \Illuminate\Support\Facades\Schema::hasColumn('pegawais', 'tg_chat_id')) {
  $pegawai->tg_chat_id = null;
  $pegawai->save();
+ }
+
+ if ($request->ajax() || $request->wantsJson()) {
+ return response()->json([
+ 'success' => true,
+ 'message' => 'Koneksi Telegram berhasil diputus.',
+ ]);
  }
 
  return back()->with('status', 'Koneksi Telegram berhasil diputus.');

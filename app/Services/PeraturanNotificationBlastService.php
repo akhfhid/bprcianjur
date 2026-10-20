@@ -21,6 +21,21 @@ class PeraturanNotificationBlastService
      *
      * @var array
      */
+    /**
+     * Cache ID pegawai penerima notifikasi peraturan (kanal Telegram).
+     *
+     * @var array|null
+     */
+    protected $telegramRecipientIds = null;
+
+    /**
+     * Penghitung batch Telegram global lintas cabang.
+     * Dipakai agar batas pesan/detik tidak di-reset saat pindah cabang.
+     *
+     * @var int|null
+     */
+    protected static $telegramBatchCounter = null;
+
     protected $jabatanNotifikasiPeraturan = [
         'Pimpinan Cabang',
         'Kepala Bagian',
@@ -61,8 +76,9 @@ class PeraturanNotificationBlastService
             }
 
             $recipientsByCabang = $this->getRecipientsByCabang();
+            $telegramByCabang = $this->getTelegramRecipientsByCabang();
 
-            if ($recipientsByCabang->isEmpty()) {
+            if ($recipientsByCabang->isEmpty() && $telegramByCabang->isEmpty()) {
                 Log::warning('Notifikasi peraturan dilewati karena tidak ada penerima aktif', [
                     'peraturan_id' => $peraturan->id,
                 ]);
@@ -75,7 +91,25 @@ class PeraturanNotificationBlastService
             $isFirstCabang = true;
             $total = 0;
 
-            foreach ($recipientsByCabang as $cabangId => $recipients) {
+            // Urutan cabang mengikuti urutan pada WaSetting (sama seperti kanal WA),
+            // lalu cabang yang hanya punya penerima Telegram ditambahkan di akhir.
+            $allCabangIds = $recipientsByCabang->keys()
+                ->merge($telegramByCabang->keys())
+                ->unique()
+                ->values();
+
+            $orderedIds = $this->getOrderedCabangIds();
+            if (!empty($orderedIds)) {
+                $orderMap = array_flip($orderedIds);
+                $allCabangIds = $allCabangIds
+                    ->sortBy(function ($id) use ($orderMap) {
+                        return $orderMap[(int) $id] ?? PHP_INT_MAX;
+                    })
+                    ->values();
+            }
+
+            foreach ($allCabangIds as $cabangId) {
+                $recipients = $recipientsByCabang->get($cabangId, collect());
                 $cabangName = optional(Cabang::find($cabangId))->name;
 
                 // Delay antar-cabang (setelah cabang pertama)
@@ -84,6 +118,9 @@ class PeraturanNotificationBlastService
                 }
                 $isFirstCabang = false;
 
+                // ----------------------------------------------------------
+                // Kanal WhatsApp (perilaku lama: jeda per orang)
+                // ----------------------------------------------------------
                 foreach ($recipients as $pegawai) {
                     if (!$this->isBlastEnabled()) {
                         Log::warning('Blast notif peraturan dihentikan dari env', [
@@ -99,15 +136,22 @@ class PeraturanNotificationBlastService
 
                     $isFirstSend = false;
                     $total++;
-                    $this->sendToPegawai($peraturan, $pegawai, $cabangName);
+                    $this->sendWaToPegawai($peraturan, $pegawai, $cabangName);
                 }
+
+                // ----------------------------------------------------------
+                // Kanal Telegram (per cabang, 15 pesan/detik + jeda 1 detik)
+                // ----------------------------------------------------------
+                $this->sendTelegramPerCabang($peraturan, $cabangId, $cabangName);
             }
 
             Log::info('Blast notif peraturan selesai tanpa queue worker', [
                 'peraturan_id' => $peraturan->id,
-                'total' => $total,
+                'total_wa' => $total,
                 'delay_per_person' => $delaySeconds,
                 'delay_per_cabang' => $delayPerCabang,
+                'telegram_batch_size' => $this->getTelegramBatchSize(),
+                'telegram_batch_delay' => $this->getTelegramBatchDelay(),
             ]);
         } catch (\Throwable $e) {
             Log::error('Gagal menjalankan blast notif peraturan tanpa queue worker', [
@@ -115,6 +159,167 @@ class PeraturanNotificationBlastService
                 'message' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Kirim notifikasi Telegram untuk satu cabang dengan aturan batching:
+     * maksimal N pesan dalam satu detik, lalu jeda M detik.
+     *
+     * Default N=15, M=1 — tetap aman di bawah batas Telegram 20 pesan/detik.
+     *
+     * @param  \App\peraturan  $peraturan
+     * @param  int            $cabangId
+     * @param  string|null    $cabangName
+     * @return void
+     */
+    protected function sendTelegramPerCabang(peraturan $peraturan, $cabangId, $cabangName = null)
+    {
+        $batchSize  = $this->getTelegramBatchSize();
+        $batchDelay = $this->getTelegramBatchDelay();
+
+        $recipients = Pegawai::query()
+            ->where('cabang', $cabangId)
+            ->where('status_active', 1)
+            ->whereNotNull('tg_chat_id')
+            ->where('tg_chat_id', '<>', '')
+            ->whereIn('id', $this->telegramRecipientIds())
+            ->orderBy('name', 'asc')
+            ->get(['id', 'name', 'email', 'cabang', 'jabatan', 'tg_chat_id']);
+
+        if ($recipients->isEmpty()) {
+            Log::info('Blast telegram peraturan: tidak ada penerima terhubung di cabang ini', [
+                'peraturan_id' => $peraturan->id,
+                'cabang_id' => $cabangId,
+                'cabang_name' => $cabangName,
+            ]);
+            return;
+        }
+
+        $service = app(TelegramPeraturanBaruNotificationService::class);
+        $sent = 0;
+        $total = $recipients->count();
+
+        // Penghitung batch GLOBAL lintas cabang (static) agar batas
+        // 15 pesan/detik tidak di-reset saat berpindah cabang.
+        if (self::$telegramBatchCounter === null) {
+            self::$telegramBatchCounter = 0;
+        }
+
+        foreach ($recipients as $pegawai) {
+            $service->notify($peraturan, $pegawai, $cabangName);
+            $sent++;
+            self::$telegramBatchCounter++;
+
+            // Jeda setiap kelipatan batchSize pesan (global, lintas cabang).
+            if ((self::$telegramBatchCounter % $batchSize) === 0) {
+                sleep($batchDelay);
+            }
+        }
+
+        Log::info('Blast telegram peraturan per cabang selesai', [
+            'peraturan_id' => $peraturan->id,
+            'cabang_id' => $cabangId,
+            'cabang_name' => $cabangName,
+            'total_penerima' => $total,
+            'batch_size' => $batchSize,
+            'batch_delay' => $batchDelay,
+        ]);
+    }
+
+    /**
+     * ID pegawai penerima notifikasi peraturan Telegram: SEMUA pegawai aktif.
+     * Di-cache per instance agar tidak query berulang tiap cabang.
+     *
+     * @return array
+     */
+    protected function telegramRecipientIds()
+    {
+        if ($this->telegramRecipientIds !== null) {
+            return $this->telegramRecipientIds;
+        }
+
+        // Cakupan: SEMUA pegawai aktif (bukan hanya jabatan tertentu).
+        // Yang belum menghubungkan Telegram akan dilewati otomatis.
+        $ids = Pegawai::query()
+            ->where('status_active', 1)
+            ->pluck('id')
+            ->all();
+
+        return $this->telegramRecipientIds = $ids;
+    }
+
+    /**
+     * Ukuran batch Telegram per detik (dibatasi maksimal 19 agar aman).
+     *
+     * @return int
+     */
+    protected function getTelegramBatchSize()
+    {
+        $size = (int) config('telegram_pulse.blast_batch_size', 15);
+
+        if ($size < 1) {
+            $size = 15;
+        }
+        if ($size > 19) {
+            $size = 19;
+        }
+
+        return $size;
+    }
+
+    /**
+     * Jeda antar batch Telegram (detik), minimal 1.
+     *
+     * @return int
+     */
+    protected function getTelegramBatchDelay()
+    {
+        $delay = (int) config('telegram_pulse.blast_batch_delay', 1);
+
+        return $delay < 1 ? 1 : $delay;
+    }
+    /**
+     * Urutan cabang dari pengaturan WA (dipakai juga untuk Telegram).
+     *
+     * @return array
+     */
+    protected function getOrderedCabangIds()
+    {
+        try {
+            $setting = WaSetting::getSetting();
+            $ordered = $setting->getCabangOrderArray();
+
+            return is_array($ordered) ? array_map('intval', $ordered) : [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Penerima notifikasi Telegram per cabang.
+     * Cakupan: semua pegawai aktif, hanya yang sudah menghubungkan Telegram.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function getTelegramRecipientsByCabang()
+    {
+        $ids = $this->telegramRecipientIds();
+
+        if (empty($ids)) {
+            return collect();
+        }
+
+        // Semua pegawai aktif yang sudah menghubungkan Telegram.
+        $rows = Pegawai::query()
+            ->whereIn('id', $ids)
+            ->where('status_active', 1)
+            ->whereNotNull('cabang')
+            ->where('cabang', '>', 0)
+            ->whereNotNull('tg_chat_id')
+            ->where('tg_chat_id', '<>', '')
+            ->get(['id', 'name', 'email', 'cabang', 'jabatan', 'tg_chat_id']);
+
+        return $rows->groupBy('cabang');
     }
 
     /**
@@ -223,18 +428,8 @@ class PeraturanNotificationBlastService
      * @param  string|null  $cabangName
      * @return void
      */
-    protected function sendToPegawai(peraturan $peraturan, Pegawai $pegawai, $cabangName = null)
+    protected function sendWaToPegawai(peraturan $peraturan, Pegawai $pegawai, $cabangName = null)
     {
-        // Notifikasi telegram peraturan baru (kanal terpisah dari WA)
-        try {
-            app(TelegramPeraturanBaruNotificationService::class)->notify($peraturan, $pegawai, $cabangName);
-        } catch (\Throwable $e) {
-            Log::warning('Gagal kirim telegram peraturan baru', [
-                'peraturan_id' => $peraturan->id,
-                'pegawai_id' => $pegawai->id,
-                'message' => $e->getMessage(),
-            ]);
-        }
         $jabatanId = $pegawai->getAttribute('jabatan');
         $cabangId = $pegawai->getAttribute('cabang');
         $jabatanName = optional($pegawai->getRelation('jabatan'))->name;

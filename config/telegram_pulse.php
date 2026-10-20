@@ -38,4 +38,18 @@ return [
 
     'token_ttl_minutes' => (int) env('TELEGRAM_LINK_TOKEN_TTL', 15),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Aturan Blast Notifikasi Peraturan Baru (Telegram)
+    |--------------------------------------------------------------------------
+    | Pengiriman dikelompokkan per cabang. Dalam satu detik maksimal
+    | blast_batch_size pesan, lalu jeda blast_batch_delay detik sebelum
+    | batch berikutnya. Nilai default 15 pesan/detik + jeda 1 detik agar
+    | tetap aman di bawah batas Telegram (20 pesan/detik).
+    */
+
+    'blast_batch_size' => (int) env('TELEGRAM_BLAST_BATCH_SIZE', 15),
+
+    'blast_batch_delay' => (int) env('TELEGRAM_BLAST_BATCH_DELAY', 1),
+
 ];

@@ -53482,3 +53482,29 @@ Mohon dapat dilakukan persetujuan pada Aplikasi SIKAP BPR Cianjur\\\"}, 200, 202
 [2026-10-19 08:11:44] local.WARNING: WhatsApp API Reject {"phone":"628170130851","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
 [2026-10-19 09:59:44] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
 [2026-10-19 09:59:44] local.WARNING: WhatsApp API Reject {"phone":"6287714714488","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 16:20:11] local.INFO: WhatsApp API Response {"phone":"6281222967556","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 16:20:11] local.WARNING: WhatsApp API Reject {"phone":"6281222967556","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 16:20:11] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3994} 
+[2026-10-19 17:01:04] local.INFO: WhatsApp API Response {"phone":"6287714714488","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 17:01:04] local.WARNING: WhatsApp API Reject {"phone":"6287714714488","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 17:01:04] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3967} 
+[2026-10-19 17:05:24] local.INFO: WhatsApp API Response {"phone":"628211551637","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 17:05:24] local.WARNING: WhatsApp API Reject {"phone":"628211551637","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 17:05:24] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3995} 
+[2026-10-19 17:17:02] local.INFO: WhatsApp API Response {"phone":"6285862686432","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 17:17:02] local.WARNING: WhatsApp API Reject {"phone":"6285862686432","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 17:17:02] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3996} 
+[2026-10-19 17:29:23] local.INFO: WhatsApp API Response {"phone":"6285624488325","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-19 17:29:23] local.WARNING: WhatsApp API Reject {"phone":"6285624488325","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-19 17:29:23] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3997} 
+[2026-10-20 07:09:59] local.INFO: WhatsApp API Response {"phone":"6285624742643","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-20 07:09:59] local.WARNING: WhatsApp API Reject {"phone":"6285624742643","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-20 07:09:59] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3990} 
+[2026-10-20 07:18:25] local.INFO: WhatsApp API Response {"phone":"6287885462651","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-20 07:18:25] local.WARNING: WhatsApp API Reject {"phone":"6287885462651","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-20 07:18:25] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3998} 
+[2026-10-20 07:34:28] local.INFO: WhatsApp API Response {"phone":"628211551637","http_code":200,"response":{"status":401,"data":[],"message":"Kode Aplikasi Salah"}} 
+[2026-10-20 07:34:28] local.WARNING: WhatsApp API Reject {"phone":"628211551637","http_code":200,"api_status":401,"api_message":"Kode Aplikasi Salah"} 
+[2026-10-20 07:34:28] local.WARNING: Notif telegram cuti dilewati: tidak ada chat ID penerima {"order_cuti_id":3999} 
+[2026-10-20 08:33:36] local.INFO: Telegram terhubung {"pegawai_id":176,"chat_id":"5434027308"} 
+[2026-10-20 08:41:05] local.INFO: Telegram terhubung {"pegawai_id":149,"chat_id":"1458368435"} 

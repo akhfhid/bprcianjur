@@ -25,6 +25,7 @@ Route::post('/telegram/webhook', [TelegramLinkController::class, 'webhook'])
 
 Route::middleware('auth')->group(function () {
  Route::get('/telegram', [TelegramLinkController::class, 'index'])->name('telegram.link.index');
+ Route::get('/telegram/status', [TelegramLinkController::class, 'status'])->name('telegram.link.status');
  Route::get('/telegram/link', [TelegramLinkController::class, 'start'])->name('telegram.link.start');
  Route::get('/telegram/test', [TelegramLinkController::class, 'test'])->name('telegram.link.test');
  Route::get('/telegram/unlink', [TelegramLinkController::class, 'unlink'])->name('telegram.link.unlink');
